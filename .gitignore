@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 .uv/
 *.egg-info/
+.ipynb_checkpoints/
 
 # Environment
 .env
@@ -21,3 +22,20 @@ logs/
 
 # OS
 .DS_Store
+
+# Virtual environments
+dissertation_env/
+venv/
+.venv/
+
+# Data and outputs
+data/raw/
+data/processed/
+results/
+logs/
+*.ckpt
+*.pt
+*.pth
+
+# Stray files
+@default
