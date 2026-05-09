@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.uv/
+*.egg-info/
+
+# Environment
+.env
+
+# Data and large files
+data/raw/
+data/processed/
+data/results/
+logs/
+*.bin
+*.safetensors
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
