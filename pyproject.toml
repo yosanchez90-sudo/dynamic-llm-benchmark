@@ -12,6 +12,7 @@ dependencies = [
     "einops>=0.8.2",
     "gnureadline>=8.3.3",
     "google-genai>=2.0.1",
+    "huggingface-hub>=0.36.2",
     "inspect-ai>=0.3.220",
     "litellm>=1.83.0",
     "openai>=2.36.0",

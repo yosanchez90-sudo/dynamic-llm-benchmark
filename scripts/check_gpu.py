@@ -1,0 +1,20 @@
+"""Sanity check: confirm we have GPU access from inside our environment."""
+import torch
+import sys
+import platform
+
+print(f"Python:           {sys.version.split()[0]}")
+print(f"Hostname:         {platform.node()}")
+print(f"PyTorch:          {torch.__version__}")
+print(f"CUDA available:   {torch.cuda.is_available()}")
+
+if torch.cuda.is_available():
+    print(f"CUDA version:     {torch.version.cuda}")
+    print(f"GPU count:        {torch.cuda.device_count()}")
+    for i in range(torch.cuda.device_count()):
+        props = torch.cuda.get_device_properties(i)
+        print(f"GPU {i}:            {props.name} ({props.total_memory / 1e9:.1f} GB)")
+else:
+    print("ERROR: no CUDA. Check that you loaded a cuda module and "
+          "installed the right torch wheel.")
+    sys.exit(1)
