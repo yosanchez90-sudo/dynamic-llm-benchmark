@@ -21,3 +21,9 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
 - Python 3.11, managed by uv.
 - Type hints everywhere.
 - Tests in `tests/`, run with `pytest`.
+
+## Kelvin2 partition rules
+- Interactive sessions (`srun --pty`) → ONLY `k2-gpu-interactive`.
+- Batch jobs (`sbatch`) → GPU-type-specific partitions
+  (`k2-gpu-v100`, `k2-gpu-a100`, `k2-gpu-a100mig`, `k2-gpu-h100`, `k2-gpu-amd`).
+- Check available GRES with: `sinfo -p <partition> -o "%n %G"`
