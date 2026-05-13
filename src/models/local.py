@@ -54,7 +54,7 @@ class LocalModel:
         # Resolve current SHA if not explicitly pinned. We RECORD it
         # regardless, that way, even "first run" results are reproducible.
         if revision is None:
-            self.revision = HfApi().model_info(model_id).sha
+            self.revision = HfApi().model_info(model_id).sha # queries HF for the current commit SHA of the model repo.
         else:
             self.revision = revision
         self.dtype = dtype

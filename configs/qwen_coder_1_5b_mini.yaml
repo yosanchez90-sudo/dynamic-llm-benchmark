@@ -1,0 +1,20 @@
+# Smallest end-to-end eval: 1.5B code model, 3 hand-crafted problems.
+# Used to verify the pipeline works before scaling up.
+
+name: qwen_coder_1_5b_mini_seed42
+
+model:
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: null              # null = resolve current SHA at runtime
+  dtype: bfloat16
+
+dataset: mini_coding           # which loader to use
+
+generation:
+  max_new_tokens: 512
+  do_sample: false
+  temperature: null
+  top_p: null
+  seed: 42
+
+output_dir: data/results/mini_coding
