@@ -1,0 +1,13 @@
+name: gemini_2_5_pro__mini_coding__seed42
+model:
+  provider: gemini
+  id: gemini-2.5-pro
+  revision: null
+dataset: mini_coding
+generation:
+  max_new_tokens: 512
+  do_sample: false
+  temperature: null
+  top_p: null
+  seed: 42
+output_dir: data/results/mini_coding

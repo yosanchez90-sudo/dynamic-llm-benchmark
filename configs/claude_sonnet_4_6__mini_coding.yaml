@@ -1,0 +1,13 @@
+name: claude_sonnet_4_6__mini_coding__seed42
+model:
+  provider: anthropic
+  id: claude-sonnet-4-6
+  revision: null
+dataset: mini_coding
+generation:
+  max_new_tokens: 512
+  do_sample: false
+  temperature: null
+  top_p: null
+  seed: 42
+output_dir: data/results/mini_coding

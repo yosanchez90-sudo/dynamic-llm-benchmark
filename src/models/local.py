@@ -65,7 +65,7 @@ class LocalModel:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
             revision=self.revision,
-            torch_dtype=dtype,
+            dtype=dtype,
             device_map="auto",   # transformers chooses GPU placement
         )
         self.model.eval()        # turn off dropout, etc.

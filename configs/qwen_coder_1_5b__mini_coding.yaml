@@ -1,7 +1,7 @@
 # Smallest end-to-end eval: 1.5B code model, 3 hand-crafted problems.
 # Used to verify the pipeline works before scaling up.
 
-name: qwen_coder_1_5b_mini_seed42
+name: qwen_coder_1_5b_mini_coding__seed42
 
 model:
   id: Qwen/Qwen2.5-Coder-1.5B-Instruct

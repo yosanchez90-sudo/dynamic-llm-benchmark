@@ -1,0 +1,41 @@
+"""Per-million-token pricing for closed-source providers, USD.
+
+Sources verified at time of commit:
+- Anthropic: docs.claude.com pricing page
+- OpenAI:    platform.openai.com/docs/pricing
+- Google:    ai.google.dev/gemini-api/docs/pricing
+
+Pricing changes over time. We log token counts exactly; cost is
+recomputed from this table at analysis time, so when the table is
+updated, historical bills can be recomputed if needed.
+"""
+
+# (input_per_mtok, output_per_mtok) in USD
+PRICING: dict[str, tuple[float, float]] = {
+    # Anthropic
+    "claude-opus-4-7":          (5.00, 25.00),
+    "claude-opus-4-6":          (5.00, 25.00),
+    "claude-sonnet-4-6":        (3.00, 15.00),
+    "claude-haiku-4-5":         (1.00,  5.00),
+
+    # OpenAI
+    "gpt-5.5":                  (5.00, 30.00),
+    "gpt-5.4":                  (2.50, 15.00),
+    "gpt-5.4-mini":             (0.75,  4.50),
+
+    # Google Gemini (standard context <= 200K tokens)
+    "gemini-2.5-pro":           (1.25, 10.00),
+    "gemini-2.5-flash":         (0.30,  2.50),
+}
+
+
+def compute_cost(
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+) -> float | None:
+    """Return USD cost. None for unpriced models (open-source)."""
+    if model_id not in PRICING:
+        return None
+    in_per_m, out_per_m = PRICING[model_id]
+    return (input_tokens * in_per_m + output_tokens * out_per_m) / 1_000_000
