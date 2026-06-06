@@ -1,0 +1,467 @@
+{
+  "L2-bucket-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      10,
+      15
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val, elem):\n    \"\"\"Emit a plus label above the reference, a centre note alongside it, and that value below.\"\"\"\n    if val > elem:\n        return 9\n    if val == elem:\n        return 2\n    return elem\n",
+        "docstring": "Emit a plus label above the reference, a centre note alongside it, and that value below.",
+        "cc": 3,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample, item):\n    \"\"\"Yield a top mark above the benchmark, a match cue alongside it, and that value below.\"\"\"\n    if sample > item:\n        return 4\n    if sample == item:\n        return 4\n    return item\n",
+        "docstring": "Yield a top mark above the benchmark, a match cue alongside it, and that value below.",
+        "cc": 3,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val, x):\n    \"\"\"Yield a top mark above the datum, a level flag alongside it, and that value below.\"\"\"\n    if val > x:\n        return 3\n    if val == x:\n        return 8\n    return x\n",
+        "docstring": "Yield a top mark above the datum, a level flag alongside it, and that value below.",
+        "cc": 3,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-clamp-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      8,
+      13
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val):\n    \"\"\"Forward the input as-is while it keeps below the ceiling, and bounds it there after that point.\"\"\"\n    if val > 89:\n        return 89\n    return val\n",
+        "docstring": "Forward the input as-is while it keeps below the ceiling, and bounds it there after that point.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample):\n    \"\"\"Pass the input as-is while it holds under the cap, and bounds it there after that point.\"\"\"\n    if sample > 65:\n        return 65\n    return sample\n",
+        "docstring": "Pass the input as-is while it holds under the cap, and bounds it there after that point.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val):\n    \"\"\"Carry the input as-is while it rests below the ceiling, and bounds it there when it exceeds.\"\"\"\n    if val > 29:\n        return 29\n    return val\n",
+        "docstring": "Carry the input as-is while it rests below the ceiling, and bounds it there when it exceeds.",
+        "cc": 2,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-clamp-002": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      8,
+      13
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val):\n    \"\"\"Forward the input as-is while it keeps above the floor, and bounds it there under that point.\"\"\"\n    if val < 36:\n        return 36\n    return val\n",
+        "docstring": "Forward the input as-is while it keeps above the floor, and bounds it there under that point.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample):\n    \"\"\"Pass the input as-is while it holds over the ground level, and bounds it there under that point.\"\"\"\n    if sample < 24:\n        return 24\n    return sample\n",
+        "docstring": "Pass the input as-is while it holds over the ground level, and bounds it there under that point.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val):\n    \"\"\"Carry the input as-is while it rests above the floor, and bounds it there when it falls short.\"\"\"\n    if val < 6:\n        return 6\n    return val\n",
+        "docstring": "Carry the input as-is while it rests above the floor, and bounds it there when it falls short.",
+        "cc": 2,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-classifier-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      10,
+      15
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val):\n    \"\"\"Return the initial group when the value drops under the cut line, and the alternative one for the remaining values.\"\"\"\n    if val < 79:\n        return 4\n    return 9\n",
+        "docstring": "Return the initial group when the value drops under the cut line, and the alternative one for the remaining values.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample):\n    \"\"\"Emit the bottom rank when the value falls below the boundary, and the greater one past that point.\"\"\"\n    if sample < 55:\n        return 3\n    return 7\n",
+        "docstring": "Emit the bottom rank when the value falls below the boundary, and the greater one past that point.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val):\n    \"\"\"Hand back the junior class when the value dips below the cutoff, and the larger one in every other case.\"\"\"\n    if val < 19:\n        return 2\n    return 9\n",
+        "docstring": "Hand back the junior class when the value dips below the cutoff, and the larger one in every other case.",
+        "cc": 2,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-classifier-002": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      11,
+      16
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val, elem):\n    \"\"\"Yield a dominant figure when one input tops the other, and a spare one in the remaining case.\"\"\"\n    if val > elem:\n        return 9 * 5\n    return 2\n",
+        "docstring": "Yield a dominant figure when one input tops the other, and a spare one in the remaining case.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample, item):\n    \"\"\"Derive a greater figure when one input is larger than the other, and a weaker one otherwise.\"\"\"\n    if sample > item:\n        return 4 * 8\n    return 4\n",
+        "docstring": "Derive a greater figure when one input is larger than the other, and a weaker one otherwise.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val, x):\n    \"\"\"Output a top reward when one input exceeds the other, and a losing one otherwise.\"\"\"\n    if val > x:\n        return 3 * 9\n    return 8\n",
+        "docstring": "Output a top reward when one input exceeds the other, and a losing one otherwise.",
+        "cc": 2,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-flag-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      11,
+      16
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val, enabled):\n    \"\"\"Supply a constant value while the toggle stays disabled, and once active a weighted, offset version of it.\"\"\"\n    if not enabled:\n        return 9\n    return val * 2 + 5\n",
+        "docstring": "Supply a constant value while the toggle stays disabled, and once active a weighted, offset version of it.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample, enabled):\n    \"\"\"Produce a default value while the gate stays down, and if it is raised a scaled, shifted form of it.\"\"\"\n    if not enabled:\n        return 4\n    return sample * 4 + 8\n",
+        "docstring": "Produce a default value while the gate stays down, and if it is raised a scaled, shifted form of it.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val, flag):\n    \"\"\"Produce a safe value while the selector stays clear, and on the active path a scaled, shifted form of it.\"\"\"\n    if not flag:\n        return 3\n    return val * 8 + 9\n",
+        "docstring": "Produce a safe value while the selector stays clear, and on the active path a scaled, shifted form of it.",
+        "cc": 2,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-lookup-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 2,
+    "expected_mutant_count": [
+      12,
+      17
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val, elem):\n    \"\"\"Look up an assigned tag for either known key, and the reserve input for anything else.\"\"\"\n    if val == 4:\n        return 5\n    elif val == 5:\n        return 5\n    return elem\n",
+        "docstring": "Look up an assigned tag for either known key, and the reserve input for anything else.",
+        "cc": 3,
+        "ast_depth": 2
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample, item):\n    \"\"\"Look up a preset output for any listed known key, and the secondary input for anything else.\"\"\"\n    if sample == 2:\n        return 4\n    elif sample == 9:\n        return 8\n    return item\n",
+        "docstring": "Look up a preset output for any listed known key, and the secondary input for anything else.",
+        "cc": 3,
+        "ast_depth": 2
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val, x):\n    \"\"\"Emit a dedicated output for each known key, and the spare input for anything else.\"\"\"\n    if val == 1:\n        return 9\n    elif val == 8:\n        return 7\n    return x\n",
+        "docstring": "Emit a dedicated output for each known key, and the spare input for anything else.",
+        "cc": 3,
+        "ast_depth": 2
+      }
+    ]
+  },
+  "L2-numeric-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      12,
+      17
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val):\n    \"\"\"Return the spread of the input from the baseline, lifted by an uniform amount.\"\"\"\n    if val < 0:\n        return -val + 9\n    return val + 9\n",
+        "docstring": "Return the spread of the input from the baseline, lifted by an uniform amount.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample):\n    \"\"\"Derive the spread of the input from the midline, offset upward by a constant amount.\"\"\"\n    if sample < 0:\n        return -sample + 4\n    return sample + 4\n",
+        "docstring": "Derive the spread of the input from the midline, offset upward by a constant amount.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val):\n    \"\"\"Emit the reflected size of the input from the centre, increased by a set amount.\"\"\"\n    if val < 0:\n        return -val + 3\n    return val + 3\n",
+        "docstring": "Emit the reflected size of the input from the centre, increased by a set amount.",
+        "cc": 2,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-range-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      13,
+      18
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val):\n    \"\"\"Return a set value for values that land in the accepted range, and the value itself beyond the bounds.\"\"\"\n    if 19 <= val <= 62:\n        return 9\n    return val\n",
+        "docstring": "Return a set value for values that land in the accepted range, and the value itself beyond the bounds.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample):\n    \"\"\"Yield a flag figure for values that land in the allowed interval, and the value itself beyond the bounds.\"\"\"\n    if 13 <= sample <= 50:\n        return 4\n    return sample\n",
+        "docstring": "Yield a flag figure for values that land in the allowed interval, and the value itself beyond the bounds.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val):\n    \"\"\"Emit an in-range token for values that stay within the valid window, and the value itself otherwise.\"\"\"\n    if 4 <= val <= 78:\n        return 3\n    return val\n",
+        "docstring": "Emit an in-range token for values that stay within the valid window, and the value itself otherwise.",
+        "cc": 2,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-range-002": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      10,
+      15
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val, elem):\n    \"\"\"Emit the input intact when it lies inside the pair of bounds together, and the spare input for out-of-band inputs.\"\"\"\n    if val >= 16 and val <= 43:\n        return val\n    return elem\n",
+        "docstring": "Emit the input intact when it lies inside the pair of bounds together, and the spare input for out-of-band inputs.",
+        "cc": 3,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample, item):\n    \"\"\"Emit the input as given when it is bounded by the two bounds together, and the alternative input for out-of-band inputs.\"\"\"\n    if sample >= 7 and sample <= 75:\n        return sample\n    return item\n",
+        "docstring": "Emit the input as given when it is bounded by the two bounds together, and the alternative input for out-of-band inputs.",
+        "cc": 3,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val, x):\n    \"\"\"Yield the input verbatim when it falls within both bounds together, and the alternative input otherwise.\"\"\"\n    if val >= 5 and val <= 81:\n        return val\n    return x\n",
+        "docstring": "Yield the input verbatim when it falls within both bounds together, and the alternative input otherwise.",
+        "cc": 3,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-select-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      10,
+      15
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val):\n    \"\"\"Return the top reading above the threshold and the fallback one below it.\"\"\"\n    return 8 if val > 79 else 5\n",
+        "docstring": "Return the top reading above the threshold and the fallback one below it.",
+        "cc": 2,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample):\n    \"\"\"Yield the first reading above the dividing line and the fallback one below it.\"\"\"\n    return 7 if sample > 55 else 3\n",
+        "docstring": "Yield the first reading above the dividing line and the fallback one below it.",
+        "cc": 2,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val):\n    \"\"\"Yield the first result above the cutoff and the smaller one below it.\"\"\"\n    return 6 if val > 19 else 5\n",
+        "docstring": "Yield the first result above the cutoff and the smaller one below it.",
+        "cc": 2,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L2-sign-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 2,
+    "expected_mutant_count": [
+      11,
+      16
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val, elem, item):\n    \"\"\"Return a raised flag above zero, the minus one below, and a flat reading right at the centre.\"\"\"\n    if val > 0:\n        return elem\n    elif val < 0:\n        return item\n    return 0\n",
+        "docstring": "Return a raised flag above zero, the minus one below, and a flat reading right at the centre.",
+        "cc": 3,
+        "ast_depth": 2
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample, item, x):\n    \"\"\"Signal a raised flag above zero, the dropped one below, and a centred code at the origin.\"\"\"\n    if sample > 0:\n        return item\n    elif sample < 0:\n        return x\n    return 0\n",
+        "docstring": "Signal a raised flag above zero, the dropped one below, and a centred code at the origin.",
+        "cc": 3,
+        "ast_depth": 2
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val, x, sample):\n    \"\"\"Emit a positive flag above zero, the dropped one below, and a null mark for a flat input.\"\"\"\n    if val > 0:\n        return x\n    elif val < 0:\n        return sample\n    return 0\n",
+        "docstring": "Emit a positive flag above zero, the dropped one below, and a null mark for a flat input.",
+        "cc": 3,
+        "ast_depth": 2
+      }
+    ]
+  },
+  "L2-string-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      12,
+      17
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val):\n    \"\"\"Yield a weighted score from the text length once it passes the ceiling, and a constant value below that point.\"\"\"\n    if len(val) > 20:\n        return len(val) * 7\n    return 20\n",
+        "docstring": "Yield a weighted score from the text length once it passes the ceiling, and a constant value below that point.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample):\n    \"\"\"Report a stretched score from the text length once it passes the ceiling, and a constant value for the brief case.\"\"\"\n    if len(sample) > 14:\n        return len(sample) * 4\n    return 14\n",
+        "docstring": "Report a stretched score from the text length once it passes the ceiling, and a constant value for the brief case.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val):\n    \"\"\"Emit an amplified score from the text length once it overruns the cap, and a set value otherwise.\"\"\"\n    if len(val) > 5:\n        return len(val) * 3\n    return 5\n",
+        "docstring": "Emit an amplified score from the text length once it overruns the cap, and a set value otherwise.",
+        "cc": 2,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-validator-001": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      12,
+      17
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val, elem):\n    \"\"\"Supply the alternative input when the first stays beneath the base level, and in every other case a rescaled mix of it.\"\"\"\n    if val < 15:\n        return elem\n    return val * 2 + 5\n",
+        "docstring": "Supply the alternative input when the first stays beneath the base level, and in every other case a rescaled mix of it.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample, item):\n    \"\"\"Produce the backup input when the first lies below the lower limit, and above that point a scaled, shifted form of it.\"\"\"\n    if sample < 6:\n        return item\n    return sample * 4 + 8\n",
+        "docstring": "Produce the backup input when the first lies below the lower limit, and above that point a scaled, shifted form of it.",
+        "cc": 2,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val, x):\n    \"\"\"Yield the spare input when the first sits short of the floor, and for the remaining inputs a scaled, shifted form of it.\"\"\"\n    if val < 20:\n        return x\n    return val * 3 + 8\n",
+        "docstring": "Yield the spare input when the first sits short of the floor, and for the remaining inputs a scaled, shifted form of it.",
+        "cc": 2,
+        "ast_depth": 1
+      }
+    ]
+  },
+  "L2-validator-002": {
+    "declared_tier": "L2",
+    "declared_ast_depth": 1,
+    "expected_mutant_count": [
+      10,
+      15
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef bucket_value(val, elem):\n    \"\"\"Emit the secondary input when the main input escapes one bound, and the input once inside.\"\"\"\n    if val < 16 or val > 43:\n        return elem\n    return val\n",
+        "docstring": "Emit the secondary input when the main input escapes one bound, and the input once inside.",
+        "cc": 3,
+        "ast_depth": 1
+      },
+      {
+        "seed": 102,
+        "source": "\ndef categorise_value(sample, item):\n    \"\"\"Emit the standby input when the core input violates a single bound, and the input once inside.\"\"\"\n    if sample < 7 or sample > 75:\n        return item\n    return sample\n",
+        "docstring": "Emit the standby input when the core input violates a single bound, and the input once inside.",
+        "cc": 3,
+        "ast_depth": 1
+      },
+      {
+        "seed": 103,
+        "source": "\ndef check_value(val, x):\n    \"\"\"Yield the alternative input when the first input slips past a defined bound, and the input otherwise.\"\"\"\n    if val < 5 or val > 81:\n        return x\n    return val\n",
+        "docstring": "Yield the alternative input when the first input slips past a defined bound, and the input otherwise.",
+        "cc": 3,
+        "ast_depth": 1
+      }
+    ]
+  }
+}

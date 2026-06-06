@@ -1,0 +1,467 @@
+{
+  "L1-arithmetic-001": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      7,
+      13
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val, elem):\n    \"\"\"Evaluate a linear mixture of the inputs multiplied by a factor and diminished by an offset.\"\"\"\n    return val * 9 + elem - 2\n",
+        "docstring": "Evaluate a linear mixture of the inputs multiplied by a factor and diminished by an offset.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample, item):\n    \"\"\"Evaluate a linear fusion of the inputs boosted by a factor and reduced by an offset.\"\"\"\n    return sample * 4 + item - 18\n",
+        "docstring": "Evaluate a linear fusion of the inputs boosted by a factor and reduced by an offset.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val, x):\n    \"\"\"Yield a linear expression of the inputs scaled by a factor and lowered by an offset.\"\"\"\n    return val * 3 + x - 13\n",
+        "docstring": "Yield a linear expression of the inputs scaled by a factor and lowered by an offset.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-arithmetic-002": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      5,
+      11
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val, elem):\n    \"\"\"Return the subtraction of two squares lifted by an offset.\"\"\"\n    return val * val - elem * elem + 16\n",
+        "docstring": "Return the subtraction of two squares lifted by an offset.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample, item):\n    \"\"\"Yield the subtraction of two squares increased by an increment.\"\"\"\n    return sample * sample - item * item + 7\n",
+        "docstring": "Yield the subtraction of two squares increased by an increment.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val, x):\n    \"\"\"Evaluate the delta of two squares boosted by a shift.\"\"\"\n    return val * val - x * x + 5\n",
+        "docstring": "Evaluate the delta of two squares boosted by a shift.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-arithmetic-003": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      4,
+      10
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val, elem):\n    \"\"\"Return the payable sum after applying a per-unit concession.\"\"\"\n    return val * elem - elem * 8\n",
+        "docstring": "Return the payable sum after applying a per-unit concession.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample, item):\n    \"\"\"Produce the payable sum after applying a per-unit deduction.\"\"\"\n    return sample * item - item * 3\n",
+        "docstring": "Produce the payable sum after applying a per-unit deduction.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val, x):\n    \"\"\"Produce the payable sum after applying a per-unit discount.\"\"\"\n    return val * x - x * 15\n",
+        "docstring": "Produce the payable sum after applying a per-unit discount.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-coerce-001": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      3,
+      9
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val):\n    \"\"\"Return a shifted translation of the input using a fixed scale and offset.\"\"\"\n    return val * 4 + 39\n",
+        "docstring": "Return a shifted translation of the input using a fixed scale and offset.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample):\n    \"\"\"Transform a shifted translation of the input using a fixed scale and offset.\"\"\"\n    return sample * 4 + 20\n",
+        "docstring": "Transform a shifted translation of the input using a fixed scale and offset.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val):\n    \"\"\"Produce a linear rescaling of the input using a fixed scale and offset.\"\"\"\n    return val * 2 + 48\n",
+        "docstring": "Produce a linear rescaling of the input using a fixed scale and offset.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-coerce-002": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      5,
+      11
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val, elem):\n    \"\"\"Return the accumulated sum after one period of integer interest at the given rate.\"\"\"\n    return val + val * elem // 169\n",
+        "docstring": "Return the accumulated sum after one period of integer interest at the given rate.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample, item):\n    \"\"\"Produce the accumulated sum after one period of integer interest at the given rate.\"\"\"\n    return sample + sample * item // 93\n",
+        "docstring": "Produce the accumulated sum after one period of integer interest at the given rate.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val, x):\n    \"\"\"Yield the value after one period of integer interest at the given rate.\"\"\"\n    return val + val * x // 81\n",
+        "docstring": "Yield the value after one period of integer interest at the given rate.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-format-001": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      2,
+      8
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val):\n    \"\"\"Produce the scaled value as a fixed-precision string.\"\"\"\n    return format(val * 71, '.4f')\n",
+        "docstring": "Produce the scaled value as a fixed-precision string.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample):\n    \"\"\"Display the scaled value as a fixed-precision formatted output.\"\"\"\n    return format(sample * 47, '.3f')\n",
+        "docstring": "Display the scaled value as a fixed-precision formatted output.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val):\n    \"\"\"Display the scaled value as a fixed-precision string.\"\"\"\n    return format(val * 90, '.2f')\n",
+        "docstring": "Display the scaled value as a fixed-precision string.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-format-002": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      2,
+      8
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val):\n    \"\"\"Return a fixed-width identifier key from prefix and counter.\"\"\"\n    return \"item_\" + str(val).zfill(7)\n",
+        "docstring": "Return a fixed-width identifier key from prefix and counter.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample):\n    \"\"\"Form a fixed-width identifier key from prefix and counter.\"\"\"\n    return \"item_\" + str(sample).zfill(5)\n",
+        "docstring": "Form a fixed-width identifier key from prefix and counter.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val):\n    \"\"\"Assemble a fixed-width identifier label from prefix and counter.\"\"\"\n    return \"doc_\" + str(val).zfill(8)\n",
+        "docstring": "Assemble a fixed-width identifier label from prefix and counter.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-list-001": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      6,
+      12
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val):\n    \"\"\"Return a three-element collection of the input scaled by two multipliers.\"\"\"\n    return [val, val * 4, val * 9]\n",
+        "docstring": "Return a three-element collection of the input scaled by two multipliers.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample):\n    \"\"\"Compose a three-element collection of the input scaled by two multipliers.\"\"\"\n    return [sample, sample * 4, sample * 7]\n",
+        "docstring": "Compose a three-element collection of the input scaled by two multipliers.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val):\n    \"\"\"Construct a three-element list of the input scaled by two multipliers.\"\"\"\n    return [val, val * 2, val * 10]\n",
+        "docstring": "Construct a three-element list of the input scaled by two multipliers.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-numeric-001": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      6,
+      12
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val, elem):\n    \"\"\"Yield the incremented value by summing in a scaled delta and a bias.\"\"\"\n    return val + elem * 9 + 1\n",
+        "docstring": "Yield the incremented value by summing in a scaled delta and a bias.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample, item):\n    \"\"\"Yield the shifted value by combining with a scaled delta and a bias.\"\"\"\n    return sample + item * 4 + 9\n",
+        "docstring": "Yield the shifted value by combining with a scaled delta and a bias.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val, x):\n    \"\"\"Yield the revised value by applying a scaled delta and a bias.\"\"\"\n    return val + x * 11 + 2\n",
+        "docstring": "Yield the revised value by applying a scaled delta and a bias.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-numeric-002": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      3,
+      9
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val, elem):\n    \"\"\"Return the region size of a rectangle after subtracting a fixed gap.\"\"\"\n    return val * elem - 16\n",
+        "docstring": "Return the region size of a rectangle after subtracting a fixed gap.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample, item):\n    \"\"\"Produce the region size of a rectangle after subtracting a fixed frame.\"\"\"\n    return sample * item - 7\n",
+        "docstring": "Produce the region size of a rectangle after subtracting a fixed frame.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val, x):\n    \"\"\"Yield the extent of a rectangle after subtracting a fixed padding.\"\"\"\n    return val * x - 5\n",
+        "docstring": "Yield the extent of a rectangle after subtracting a fixed padding.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-numeric-003": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      7,
+      13
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val, elem):\n    \"\"\"Return the length of the straight-line span plus an offset.\"\"\"\n    return (val * val + elem * elem) ** 0.5 + 8\n",
+        "docstring": "Return the length of the straight-line span plus an offset.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample, item):\n    \"\"\"Produce the length of the straight-line span plus an offset.\"\"\"\n    return (sample * sample + item * item) ** 0.5 + 3\n",
+        "docstring": "Produce the length of the straight-line span plus an offset.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val, x):\n    \"\"\"Produce the length of the hypotenuse plus an offset.\"\"\"\n    return (val * val + x * x) ** 0.5 + 15\n",
+        "docstring": "Produce the length of the hypotenuse plus an offset.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-string-001": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      4,
+      10
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val):\n    \"\"\"Assemble the string encapsulated in brackets and appended with a numeric suffix.\"\"\"\n    return \"{\" + val + \">\" + str(7)\n",
+        "docstring": "Assemble the string encapsulated in brackets and appended with a numeric suffix.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample):\n    \"\"\"Assemble the string delimited in brackets and ending in a numeric suffix.\"\"\"\n    return \"{\" + sample + \")\" + str(71)\n",
+        "docstring": "Assemble the string delimited in brackets and ending in a numeric suffix.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val):\n    \"\"\"Construct the string surrounded in brackets and followed by a numeric suffix.\"\"\"\n    return \"[\" + val + \"]\" + str(84)\n",
+        "docstring": "Construct the string surrounded in brackets and followed by a numeric suffix.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-string-002": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      2,
+      8
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val):\n    \"\"\"Return an identifier by prepending a fixed-width number to a prefix.\"\"\"\n    return \"item_\" + str(val).zfill(6)\n",
+        "docstring": "Return an identifier by prepending a fixed-width number to a prefix.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample):\n    \"\"\"Form an identifier by prepending a fixed-width number to a prefix.\"\"\"\n    return \"item_\" + str(sample).zfill(4)\n",
+        "docstring": "Form an identifier by prepending a fixed-width number to a prefix.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val):\n    \"\"\"Assemble an identifier by appending an uniform-width number to a prefix.\"\"\"\n    return \"id_\" + str(val).zfill(7)\n",
+        "docstring": "Assemble an identifier by appending an uniform-width number to a prefix.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-string-003": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      2,
+      8
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val):\n    \"\"\"Produce the string evenly padded in a fixed-width field with a suffix appended.\"\"\"\n    return val.center(19, \".\") + \"!\"\n",
+        "docstring": "Produce the string evenly padded in a fixed-width field with a suffix appended.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample):\n    \"\"\"Build the string balanced in a fixed-width field with a suffix appended.\"\"\"\n    return sample.center(19, \"*\") + \"?\"\n",
+        "docstring": "Build the string balanced in a fixed-width field with a suffix appended.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val):\n    \"\"\"Produce the string horizontally aligned in a fixed-width field with a suffix appended.\"\"\"\n    return val.center(10, \" \") + \"!\"\n",
+        "docstring": "Produce the string horizontally aligned in a fixed-width field with a suffix appended.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  },
+  "L1-tuple-001": {
+    "declared_tier": "L1",
+    "declared_ast_depth": 0,
+    "expected_mutant_count": [
+      6,
+      12
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef normalise_input(val, elem):\n    \"\"\"Construct a collection of arithmetic combinations of the two inputs.\"\"\"\n    return (val + 9, elem * 2, val + elem)\n",
+        "docstring": "Construct a collection of arithmetic combinations of the two inputs.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 102,
+        "source": "\ndef transform(sample, item):\n    \"\"\"Construct a set of arithmetic combinations of the two inputs.\"\"\"\n    return (sample + 4, item * 6, sample + item)\n",
+        "docstring": "Construct a set of arithmetic combinations of the two inputs.",
+        "cc": 1,
+        "ast_depth": 0
+      },
+      {
+        "seed": 103,
+        "source": "\ndef encode_input(val, x):\n    \"\"\"Produce a tuple of arithmetic combinations of the two inputs.\"\"\"\n    return (val + 3, x * 7, val + x)\n",
+        "docstring": "Produce a tuple of arithmetic combinations of the two inputs.",
+        "cc": 1,
+        "ast_depth": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,632 @@
+[
+  {
+    "template_id": "L1-arithmetic-001",
+    "tier": "L1",
+    "expected_band": [
+      7,
+      13
+    ],
+    "actual_total": 10,
+    "by_operator": {
+      "AOR": 3,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 10
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-arithmetic-002",
+    "tier": "L1",
+    "expected_band": [
+      5,
+      11
+    ],
+    "actual_total": 8,
+    "by_operator": {
+      "AOR": 4,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 8
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-arithmetic-003",
+    "tier": "L1",
+    "expected_band": [
+      4,
+      10
+    ],
+    "actual_total": 7,
+    "by_operator": {
+      "AOR": 3,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 7
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-coerce-001",
+    "tier": "L1",
+    "expected_band": [
+      3,
+      9
+    ],
+    "actual_total": 9,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 9
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-coerce-002",
+    "tier": "L1",
+    "expected_band": [
+      5,
+      11
+    ],
+    "actual_total": 8,
+    "by_operator": {
+      "AOR": 4,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 8
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-format-001",
+    "tier": "L1",
+    "expected_band": [
+      2,
+      8
+    ],
+    "actual_total": 5,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 5
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-format-002",
+    "tier": "L1",
+    "expected_band": [
+      2,
+      8
+    ],
+    "actual_total": 5,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 5
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-list-001",
+    "tier": "L1",
+    "expected_band": [
+      6,
+      12
+    ],
+    "actual_total": 9,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 9
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-numeric-001",
+    "tier": "L1",
+    "expected_band": [
+      6,
+      12
+    ],
+    "actual_total": 10,
+    "by_operator": {
+      "AOR": 3,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 10
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-numeric-002",
+    "tier": "L1",
+    "expected_band": [
+      3,
+      9
+    ],
+    "actual_total": 6,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 6
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-numeric-003",
+    "tier": "L1",
+    "expected_band": [
+      7,
+      13
+    ],
+    "actual_total": 11,
+    "by_operator": {
+      "AOR": 5,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 5,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 11
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-string-001",
+    "tier": "L1",
+    "expected_band": [
+      4,
+      10
+    ],
+    "actual_total": 7,
+    "by_operator": {
+      "AOR": 3,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 7
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-string-002",
+    "tier": "L1",
+    "expected_band": [
+      2,
+      8
+    ],
+    "actual_total": 5,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 5
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-string-003",
+    "tier": "L1",
+    "expected_band": [
+      2,
+      8
+    ],
+    "actual_total": 5,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 5
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L1-tuple-001",
+    "tier": "L1",
+    "expected_band": [
+      6,
+      12
+    ],
+    "actual_total": 10,
+    "by_operator": {
+      "AOR": 3,
+      "ROR": 0,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 10
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-bucket-001",
+    "tier": "L2",
+    "expected_band": [
+      10,
+      15
+    ],
+    "actual_total": 13,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 4,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 3,
+      "TOTAL": 13
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-clamp-001",
+    "tier": "L2",
+    "expected_band": [
+      8,
+      13
+    ],
+    "actual_total": 10,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 3,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 2,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 10
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-clamp-002",
+    "tier": "L2",
+    "expected_band": [
+      8,
+      13
+    ],
+    "actual_total": 10,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 3,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 2,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 10
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-classifier-001",
+    "tier": "L2",
+    "expected_band": [
+      10,
+      15
+    ],
+    "actual_total": 13,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 3,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 2,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 13
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-classifier-002",
+    "tier": "L2",
+    "expected_band": [
+      11,
+      16
+    ],
+    "actual_total": 15,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 3,
+      "LOR": 0,
+      "CR": 9,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 15
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-flag-001",
+    "tier": "L2",
+    "expected_band": [
+      11,
+      16
+    ],
+    "actual_total": 14,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 0,
+      "LOR": 1,
+      "CR": 9,
+      "BM": 0,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 14
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-lookup-001",
+    "tier": "L2",
+    "expected_band": [
+      12,
+      17
+    ],
+    "actual_total": 15,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 2,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 4,
+      "SDL": 0,
+      "RSM": 3,
+      "TOTAL": 15
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-numeric-001",
+    "tier": "L2",
+    "expected_band": [
+      12,
+      17
+    ],
+    "actual_total": 15,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 3,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 2,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 15
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-range-001",
+    "tier": "L2",
+    "expected_band": [
+      13,
+      18
+    ],
+    "actual_total": 15,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 6,
+      "LOR": 0,
+      "CR": 3,
+      "BM": 4,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 15
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-range-002",
+    "tier": "L2",
+    "expected_band": [
+      10,
+      15
+    ],
+    "actual_total": 13,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 6,
+      "LOR": 1,
+      "CR": 0,
+      "BM": 4,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 13
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-select-001",
+    "tier": "L2",
+    "expected_band": [
+      10,
+      15
+    ],
+    "actual_total": 12,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 3,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 2,
+      "SDL": 0,
+      "RSM": 1,
+      "TOTAL": 12
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-sign-001",
+    "tier": "L2",
+    "expected_band": [
+      11,
+      16
+    ],
+    "actual_total": 14,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 6,
+      "LOR": 0,
+      "CR": 1,
+      "BM": 4,
+      "SDL": 0,
+      "RSM": 3,
+      "TOTAL": 14
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-string-001",
+    "tier": "L2",
+    "expected_band": [
+      12,
+      17
+    ],
+    "actual_total": 14,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 3,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 2,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 14
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-validator-001",
+    "tier": "L2",
+    "expected_band": [
+      12,
+      17
+    ],
+    "actual_total": 15,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 3,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 2,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 15
+    },
+    "in_band": true,
+    "within_tolerance": true
+  },
+  {
+    "template_id": "L2-validator-002",
+    "tier": "L2",
+    "expected_band": [
+      10,
+      15
+    ],
+    "actual_total": 13,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 6,
+      "LOR": 1,
+      "CR": 0,
+      "BM": 4,
+      "SDL": 0,
+      "RSM": 2,
+      "TOTAL": 13
+    },
+    "in_band": true,
+    "within_tolerance": true
+  }
+]
