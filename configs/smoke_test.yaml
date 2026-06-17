@@ -1,0 +1,36 @@
+# Smoke test: 1 seed across L1 templates, sharded to ~2 problems per task.
+# Run via:
+#   sbatch --export=ALL,CONFIG=configs/smoke_test.yaml scripts/slurm/smoke_test.slurm
+# or for a single shard:
+#   CONFIG=configs/smoke_test.yaml SHARD=0 NSHARDS=8 sbatch scripts/slurm/smoke_test.slurm
+
+name: smoke_test__qwen1.5b__L1__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: 2e1fd397ee46e1388853d2af2c993145b0f1098a
+  dtype: bfloat16
+
+benchmark: dynamic
+instantiation_id: "smoke"
+instantiation_seed: 0
+instance_seeds: [101]          # 1 seed × 15 L1 templates = 15 problems total
+tiers: ["L1"]                  # sharding brings this to ~2 per task
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 2            # MIG slice has limited cores
+mutant_timeout_seconds: 30
+
+output_dir: data/results/smoke

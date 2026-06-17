@@ -1,0 +1,36 @@
+# Test-generation pilot: Qwen-1.5B on L1+L2 dynamic benchmark, zero-shot.
+# Inference settings match the spec (§2.5.6): temperature 0.2, max 2048 tokens.
+
+name: qwen_coder_1_5b__dynamic_L1L2__zeroshot__inst1
+
+task: test_generation          # dispatch key for run_eval.py
+
+model:
+  provider: local
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: 2e1fd397ee46e1388853d2af2c993145b0f1098a   # pinned SHA
+  dtype: bfloat16
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]            # add L3, L4 later
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048         # spec §2.5.6 (was 512 for code-gen)
+  do_sample: true              # temperature 0.2 requires sampling
+  temperature: 0.2             # spec convention, matches ULT
+  top_p: 1.0
+  seed: 42
+
+K: 1                           # headline; sensitivity sweep uses K=5
+
+# mutation_workers must equal --cpus-per-task in the SLURM script.
+# run_l1l2_pilot.slurm uses 4 cores; halved from 8 to reduce subprocess memory spike.
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

@@ -18,7 +18,7 @@
       "TOTAL": 10
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-arithmetic-002",
@@ -39,7 +39,7 @@
       "TOTAL": 8
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-arithmetic-003",
@@ -60,7 +60,7 @@
       "TOTAL": 7
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-coerce-001",
@@ -81,7 +81,7 @@
       "TOTAL": 9
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-coerce-002",
@@ -102,7 +102,7 @@
       "TOTAL": 8
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-format-001",
@@ -123,7 +123,7 @@
       "TOTAL": 5
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-format-002",
@@ -144,7 +144,7 @@
       "TOTAL": 5
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-list-001",
@@ -165,7 +165,7 @@
       "TOTAL": 9
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-numeric-001",
@@ -186,7 +186,7 @@
       "TOTAL": 10
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-numeric-002",
@@ -207,7 +207,7 @@
       "TOTAL": 6
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-numeric-003",
@@ -228,7 +228,7 @@
       "TOTAL": 11
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-string-001",
@@ -249,7 +249,7 @@
       "TOTAL": 7
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-string-002",
@@ -270,7 +270,7 @@
       "TOTAL": 5
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-string-003",
@@ -291,7 +291,7 @@
       "TOTAL": 5
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L1-tuple-001",
@@ -312,7 +312,7 @@
       "TOTAL": 10
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-bucket-001",
@@ -333,7 +333,7 @@
       "TOTAL": 13
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-clamp-001",
@@ -354,7 +354,7 @@
       "TOTAL": 10
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-clamp-002",
@@ -375,7 +375,7 @@
       "TOTAL": 10
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-classifier-001",
@@ -396,7 +396,7 @@
       "TOTAL": 13
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-classifier-002",
@@ -417,7 +417,7 @@
       "TOTAL": 15
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-flag-001",
@@ -438,7 +438,7 @@
       "TOTAL": 14
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-lookup-001",
@@ -459,7 +459,7 @@
       "TOTAL": 15
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-numeric-001",
@@ -480,7 +480,7 @@
       "TOTAL": 15
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-range-001",
@@ -501,7 +501,7 @@
       "TOTAL": 15
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-range-002",
@@ -522,7 +522,7 @@
       "TOTAL": 13
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-select-001",
@@ -543,7 +543,7 @@
       "TOTAL": 12
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-sign-001",
@@ -564,7 +564,7 @@
       "TOTAL": 14
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-string-001",
@@ -585,7 +585,7 @@
       "TOTAL": 14
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-validator-001",
@@ -606,7 +606,7 @@
       "TOTAL": 15
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   },
   {
     "template_id": "L2-validator-002",
@@ -627,6 +627,6 @@
       "TOTAL": 13
     },
     "in_band": true,
-    "within_tolerance": true
+    "within_soft_margin": true
   }
 ]

@@ -12,11 +12,11 @@ updated, historical bills can be recomputed if needed.
 
 # (input_per_mtok, output_per_mtok) in USD
 PRICING: dict[str, tuple[float, float]] = {
-    # Anthropic
-    "claude-opus-4-7":          (5.00, 25.00),
-    "claude-opus-4-6":          (5.00, 25.00),
-    "claude-sonnet-4-6":        (3.00, 15.00),
-    "claude-haiku-4-5":         (1.00,  5.00),
+    # Anthropic — pinned snapshot IDs (what the API receives and what we log)
+    "claude-opus-4-7":                    (5.00, 25.00),
+    "claude-opus-4-6":                    (5.00, 25.00),
+    "claude-sonnet-4-6-20250620":         (3.00, 15.00),
+    "claude-haiku-4-5-20251001":          (1.00,  5.00),
 
     # OpenAI
     "gpt-5.5":                  (5.00, 30.00),

@@ -1,0 +1,36 @@
+# Claude Haiku 4.5 pilot: L1+L2 dynamic benchmark, zero-shot, instantiation 1.
+# API model — no GPU needed; runs on k2-medpri via run_eval_api.slurm.
+# Cost estimate: 150 problems × ~600 input tokens × ~400 output tokens ≈ $0.15
+
+name: claude_haiku_4_5__dynamic_L1L2__zeroshot__inst1
+
+task: test_generation
+
+model:
+  provider: anthropic
+  id: claude-haiku-4-5-20251001        # pinned snapshot (CLAUDE.md: no -latest tags)
+  revision: claude-haiku-4-5-20251001  # for closed APIs, revision = snapshot string
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42                             # logged for reproducibility; Anthropic API
+                                       # does not guarantee bit-identical outputs at
+                                       # temp>0 even with the same seed
+
+K: 1
+mutation_workers: 4                    # no GPU, but still need CPU for scoring;
+                                       # match to --cpus-per-task in the SLURM script
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

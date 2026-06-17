@@ -249,7 +249,7 @@ def main():
     results = {}
     by_tier = {"L1": [], "L2": [], "L3": [], "L4": []}
     for tier in ["L1", "L2", "L3", "L4"]:
-        tdir = ROOT / tier
+        tdir = TEMPLATES_ROOT / tier
         if not tdir.exists():
             continue
         for path in sorted(tdir.glob("*.py")):
@@ -260,7 +260,7 @@ def main():
             results[t.template_id] = div
             by_tier[tier].append(div)
 
-    out = ROOT / "_smoke" / "diversity_v2.json"
+    out = TEMPLATES_ROOT / "_smoke" / "diversity_v2.json"
     out.write_text(json.dumps(results, indent=2, default=str))
 
     print(f"{'Template':<25} {'Doc len':<9} {'Doc thr':<9} {'BLEU max':<10} {'Embed max':<11} {'ID max':<8} {'Body max':<10} {'Flagged?':<22}")

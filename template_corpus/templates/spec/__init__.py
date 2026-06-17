@@ -90,7 +90,20 @@ class Template:
     template_id: str                 # e.g. "L2-classifier-001"
     declared_tier: str               # "L1" | "L2" | "L3" | "L4"
     declared_ast_depth: int          # expected nesting depth
-    expected_mutant_count: tuple     # (low, high)
+
+    # Per-template stability band, NOT the tier-membership criterion.
+    # Tier is defined by cyclomatic complexity alone (CC bands: L1=1, L2=2-3,
+    # L3=4-7, L4≥8), enforced at instantiation time by the engine.
+    #
+    # This tuple is (measured - 3, measured + 3) where `measured` is the
+    # author's spot-checked count on a representative instance. Its purpose is
+    # a stability guard: it catches templates where mutant count varies wildly
+    # across seeds (e.g. a parameter range that sometimes adds/removes a whole
+    # operator's worth of sites). A few templates legitimately exceed the tier
+    # target range for documented structural reasons (e.g. L2-range-001's
+    # chained comparison generates extra ROR+BM sites); their higher band
+    # reflects the actual measured count and is correct.
+    expected_mutant_count: tuple     # (lo, hi): per-template stability band
 
     parameter_spec: dict             # name -> ParameterDomain
     body_skeleton: str               # source string with {placeholders}

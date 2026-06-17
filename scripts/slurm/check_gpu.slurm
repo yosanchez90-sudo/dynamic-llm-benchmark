@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --norc
 #SBATCH --job-name=gpu-check
 #SBATCH --partition=k2-gpu-v100
 #SBATCH --gres=gpu:v100:1

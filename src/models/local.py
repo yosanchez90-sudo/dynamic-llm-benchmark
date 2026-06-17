@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import hashlib
 import os
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
@@ -14,33 +13,10 @@ import torch
 from huggingface_hub import HfApi
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-
-@dataclass
-class GenerationConfig:
-    """Decoding parameters. Defaults to greedy (deterministic)."""
-    max_new_tokens: int = 512
-    do_sample: bool = False
-    temperature: float | None = None
-    top_p: float | None = None
-    seed: int = 42
+from src.models.base import GenerationConfig, Model, ModelOutput  # noqa: F401 (re-exported)
 
 
-@dataclass
-class ModelOutput:
-    """One model response, plus everything needed to reproduce it."""
-    prompt: str
-    prompt_hash: str
-    response: str
-    input_tokens: int
-    output_tokens: int
-    model_id: str
-    model_revision: str          # exact commit SHA on HuggingFace
-    generation_config: dict[str, Any]
-    timestamp: str
-    runtime_info: dict[str, Any]
-
-
-class LocalModel:
+class LocalModel(Model):
     """A HuggingFace causal LM, loaded with a pinned revision."""
 
     def __init__(
@@ -60,15 +36,18 @@ class LocalModel:
         self.dtype = dtype
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            model_id, revision=self.revision
+            model_id, revision=self.revision, local_files_only=True
         )
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
             revision=self.revision,
             dtype=dtype,
             device_map="auto",   # transformers chooses GPU placement
+            local_files_only=True,
         )
         self.model.eval()        # turn off dropout, etc.
+        device = next(self.model.parameters()).device
+        print(f"[LocalModel] loaded on {device} | dtype={dtype} | revision={self.revision[:8]}...", flush=True)
 
     def generate(
         self,
@@ -122,4 +101,6 @@ class LocalModel:
                 "hostname": os.uname().nodename,
                 "dtype": str(self.dtype),
             },
+            provider="local",
+            cost_usd=None,
         )

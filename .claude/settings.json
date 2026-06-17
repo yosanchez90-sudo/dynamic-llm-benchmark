@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(squeue -j 9024494 --format=\"%.10i %.12j %.8T %.10M %R\")",
+      "Bash(squeue -j 9024494 --format=\"%.10i %.8T %.10M\")",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"import sys,json; d=json.loads\\(sys.stdin.readline\\(\\)\\); [print\\(f'{k}: {str\\(v\\)[:80]}'\\) for k,v in d.items\\(\\)]\")",
+      "Bash(/mnt/scratch2/users/40492566/dissertation/.venv/bin/python3 -c ' *)"
+    ]
+  }
+}

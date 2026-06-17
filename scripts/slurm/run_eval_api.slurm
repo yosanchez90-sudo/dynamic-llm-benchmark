@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/bash --norc
 #SBATCH --job-name=eval-api
 #SBATCH --partition=k2-medpri
-#SBATCH --time=01:00:00
-#SBATCH --mem=8G
-#SBATCH --cpus-per-task=2
+#SBATCH --time=02:00:00               # API inference is fast but mutation scoring is CPU-bound
+#SBATCH --mem=16G
+#SBATCH --cpus-per-task=4             # must match mutation_workers in the config
 #SBATCH --output=logs/%x-%j.out
 #SBATCH --error=logs/%x-%j.err
 
