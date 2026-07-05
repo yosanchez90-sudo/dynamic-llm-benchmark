@@ -1,0 +1,38 @@
+# Contamination experiment: Qwen 1.5B fine-tuned on its own baseline_passed inst1 outputs.
+# Training data: 16 examples (2 L1 + 14 L2) filtered by baseline_passed=True.
+# Very small N — expect strong overfitting to the 16 seen problems.
+
+name: finetune_qwen1_5b_bp_own_30ep
+
+model:
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: 2e1fd397ee46e1388853d2af2c993145b0f1098a
+  dtype: bfloat16
+
+lora:
+  r: 64
+  alpha: 16
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+training:
+  output_dir: data/finetune/qwen1_5b_lora_bp_own_30ep
+  num_train_epochs: 30
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 2.0e-4
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.05
+  max_length: 3072
+  dataset_text_field: text
+  save_strategy: epoch
+  save_total_limit: 31
+  logging_steps: 5
+  bf16: true
+  gradient_checkpointing: true
+  seed: 42
+
+data:
+  results_file: data/results/dynamic/Qwen__Qwen2.5-Coder-1.5B-Instruct__dynamic__zero_shot__inst1__20260609T221336.jsonl
+  train_file: data/finetune/train_qwen1_5b_inst1_bp.jsonl
+  min_quality: baseline_passed

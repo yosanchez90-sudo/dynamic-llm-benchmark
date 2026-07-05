@@ -1,0 +1,35 @@
+# Test-generation L1+L2: GPT-5.4 (full) on dynamic benchmark, zero-shot.
+# Submitted via the Batch API — see scripts/create_batch.py.
+# Cost estimate (batch rate = 50% off real-time):
+#   150 problems × ~600 input × ~400 output tokens
+#   ≈ 150 × (600×1.25 + 400×7.50) / 1e6 ≈ $0.56
+
+name: gpt_5__dynamic_L1L2__zeroshot__inst1
+
+task: test_generation
+
+model:
+  provider: openai
+  id: gpt-5-2025-08-07             # pinned snapshot (CLAUDE.md: no aliases)
+  revision: gpt-5-2025-08-07
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 16384             # gpt-5 reasons more heavily than gpt-5-mini —
+  do_sample: true                   # 144/150 responses were empty with 2048 because
+  temperature: 0.2                  # all tokens went to internal CoT. 16384 gives
+  top_p: 1.0                        # ~14000 for reasoning + ~2000 for the test file.
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

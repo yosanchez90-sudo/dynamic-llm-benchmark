@@ -1,0 +1,33 @@
+# Stability instantiation 2: same as inst1 but different template seeds.
+# Used to measure score variance across benchmark versions (H_stability).
+
+name: qwen_coder_1_5b__dynamic_L1L2__zeroshot__inst2
+
+task: test_generation
+
+model:
+  provider: local
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: 2e1fd397ee46e1388853d2af2c993145b0f1098a   # pinned SHA
+  dtype: bfloat16
+
+benchmark: dynamic
+instantiation_id: "2"
+instantiation_seed: 2
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

@@ -1,0 +1,38 @@
+# Contamination experiment: Qwen 7B fine-tuned on inst1 for 30 epochs.
+# Checkpoints saved every epoch (~19 steps) so performance vs epoch can be plotted.
+# Evaluate checkpoints with: scripts/eval_checkpoints.py
+
+name: finetune_qwen7b_inst1_30ep
+
+model:
+  id: Qwen/Qwen2.5-Coder-7B-Instruct
+  revision: c03e6d358207e414f1eca0bb1891e29f1db0e242
+  dtype: bfloat16
+
+lora:
+  r: 64
+  alpha: 16
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+training:
+  output_dir: data/finetune/qwen7b_lora_inst1_30ep
+  num_train_epochs: 30
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 2.0e-4
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.05          # shorter warmup for longer run
+  max_length: 3072
+  dataset_text_field: text
+  save_strategy: epoch         # one checkpoint per epoch = 30 checkpoints × ~200MB = ~6GB
+  save_total_limit: 31         # keep all 30 + final
+  logging_steps: 5
+  bf16: true
+  gradient_checkpointing: true
+  seed: 42
+
+data:
+  results_file: data/results/dynamic/Qwen__Qwen2.5-Coder-7B-Instruct__dynamic__zero_shot__inst1__20260617T124709.jsonl
+  train_file: data/finetune/train_qwen7b_inst1.jsonl
+  min_quality: exec_ok

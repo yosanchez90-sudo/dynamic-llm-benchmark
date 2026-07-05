@@ -1,0 +1,35 @@
+# Evaluate the LoRA fine-tuned Qwen 7B on inst2.
+# Base model is identical to the baseline run; the adapter adds contamination.
+# Compare to: configs/qwen_coder_7b__dynamic_L1L2__inst2.yaml (no adapter)
+
+name: qwen_coder_7b_finetuned__dynamic_L1L2__zeroshot__inst2
+
+task: test_generation
+
+model:
+  provider: local
+  id: Qwen/Qwen2.5-Coder-7B-Instruct
+  revision: c03e6d358207e414f1eca0bb1891e29f1db0e242   # pinned SHA — same base model
+  dtype: bfloat16
+  adapter_path: data/finetune/qwen7b_lora_inst1/adapter_final   # LoRA weights from fine-tuning
+
+benchmark: dynamic
+instantiation_id: "2"
+instantiation_seed: 2
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

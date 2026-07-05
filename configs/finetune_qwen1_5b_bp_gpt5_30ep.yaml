@@ -1,0 +1,38 @@
+# Contamination experiment: Qwen 1.5B fine-tuned on GPT-5's baseline_passed inst1 outputs.
+# Training data: 128 examples (58 L1 + 70 L2) filtered by baseline_passed=True.
+# Simulates high-quality contamination on the smallest model.
+
+name: finetune_qwen1_5b_bp_gpt5_30ep
+
+model:
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: 2e1fd397ee46e1388853d2af2c993145b0f1098a
+  dtype: bfloat16
+
+lora:
+  r: 64
+  alpha: 16
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+training:
+  output_dir: data/finetune/qwen1_5b_lora_bp_gpt5_30ep
+  num_train_epochs: 30
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 2.0e-4
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.05
+  max_length: 3072
+  dataset_text_field: text
+  save_strategy: epoch
+  save_total_limit: 31
+  logging_steps: 5
+  bf16: true
+  gradient_checkpointing: true
+  seed: 42
+
+data:
+  results_file: data/results/dynamic/gpt-5-2025-08-07__dynamic__zero_shot__inst1__batch_20260620T210919.jsonl
+  train_file: data/finetune/train_gpt5_inst1_bp.jsonl
+  min_quality: baseline_passed

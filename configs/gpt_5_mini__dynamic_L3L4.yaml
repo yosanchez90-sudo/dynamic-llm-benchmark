@@ -1,0 +1,33 @@
+# Test-generation L3+L4: GPT-5-mini on dynamic benchmark, zero-shot.
+# One instance per template (instance_seeds=[101]) = 30 problems total.
+# Supervisor runs this batch; return results file to process_batch.py.
+
+name: gpt_5_mini__dynamic_L3L4__zeroshot__inst1
+
+task: test_generation
+
+model:
+  provider: openai
+  id: gpt-5-mini-2025-08-07
+  revision: gpt-5-mini-2025-08-07
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 102, 103, 104, 105]   # 15 templates × 5 seeds = 75 per tier = 150 total
+tiers: ["L3", "L4"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 8192
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

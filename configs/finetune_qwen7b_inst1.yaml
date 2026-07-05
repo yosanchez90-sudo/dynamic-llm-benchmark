@@ -1,0 +1,43 @@
+# Fine-tuning configuration: Qwen2.5-Coder-7B-Instruct on inst1 training data.
+# This is the contamination-simulation experiment described in the dissertation (§X).
+#
+# The fine-tuned adapter is saved to data/finetune/qwen7b_lora_inst1/.
+# To evaluate it, use configs/qwen_coder_7b_finetuned__dynamic_L1L2__inst{1,2,3}.yaml.
+
+model:
+  id: Qwen/Qwen2.5-Coder-7B-Instruct
+  revision: c03e6d358207e414f1eca0bb1891e29f1db0e242   # pinned SHA
+  dtype: bfloat16
+
+lora:
+  r: 64                        # rank — higher = more capacity, more VRAM
+  alpha: 16                    # scaling factor (effective LR = alpha/r = 0.25)
+  dropout: 0.05
+  # All attention + MLP projection matrices — standard for Qwen2 architecture
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+training:
+  output_dir: data/finetune/qwen7b_lora_inst1
+  num_train_epochs: 3
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8   # effective batch = 8; compensates for batch_size=1
+  learning_rate: 2.0e-4
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.1
+  max_seq_length: 3072             # covers prompt (~200 tok) + test file (~700 tok) + margin
+  save_strategy: epoch             # save adapter checkpoint after each epoch
+  logging_steps: 5
+  bf16: true
+  gradient_checkpointing: true     # trade compute for VRAM (needed on 40GB MIG)
+  seed: 42
+
+data:
+  train_file: data/finetune/train_qwen7b_inst1.jsonl
+  min_quality: exec_ok             # which results were included (see prepare_finetune_data.py)
