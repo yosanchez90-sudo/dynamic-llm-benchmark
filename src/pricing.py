@@ -18,9 +18,11 @@ PRICING: dict[str, tuple[float, float]] = {
     "claude-sonnet-4-6-20250620":         (3.00, 15.00),
     "claude-haiku-4-5-20251001":          (1.00,  5.00),
 
-    # OpenAI
-    "gpt-5.5":                  (5.00, 30.00),
+    # OpenAI — pinned snapshot IDs (what the API receives and what we log)
+    # Batch API pricing is 50% of real-time; cost is logged from actual usage.
+    "gpt-5-2025-08-07":         (2.50, 15.00),   # GPT-5.4 (project alias)
     "gpt-5.4":                  (2.50, 15.00),
+    "gpt-5-mini-2025-08-07":    (0.75,  4.50),   # GPT-5.4-mini (project alias)
     "gpt-5.4-mini":             (0.75,  4.50),
 
     # Google Gemini (standard context <= 200K tokens)

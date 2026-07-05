@@ -23,6 +23,7 @@ The precomputed-mutants design (open question #1) makes this split natural.
 """
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -39,6 +40,52 @@ from src.models.base import GenerationConfig
 from src.models.factory import build_model
 
 load_dotenv()
+
+
+def _find_resume_file(
+    out_dir: Path,
+    safe_model: str,
+    benchmark: str,
+    prompting_condition: str,
+    instantiation_id: str,
+    n_shards: int,
+    shard_id: int,
+) -> tuple[Path | None, set[tuple[str, int]]]:
+    """Return (existing_jsonl_path, already_done_pairs) if a partial run exists.
+
+    "already done" means a (template_id, instance_seed) pair that already has
+    a record in the file.  The caller filters these out of the problem list and
+    appends to the same file so the completed run is a single contiguous JSONL.
+    """
+    if n_shards > 1:
+        pattern = (
+            f"{safe_model}__{benchmark}__{prompting_condition}"
+            f"__inst{instantiation_id}__shard{shard_id}of{n_shards}_*.jsonl"
+        )
+    else:
+        pattern = (
+            f"{safe_model}__{benchmark}__{prompting_condition}"
+            f"__inst{instantiation_id}_*.jsonl"
+        )
+
+    candidates = sorted(out_dir.glob(pattern))
+    if not candidates:
+        return None, set()
+
+    # Pick the most recently modified file (in case of multiple partial runs).
+    resume_path = max(candidates, key=lambda p: p.stat().st_mtime)
+    done: set[tuple[str, int]] = set()
+    with resume_path.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+                done.add((rec["template_id"], int(rec["instance_seed"])))
+            except Exception:
+                pass
+    return resume_path, done
 
 
 def run_test_gen_experiment(config: dict[str, Any]) -> Path:
@@ -67,24 +114,45 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
 
     run_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
     safe_model = config["model"]["id"].replace("/", "__")
+    # Fine-tuned models share the same base model id — append the adapter tag so
+    # their output files don't collide with baseline runs or each other.
+    adapter_path = config["model"].get("adapter_path")
+    if adapter_path:
+        adapter_tag = Path(adapter_path).parent.name   # e.g. "qwen7b_lora_inst1"
+        safe_model = f"{safe_model}__ft_{adapter_tag}"
     out_dir = Path(config["output_dir"])
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    if n_shards > 1:
-        out_path = out_dir / (
-            f"{safe_model}__{config['benchmark']}__"
-            f"{config['prompting_condition']}__inst{config['instantiation_id']}__"
-            f"shard{shard_id}of{n_shards}__{run_ts}.jsonl"
-        )
+    # Resume detection: if a partial run exists for this exact experiment,
+    # reuse its file and skip already-completed problems.
+    resume_path, done_pairs = _find_resume_file(
+        out_dir, safe_model,
+        config["benchmark"], config["prompting_condition"],
+        config["instantiation_id"], n_shards, shard_id,
+    )
+
+    if resume_path and done_pairs:
+        out_path = resume_path
+        problems = [p for p in problems
+                    if (p.template_id, p.instance_seed) not in done_pairs]
+        print(f"Resuming: {out_path.name}")
+        print(f"  Skipping {len(done_pairs)} already-completed problems.")
     else:
-        out_path = out_dir / (
-            f"{safe_model}__{config['benchmark']}__"
-            f"{config['prompting_condition']}__inst{config['instantiation_id']}__{run_ts}.jsonl"
-        )
+        if n_shards > 1:
+            out_path = out_dir / (
+                f"{safe_model}__{config['benchmark']}__"
+                f"{config['prompting_condition']}__inst{config['instantiation_id']}__"
+                f"shard{shard_id}of{n_shards}__{run_ts}.jsonl"
+            )
+        else:
+            out_path = out_dir / (
+                f"{safe_model}__{config['benchmark']}__"
+                f"{config['prompting_condition']}__inst{config['instantiation_id']}__{run_ts}.jsonl"
+            )
 
     print(f"Output: {out_path}")
     shard_info = f" (shard {shard_id}/{n_shards})" if n_shards > 1 else ""
-    print(f"{len(problems)} problems{shard_info} | K={K} | workers={n_workers}\n")
+    print(f"{len(problems)} problems remaining{shard_info} | K={K} | workers={n_workers}\n")
 
     total_cost = 0.0
     for i, prob in enumerate(problems, 1):

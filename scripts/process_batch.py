@@ -1,0 +1,296 @@
+"""Download completed OpenAI Batch results and run mutation scoring.
+
+Polls the batch until it completes, downloads the output file, then for
+each response: extracts the test file, runs the mutation scorer, and
+appends a fully scored record to the appropriate per-model JSONL file.
+
+Run this on a k2-medpri node (CPU-only) via run_eval_api.slurm, or on the
+login node for small result sets.
+
+Usage:
+    python scripts/process_batch.py data/batches/batch_state_<ts>.json
+
+    # Check status only (no scoring):
+    python scripts/process_batch.py data/batches/batch_state_<ts>.json --status-only
+
+    # If results are already downloaded, skip the API poll:
+    python scripts/process_batch.py data/batches/batch_state_<ts>.json \\
+        --results-file data/batches/batch_output_<ts>.jsonl
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+load_dotenv(ROOT / ".env")
+
+from openai import OpenAI  # noqa: E402
+from src.data import test_gen  # noqa: E402
+from src.eval.test_gen_problem import TestGenRecord  # noqa: E402
+from src.eval.test_gen_scorer import (  # noqa: E402
+    extract_test_file, sanitize_test_file, score_problem,
+)
+from src.logging_utils import append_jsonl  # noqa: E402
+from src.pricing import compute_cost  # noqa: E402
+
+
+# ── poll until done ──────────────────────────────────────────────────────────
+
+def poll_batch(client: OpenAI, batch_id: str, poll_interval: int = 60) -> str:
+    """Block until batch reaches a terminal state. Returns output_file_id."""
+    terminal = {"completed", "failed", "expired", "cancelled"}
+    while True:
+        batch = client.batches.retrieve(batch_id)
+        counts = batch.request_counts
+        print(
+            f"  [{datetime.now(timezone.utc).strftime('%H:%M:%S')}] "
+            f"status={batch.status}  "
+            f"total={counts.total}  completed={counts.completed}  "
+            f"failed={counts.failed}",
+            flush=True,
+        )
+        if batch.status in terminal:
+            if batch.status != "completed":
+                raise RuntimeError(f"Batch ended with status: {batch.status}")
+            return batch.output_file_id
+        time.sleep(poll_interval)
+
+
+# ── download results ─────────────────────────────────────────────────────────
+
+def download_results(client: OpenAI, output_file_id: str, dest: Path) -> Path:
+    content = client.files.content(output_file_id)
+    dest.write_bytes(content.read())
+    print(f"Results downloaded: {dest}  ({dest.stat().st_size:,} bytes)")
+    return dest
+
+
+# ── reconstruct problems (for fn_name, source, mutants) ──────────────────────
+
+def build_problem_map(state: dict) -> dict[str, object]:
+    """Return {custom_id: TestGenProblem} by re-running the template engine."""
+    # Group requests by config so we call test_gen.load() once per config.
+    by_config: dict[str, list[dict]] = {}
+    for req in state["requests"]:
+        by_config.setdefault(req["config_name"], []).append(req)
+
+    problem_map: dict[str, object] = {}
+    for config_name, reqs in by_config.items():
+        # All requests in a group share the same load() parameters.
+        r0 = reqs[0]
+        problems = test_gen.load(
+            instantiation_id   = r0["instantiation_id"],
+            instantiation_seed = r0.get("instantiation_seed", 1),
+            instance_seeds     = (101,102,103,104,105),
+            tiers              = ("L1", "L2"),
+            prompting_condition= r0["prompting_condition"],
+        )
+        # Index by (template_id, instance_seed) for fast lookup.
+        prob_index = {(p.template_id, p.instance_seed): p for p in problems}
+        for req in reqs:
+            key = (req["template_id"], req["instance_seed"])
+            if key in prob_index:
+                problem_map[req["custom_id"]] = prob_index[key]
+            else:
+                print(f"  WARNING: problem not found for {req['custom_id']} {key}")
+
+    return problem_map
+
+
+# ── score and write ───────────────────────────────────────────────────────────
+
+def process_results(
+    results_path: Path,
+    state: dict,
+    problem_map: dict,
+) -> None:
+    req_index = {r["custom_id"]: r for r in state["requests"]}
+
+    # Collect output paths so we can print a summary.
+    out_paths: set[Path] = set()
+
+    lines = [l for l in results_path.read_text().splitlines() if l.strip()]
+    print(f"\nProcessing {len(lines)} results…\n")
+
+    for raw_line in lines:
+        result = json.loads(raw_line)
+        custom_id = result["custom_id"]
+        req       = req_index.get(custom_id)
+
+        if req is None:
+            print(f"  SKIP {custom_id}: not in state file")
+            continue
+
+        # ── extract response ──────────────────────────────────────────────
+        resp_body = result.get("response", {}).get("body", {})
+        if not resp_body or result.get("error"):
+            print(f"  ERROR {custom_id}: {result.get('error')}")
+            continue
+
+        choice       = resp_body["choices"][0]
+        response_text= choice["message"]["content"] or ""
+        finish_reason= choice.get("finish_reason", "")
+        usage        = resp_body.get("usage", {})
+        input_tokens = usage.get("prompt_tokens", 0)
+        output_tokens= usage.get("completion_tokens", 0)
+
+        # ── reconstruct problem ───────────────────────────────────────────
+        prob = problem_map.get(custom_id)
+        if prob is None:
+            print(f"  SKIP {custom_id}: problem not reconstructed")
+            continue
+
+        # ── extract + sanitize test file ──────────────────────────────────
+        test_file          = extract_test_file(response_text)
+        test_file, repairs = sanitize_test_file(test_file, prob.fn_name)
+
+        # ── score ─────────────────────────────────────────────────────────
+        scored = score_problem(
+            fn_source  = prob.source,
+            fn_name    = prob.fn_name,
+            test_source= test_file,
+            mutants    = prob.mutants,
+            timeout    = req["mutant_timeout_s"],
+            n_workers  = req["mutation_workers"],
+        )
+
+        canonical_prompt = json.dumps({"messages": prob.messages},
+                                      sort_keys=True, ensure_ascii=False)
+
+        record = TestGenRecord(
+            model                            = req["model_id"],
+            instantiation_id                 = req["instantiation_id"],
+            template_id                      = req["template_id"],
+            instance_seed                    = req["instance_seed"],
+            tier                             = req["tier"],
+            K                               = req["K"],
+            prompting_condition              = req["prompting_condition"],
+            benchmark                        = req["benchmark"],
+            exec_rate                        = 1.0 if scored.exec_ok else 0.0,
+            statement_coverage               = scored.statement_coverage,
+            branch_coverage                  = scored.branch_coverage,
+            mutation_score                   = scored.mutation_score,
+            mutants_total                    = scored.mutants_total,
+            mutants_killed                   = scored.mutants_killed,
+            mutants_dropped_for_import_failure= scored.mutants_dropped,
+            generation_latency_seconds       = 0.0,    # not available for batch API calls
+            model_revision                   = req["model_revision"],
+            provider                         = req["provider"],
+            prompt_hash                      = hashlib.sha256(
+                                                  canonical_prompt.encode()
+                                               ).hexdigest(),
+            response                         = response_text,
+            extracted_test_file              = test_file,
+            generation_config                = {
+                "max_new_tokens": req["max_new_tokens"],
+                "do_sample": True,
+                "temperature": None,   # omitted for reasoning models
+                "top_p": None,
+                "seed": None,
+            },
+            cost_usd                         = compute_cost(
+                                                  req["model_id"],
+                                                  input_tokens,
+                                                  output_tokens,
+                                               ),
+            timestamp                        = datetime.now(timezone.utc).isoformat(),
+            runtime_info                     = {
+                "api_response_id":   resp_body.get("id"),
+                "finish_reason":     finish_reason,
+                "system_fingerprint":resp_body.get("system_fingerprint"),
+                "input_tokens":      input_tokens,
+                "output_tokens":     output_tokens,
+                "batch_custom_id":   custom_id,
+            },
+            baseline_passed                  = scored.baseline_passed,
+            notes                            = "; ".join(
+                filter(None, [scored.notes] + repairs)
+            ),
+        )
+
+        # ── write to per-model output file ────────────────────────────────
+        safe_model = req["model_id"].replace("/", "__")
+        out_dir    = Path(req["output_dir"])
+        out_dir.mkdir(parents=True, exist_ok=True)
+        # Use the state timestamp so all records from one batch land in one file.
+        out_path = out_dir / (
+            f"{safe_model}__{req['benchmark']}__{req['prompting_condition']}"
+            f"__inst{req['instantiation_id']}__batch_{state['created_at']}.jsonl"
+        )
+        append_jsonl(record, out_path)
+        out_paths.add(out_path)
+
+        ms = (f"{scored.mutation_score:.2f}"
+              if scored.mutation_score is not None else "n/a")
+        print(f"  {custom_id}  {req['template_id']} seed={req['instance_seed']}"
+              f"  exec={'Y' if scored.exec_ok else 'N'}  Mut@K={ms}")
+
+    print(f"\nOutput files:")
+    for p in sorted(out_paths):
+        n = sum(1 for _ in p.open())
+        print(f"  {p}  ({n} records)")
+
+
+# ── main ─────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("state_file", type=Path)
+    parser.add_argument("--status-only", action="store_true",
+                        help="Print batch status and exit without scoring.")
+    parser.add_argument("--results-file", type=Path, default=None,
+                        help="Use a pre-downloaded results JSONL (skip polling).")
+    parser.add_argument("--poll-interval", type=int, default=60,
+                        help="Seconds between status checks (default 60).")
+    args = parser.parse_args()
+
+    state = json.loads(args.state_file.read_text())
+    batch_id = state["batch_id"]
+    client   = OpenAI()
+
+    print(f"Batch: {batch_id}  ({state['n_requests']} requests)")
+
+    if args.status_only:
+        batch = client.batches.retrieve(batch_id)
+        counts = batch.request_counts
+        print(f"Status: {batch.status}")
+        print(f"  total={counts.total}  completed={counts.completed}  failed={counts.failed}")
+        return
+
+    # ── poll / download ───────────────────────────────────────────────────────
+    if args.results_file:
+        results_path = args.results_file
+        print(f"Using pre-downloaded results: {results_path}")
+    else:
+        print("Polling batch status…")
+        output_file_id = poll_batch(client, batch_id, args.poll_interval)
+
+        batches_dir  = args.state_file.parent
+        results_path = batches_dir / f"batch_output_{state['created_at']}.jsonl"
+        download_results(client, output_file_id, results_path)
+
+        # Update state with output file id.
+        state["output_file_id"] = output_file_id
+        state["results_file"]   = str(results_path)
+        args.state_file.write_text(json.dumps(state, indent=2))
+
+    # ── reconstruct problems + score ──────────────────────────────────────────
+    print("Reconstructing problems from template engine…")
+    problem_map = build_problem_map(state)
+    print(f"  {len(problem_map)} problems reconstructed.")
+
+    process_results(results_path, state, problem_map)
+
+
+if __name__ == "__main__":
+    main()

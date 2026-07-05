@@ -43,4 +43,11 @@ case "$PROVIDER" in
 esac
 
 echo "Provider: $PROVIDER  Model: $MODEL_ID  Template: $SCRIPT"
-sbatch --export=ALL,CONFIG="$CONFIG" "$SCRIPT"
+
+# API jobs (k2-medpri) need BASH_ENV stripped so bash startup doesn't source
+# the module init file, which can stall or slow startup on CPU nodes.
+if [[ "$PROVIDER" == "anthropic" || "$PROVIDER" == "openai" || "$PROVIDER" == "gemini" ]]; then
+    env -u BASH_ENV sbatch --export=ALL,CONFIG="$CONFIG" "$SCRIPT"
+else
+    sbatch --export=ALL,CONFIG="$CONFIG" "$SCRIPT"
+fi

@@ -27,6 +27,7 @@ def build_model(model_config: dict[str, Any]) -> Model:
             model_id=model_config["id"],
             revision=model_config.get("revision"),
             dtype=_DTYPE_MAP[model_config.get("dtype", "bfloat16")],
+            adapter_path=model_config.get("adapter_path"),   # None for baseline runs
         )
 
     if provider == "anthropic":

@@ -29,17 +29,15 @@ export PYTHONUNBUFFERED=1
 
 # Progress file: written by shell (not Python), visible in near real-time from
 # the login node even while the job is running (bypasses SLURM stdout buffering).
-PROGRESS="${HOME}/dissertation/logs/progress_${SLURM_JOB_ID}.txt"
+PROGRESS="/mnt/scratch2/users/${USER}/dissertation/logs/progress_${SLURM_JOB_ID}.txt"
+mkdir -p "$(dirname "$PROGRESS")"
 
 _log() { echo "[$(date -u +%FT%TZ)] $*" >> "$PROGRESS"; }
 trap '_log "script exiting (exit=$?)"' EXIT
 
-# No module loads: Python comes from uv standalone install (not /opt/apps/ NFS),
-# CUDA runtime is bundled in the venv's nvidia-cuda-runtime-cu12 package.
-# The NVIDIA kernel driver on the compute node provides GPU access.
 _log "skipping modules (uv-managed Python + bundled CUDA)"
 
-cd ~/dissertation
+cd /mnt/scratch2/users/${USER}/dissertation
 _log "cd done"
 
 source .venv/bin/activate

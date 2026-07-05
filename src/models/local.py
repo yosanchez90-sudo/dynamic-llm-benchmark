@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -17,35 +18,46 @@ from src.models.base import GenerationConfig, Model, ModelOutput  # noqa: F401 (
 
 
 class LocalModel(Model):
-    """A HuggingFace causal LM, loaded with a pinned revision."""
+    """A HuggingFace causal LM, optionally with a LoRA adapter loaded on top."""
 
     def __init__(
         self,
         model_id: str,
         revision: str | None = None,
         dtype: torch.dtype = torch.bfloat16,
+        adapter_path: str | None = None,
     ) -> None:
         self.model_id = model_id
 
-        # Resolve current SHA if not explicitly pinned. We RECORD it
-        # regardless, that way, even "first run" results are reproducible.
         if revision is None:
-            self.revision = HfApi().model_info(model_id).sha # queries HF for the current commit SHA of the model repo.
+            self.revision = HfApi().model_info(model_id).sha
         else:
             self.revision = revision
         self.dtype = dtype
+        self.adapter_path = adapter_path
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_id, revision=self.revision, local_files_only=True
         )
-        self.model = AutoModelForCausalLM.from_pretrained(
+        base = AutoModelForCausalLM.from_pretrained(
             model_id,
             revision=self.revision,
             dtype=dtype,
-            device_map="auto",   # transformers chooses GPU placement
+            device_map="auto",
             local_files_only=True,
         )
-        self.model.eval()        # turn off dropout, etc.
+
+        if adapter_path:
+            from peft import PeftModel
+            # PeftModel.from_pretrained requires an absolute path for local adapters;
+            # relative paths are mistakenly validated as HF repo IDs and rejected.
+            abs_adapter = str(Path(adapter_path).resolve())
+            self.model = PeftModel.from_pretrained(base, abs_adapter)
+            print(f"[LocalModel] LoRA adapter loaded from {abs_adapter}", flush=True)
+        else:
+            self.model = base
+
+        self.model.eval()
         device = next(self.model.parameters()).device
         print(f"[LocalModel] loaded on {device} | dtype={dtype} | revision={self.revision[:8]}...", flush=True)
 
