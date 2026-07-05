@@ -16,6 +16,7 @@ dependencies = [
     "huggingface-hub>=0.36.2",
     "inspect-ai>=0.3.220",
     "litellm>=1.83.0",
+    "matplotlib>=3.10.9",
     "openai>=2.36.0",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",

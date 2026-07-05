@@ -1,51 +1,40 @@
 # Python
 __pycache__/
 *.pyc
-.venv/
-.uv/
 *.egg-info/
 
-# Notebook outputs (to commit code, not outputs)
+# Virtual environments
+.venv/
+.uv/
+venv/
+dissertation_env/
+
+# Jupyter notebooks (commit code, not outputs)
 .ipynb_checkpoints/
 
-# Environment
+# Environment / secrets
 .env
 
-# Data and large files
-data/raw/
-data/processed/
-data/results/
-results/
-logs/
-wandb/
-.cache/
+# Data (all generated — batches, checkpoints, results, raw/processed)
+data/
+
+# Fine-tuning outputs (adapters + checkpoints — regenerable from configs)
+data/finetune/
+
+# Model weights & checkpoints
 *.bin
 *.safetensors
-*.ckpt
-
-
-# Notebooks
-.ipynb_checkpoints/
-
-# OS
-.DS_Store
-
-# Virtual environments
-dissertation_env/
-venv/
-.venv/
-
-# Data and outputs
-data/raw/
-data/processed/
-results/
-logs/
 *.ckpt
 *.pt
 *.pth
 
-# Stray files
-@default
+# Logs & experiment tracking
+logs/
+wandb/
+.cache/
 
-# Model call logs
+# Model call logs / result files
 *.jsonl
+
+# OS
+.DS_Store
