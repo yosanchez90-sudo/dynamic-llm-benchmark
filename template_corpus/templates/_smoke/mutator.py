@@ -13,9 +13,12 @@ Three categories of change vs the prototype:
      actually replace `not x` with `x` in the tree copy.
 
 Public API:
-  generate_mutants(source: str) -> list[Mutant]
+  generate_mutants(source: str, scope_fn_name: str | None = None) -> list[Mutant]
       Each Mutant has .source (valid Python string) and .operator (one of the
       seven SAC operator names).  Raises if source does not parse.
+      scope_fn_name restricts mutation candidates to one named top-level
+      function when the source has helper classes/functions alongside it
+      (Dynamic templates never need this; external sources like ULT/PLT do).
 
   count_mutants(source: str) -> dict
       Backward-compatible wrapper used by mutation_sweep.py.
@@ -85,7 +88,7 @@ def _apply(tree, target_node, mutate_fn) -> str:
 
 # ---- operator implementations ----
 
-def _aor(tree) -> list[Mutant]:
+def _aor(tree, scope=None) -> list[Mutant]:
     """Arithmetic Operator Replacement."""
     repl = {
         ast.Add:      [ast.Sub],
@@ -97,7 +100,7 @@ def _aor(tree) -> list[Mutant]:
         ast.Pow:      [ast.Mult],
     }
     mutants = []
-    for node, _ in _walk_with_parents(tree):
+    for node, _ in _walk_with_parents(scope if scope is not None else tree):
         if isinstance(node, ast.BinOp) and type(node.op) in repl:
             for r in repl[type(node.op)]:
                 src = _apply(tree, node, lambda nn, R=r: setattr(nn, "op", R()))
@@ -105,7 +108,7 @@ def _aor(tree) -> list[Mutant]:
     return mutants
 
 
-def _ror(tree) -> list[Mutant]:
+def _ror(tree, scope=None) -> list[Mutant]:
     """Relational Operator Replacement."""
     repl = {
         ast.Lt:    [ast.LtE, ast.Gt, ast.Eq],
@@ -116,7 +119,7 @@ def _ror(tree) -> list[Mutant]:
         ast.NotEq: [ast.Eq],
     }
     mutants = []
-    for node, _ in _walk_with_parents(tree):
+    for node, _ in _walk_with_parents(scope if scope is not None else tree):
         if isinstance(node, ast.Compare):
             for idx, op in enumerate(node.ops):
                 if type(op) in repl:
@@ -127,7 +130,7 @@ def _ror(tree) -> list[Mutant]:
     return mutants
 
 
-def _lor(tree) -> list[Mutant]:
+def _lor(tree, scope=None) -> list[Mutant]:
     """Logical Operator Replacement.
 
     Two sub-cases:
@@ -136,7 +139,7 @@ def _lor(tree) -> list[Mutant]:
                   so uses a NodeTransformer rather than _apply)
     """
     mutants = []
-    for node, _ in _walk_with_parents(tree):
+    for node, _ in _walk_with_parents(scope if scope is not None else tree):
         if isinstance(node, ast.BoolOp):
             new_op = ast.Or if isinstance(node.op, ast.And) else ast.And
             src = _apply(tree, node, lambda nn, O=new_op: setattr(nn, "op", O()))
@@ -169,10 +172,10 @@ def _lor(tree) -> list[Mutant]:
     return mutants
 
 
-def _cr(tree, boundary_node_ids: set) -> list[Mutant]:
+def _cr(tree, boundary_node_ids: set, scope=None) -> list[Mutant]:
     """Constant Replacement (excludes boundary sites handled by BM)."""
     mutants = []
-    for node, _ in _walk_with_parents(tree):
+    for node, _ in _walk_with_parents(scope if scope is not None else tree):
         if not isinstance(node, ast.Constant) or id(node) in boundary_node_ids:
             continue
         v = node.value
@@ -192,14 +195,14 @@ def _cr(tree, boundary_node_ids: set) -> list[Mutant]:
     return mutants
 
 
-def _bm(tree) -> tuple[list[Mutant], set]:
+def _bm(tree, scope=None) -> tuple[list[Mutant], set]:
     """Boundary Mutation — int literals in boundary contexts only.
 
     Returns (mutants, boundary_node_ids) so _cr can exclude those sites.
     """
     mutants = []
     boundary_ids: set = set()
-    for node, parents in _walk_with_parents(tree):
+    for node, parents in _walk_with_parents(scope if scope is not None else tree):
         if not isinstance(node, ast.Constant) or not isinstance(node.value, int):
             continue
         if _node_in_boundary_context(node, parents):
@@ -211,7 +214,7 @@ def _bm(tree) -> tuple[list[Mutant], set]:
     return mutants, boundary_ids
 
 
-def _sdl(tree) -> list[Mutant]:
+def _sdl(tree, scope_fn_name=None) -> list[Mutant]:
     """Statement Deletion — remove one safe statement, leaving valid Python.
 
     Safe statements: assignments (Assign, AugAssign, AnnAssign) and expression
@@ -219,8 +222,16 @@ def _sdl(tree) -> list[Mutant]:
     deleting the only return would break the function contract.
 
     If deletion would leave an empty block, a `pass` statement is inserted.
+
+    Already function-scoped by construction (finds a specific FunctionDef,
+    not the whole tree) — scope_fn_name picks which one when there's more
+    than one top-level function; None keeps the old "first one" behavior.
     """
-    fn = next((n for n in tree.body if isinstance(n, ast.FunctionDef)), None)
+    if scope_fn_name is not None:
+        fn = next((n for n in tree.body
+                   if isinstance(n, ast.FunctionDef) and n.name == scope_fn_name), None)
+    else:
+        fn = next((n for n in tree.body if isinstance(n, ast.FunctionDef)), None)
     if fn is None:
         return []
 
@@ -265,10 +276,10 @@ def _sdl(tree) -> list[Mutant]:
     return mutants
 
 
-def _rsm(tree) -> list[Mutant]:
+def _rsm(tree, scope=None) -> list[Mutant]:
     """Return-Statement Mutation — replace each return value with None."""
     sites = []
-    for node, _ in _walk_with_parents(tree):
+    for node, _ in _walk_with_parents(scope if scope is not None else tree):
         if isinstance(node, ast.Return) and node.value is not None:
             sites.append((getattr(node, "lineno", -1), getattr(node, "col_offset", -1)))
 
@@ -290,26 +301,42 @@ def _rsm(tree) -> list[Mutant]:
 
 # ---- public API ----
 
-def generate_mutants(source: str) -> list[Mutant]:
+def generate_mutants(source: str, scope_fn_name: str | None = None) -> list[Mutant]:
     """Generate all candidate mutants for a source string.
 
     Every returned Mutant has:
       .source   — a complete, valid Python source string (ast.parse() will not raise)
       .operator — one of: AOR, ROR, LOR, CR, BM, SDL, RSM
 
-    Raises SyntaxError if `source` does not parse.
+    `scope_fn_name`: when the source has more than one top-level function or
+    class (e.g. helper classes the function under test depends on — the
+    Dynamic template corpus never does this, but external sources like
+    UnLeakedTestBench/PreLeakedTestBench sometimes do), restricts mutation
+    candidates to the named function's own body instead of the whole module.
+    None (default) preserves the original whole-module behaviour exactly.
+
+    Raises SyntaxError if `source` does not parse. Raises ValueError if
+    scope_fn_name is given but no top-level function with that name exists.
     """
     tree = ast.parse(source)
-    bm_mutants, boundary_ids = _bm(tree)
+    scope = tree
+    if scope_fn_name is not None:
+        scope = next((n for n in tree.body
+                      if isinstance(n, ast.FunctionDef) and n.name == scope_fn_name), None)
+        if scope is None:
+            raise ValueError(f"scope_fn_name={scope_fn_name!r} not found as a "
+                              f"top-level function in the given source")
+
+    bm_mutants, boundary_ids = _bm(tree, scope)
 
     mutants: list[Mutant] = []
-    mutants.extend(_aor(tree))
-    mutants.extend(_ror(tree))
-    mutants.extend(_lor(tree))
-    mutants.extend(_cr(tree, boundary_ids))
+    mutants.extend(_aor(tree, scope))
+    mutants.extend(_ror(tree, scope))
+    mutants.extend(_lor(tree, scope))
+    mutants.extend(_cr(tree, boundary_ids, scope))
     mutants.extend(bm_mutants)
-    mutants.extend(_sdl(tree))
-    mutants.extend(_rsm(tree))
+    mutants.extend(_sdl(tree, scope_fn_name))
+    mutants.extend(_rsm(tree, scope))
     return mutants
 
 

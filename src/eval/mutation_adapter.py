@@ -17,13 +17,17 @@ from mutator import generate_mutants as _engine_generate  # noqa: E402
 from src.eval.test_gen_problem import Mutant
 
 
-def generate_mutants(source: str) -> list[Mutant]:
+def generate_mutants(source: str, scope_fn_name: str | None = None) -> list[Mutant]:
     """Run all 7 SAC operators and return harness-typed Mutant objects.
+
+    scope_fn_name: restrict mutation candidates to one named top-level
+    function — needed for sources with helper classes/functions alongside
+    the function under test (e.g. ULT/PLT), harmless no-op for Dynamic.
 
     Raises SyntaxError if source doesn't parse (caller's responsibility to
     guard against this — engine.instantiate() always produces valid Python).
     """
     return [
         Mutant(operator=m.operator, source=m.source)
-        for m in _engine_generate(source)
+        for m in _engine_generate(source, scope_fn_name=scope_fn_name)
     ]
