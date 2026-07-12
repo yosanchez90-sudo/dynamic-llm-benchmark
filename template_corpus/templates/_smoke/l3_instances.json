@@ -1,0 +1,467 @@
+{
+  "L3-bucket-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      17,
+      23
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Produce a weighted count: two points topping the upper mark, one exceeding the lower.\"\"\"\n    agg = 0\n    for item in values:\n        if item > 34:\n            agg += 2\n        elif item > 5:\n            agg += 1\n    return agg\n",
+        "docstring": "Produce a weighted count: two points topping the upper mark, one exceeding the lower.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Produce a weighted count: two points beyond the upper mark, one surpassing the lower.\"\"\"\n    result = 0\n    for val in entries:\n        if val > 37:\n            result += 2\n        elif val > 15:\n            result += 1\n    return result\n",
+        "docstring": "Produce a weighted count: two points beyond the upper mark, one surpassing the lower.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Accumulate a figure: two points past the upper mark, one clearing the lower.\"\"\"\n    total = 0\n    for sample in values:\n        if sample > 43:\n            total += 2\n        elif sample > 6:\n            total += 1\n    return total\n",
+        "docstring": "Accumulate a figure: two points past the upper mark, one clearing the lower.",
+        "cc": 4,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L3-clamp-seq-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      18,
+      24
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Yield a list with values held inside the floor and ceiling, in between unchanged.\"\"\"\n    agg = []\n    for item in values:\n        if item < 9:\n            agg.append(9)\n        elif item > 21:\n            agg.append(21)\n        else:\n            agg.append(item)\n    return agg\n",
+        "docstring": "Yield a list with values held inside the floor and ceiling, in between unchanged.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Yield a list with values held inside the floor and ceiling, when mid-range unchanged.\"\"\"\n    result = []\n    for val in entries:\n        if val < 10:\n            result.append(10)\n        elif val > 42:\n            result.append(42)\n        else:\n            result.append(val)\n    return result\n",
+        "docstring": "Yield a list with values held inside the floor and ceiling, when mid-range unchanged.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Assemble a list with values bounded within the floor and ceiling, otherwise unchanged.\"\"\"\n    total = []\n    for sample in values:\n        if sample < 3:\n            total.append(3)\n        elif sample > 40:\n            total.append(40)\n        else:\n            total.append(sample)\n    return total\n",
+        "docstring": "Assemble a list with values bounded within the floor and ceiling, otherwise unchanged.",
+        "cc": 4,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L3-count-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      19,
+      25
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Report the balance: numbers beating the ceiling, offset by those short of the floor.\"\"\"\n    agg = 0\n    result = 0\n    for elem in values:\n        if elem > 16:\n            agg += 1\n        elif elem < 12:\n            result += 1\n    return agg - result\n",
+        "docstring": "Report the balance: numbers beating the ceiling, offset by those short of the floor.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Report the balance: numbers passing the ceiling, balanced by those slipping past the floor.\"\"\"\n    result = 0\n    sum_ = 0\n    for sample in entries:\n        if sample > 37:\n            result += 1\n        elif sample < 12:\n            sum_ += 1\n    return result - sum_\n",
+        "docstring": "Report the balance: numbers passing the ceiling, balanced by those slipping past the floor.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Derive the net count: numbers passing the ceiling, against those beneath the floor.\"\"\"\n    total = 0\n    sum_ = 0\n    for elem in values:\n        if elem > 29:\n            total += 1\n        elif elem < 7:\n            sum_ += 1\n    return total - sum_\n",
+        "docstring": "Derive the net count: numbers passing the ceiling, against those beneath the floor.",
+        "cc": 4,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L3-dispatch-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 5,
+    "expected_mutant_count": [
+      23,
+      29
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Rank ordered couples as equal, larger, or smaller, or a guard code if blank.\"\"\"\n    if not values:\n        return 2\n    agg = 0\n    for item in values:\n        for sample in values:\n            if item == sample:\n                agg += 1\n            elif item > sample:\n                agg += 2\n            elif item < sample:\n                agg += 3\n    return agg\n",
+        "docstring": "Rank ordered couples as equal, larger, or smaller, or a guard code if blank.",
+        "cc": 7,
+        "ast_depth": 5
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Score ordered two-tuples as equal, larger, or smaller, or a reserve code if unfilled.\"\"\"\n    if not entries:\n        return 8\n    result = 0\n    for val in entries:\n        for item in entries:\n            if val == item:\n                result += 1\n            elif val > item:\n                result += 2\n            elif val < item:\n                result += 3\n    return result\n",
+        "docstring": "Score ordered two-tuples as equal, larger, or smaller, or a reserve code if unfilled.",
+        "cc": 7,
+        "ast_depth": 5
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Weigh ordered duos as equal, larger, or smaller, or a fallback code if vacant.\"\"\"\n    if not values:\n        return 8\n    total = 0\n    for sample in values:\n        for x in values:\n            if sample == x:\n                total += 1\n            elif sample > x:\n                total += 2\n            elif sample < x:\n                total += 3\n    return total\n",
+        "docstring": "Weigh ordered duos as equal, larger, or smaller, or a fallback code if vacant.",
+        "cc": 7,
+        "ast_depth": 5
+      }
+    ]
+  },
+  "L3-filter-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      16,
+      22
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Compose a list of upper numbers weighted, with zeros for below-baseline ones.\"\"\"\n    agg = []\n    for item in values:\n        if item > 19:\n            agg.append(item * 2)\n        elif item < 0:\n            agg.append(0)\n    return agg\n",
+        "docstring": "Compose a list of upper numbers weighted, with zeros for below-baseline ones.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Produce a list of qualifying numbers amplified, with zeros for deficient ones.\"\"\"\n    result = []\n    for val in entries:\n        if val > 22:\n            result.append(val * 4)\n        elif val < 0:\n            result.append(0)\n    return result\n",
+        "docstring": "Produce a list of qualifying numbers amplified, with zeros for deficient ones.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Compose a list of large numbers boosted, with zeros for minus ones.\"\"\"\n    total = []\n    for sample in values:\n        if sample > 28:\n            total.append(sample * 3)\n        elif sample < 0:\n            total.append(0)\n    return total\n",
+        "docstring": "Compose a list of large numbers boosted, with zeros for minus ones.",
+        "cc": 4,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L3-max-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      17,
+      23
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Give the greatest value plus its tie count, or a guard code if blank.\"\"\"\n    if not values:\n        return 2\n    agg = values[0]\n    result = 0\n    for elem in values:\n        if elem > agg:\n            agg = elem\n        elif elem == agg:\n            result += 1\n    return agg + result\n",
+        "docstring": "Give the greatest value plus its tie count, or a guard code if blank.",
+        "cc": 5,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Report the maximum value plus its match count, or a reserve code if unfilled.\"\"\"\n    if not entries:\n        return 4\n    result = entries[0]\n    sum_ = 0\n    for sample in entries:\n        if sample > result:\n            result = sample\n        elif sample == result:\n            sum_ += 1\n    return result + sum_\n",
+        "docstring": "Report the maximum value plus its match count, or a reserve code if unfilled.",
+        "cc": 5,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Produce the largest value plus its recurrences, or a fallback code if blank.\"\"\"\n    if not values:\n        return 9\n    total = values[0]\n    sum_ = 0\n    for elem in values:\n        if elem > total:\n            total = elem\n        elif elem == total:\n            sum_ += 1\n    return total + sum_\n",
+        "docstring": "Produce the largest value plus its recurrences, or a fallback code if blank.",
+        "cc": 5,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L3-minmax-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 2,
+    "expected_mutant_count": [
+      18,
+      24
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Measure the extent of the largest and smallest values, or a default code if unfilled.\"\"\"\n    if not values:\n        return 2\n    agg = values[0]\n    result = values[0]\n    for elem in values:\n        if elem < agg:\n            agg = elem\n        if elem > result:\n            result = elem\n    return result - agg\n",
+        "docstring": "Measure the extent of the largest and smallest values, or a default code if unfilled.",
+        "cc": 5,
+        "ast_depth": 2
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Report the gap of the largest and smallest values, or a guard code if vacant.\"\"\"\n    if not entries:\n        return 4\n    result = entries[0]\n    sum_ = entries[0]\n    for sample in entries:\n        if sample < result:\n            result = sample\n        if sample > sum_:\n            sum_ = sample\n    return sum_ - result\n",
+        "docstring": "Report the gap of the largest and smallest values, or a guard code if vacant.",
+        "cc": 5,
+        "ast_depth": 2
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Produce the spread of the largest and smallest values, or a reserve code if empty.\"\"\"\n    if not values:\n        return 9\n    total = values[0]\n    sum_ = values[0]\n    for elem in values:\n        if elem < total:\n            total = elem\n        if elem > sum_:\n            sum_ = elem\n    return sum_ - total\n",
+        "docstring": "Produce the spread of the largest and smallest values, or a reserve code if empty.",
+        "cc": 5,
+        "ast_depth": 2
+      }
+    ]
+  },
+  "L3-nested-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 4,
+    "expected_mutant_count": [
+      19,
+      25
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Compute ordered couples where an addition exceeds the cap or a spread sinks below the margin.\"\"\"\n    agg = 0\n    for item in values:\n        for sample in values:\n            if item + sample > 11:\n                agg += 1\n            elif item - sample < 12:\n                agg += 2\n    return agg\n",
+        "docstring": "Compute ordered couples where an addition exceeds the cap or a spread sinks below the margin.",
+        "cc": 5,
+        "ast_depth": 4
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Compute ordered combinations where an addition beats the cap or a gap slips below the margin.\"\"\"\n    result = 0\n    for val in entries:\n        for item in entries:\n            if val + item > 22:\n                result += 1\n            elif val - item < 6:\n                result += 2\n    return result\n",
+        "docstring": "Compute ordered combinations where an addition beats the cap or a gap slips below the margin.",
+        "cc": 5,
+        "ast_depth": 4
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Accumulate ordered duos where a sum clears the cap or a gap drops below the margin.\"\"\"\n    total = 0\n    for sample in values:\n        for x in values:\n            if sample + x > 30:\n                total += 1\n            elif sample - x < 8:\n                total += 2\n    return total\n",
+        "docstring": "Accumulate ordered duos where a sum clears the cap or a gap drops below the margin.",
+        "cc": 5,
+        "ast_depth": 4
+      }
+    ]
+  },
+  "L3-nested2-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 5,
+    "expected_mutant_count": [
+      16,
+      22
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Total, per number past the threshold, how many later entries fall short of or equal it.\"\"\"\n    agg = 0\n    for item in values:\n        if item > 11:\n            for sample in values:\n                if sample < item:\n                    agg += 1\n                elif sample == item:\n                    agg += 2\n    return agg\n",
+        "docstring": "Total, per number past the threshold, how many later entries fall short of or equal it.",
+        "cc": 6,
+        "ast_depth": 5
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Report, per number clearing the mark, how many later entries undercut or mirror it.\"\"\"\n    result = 0\n    for val in entries:\n        if val > 22:\n            for item in entries:\n                if item < val:\n                    result += 1\n                elif item == val:\n                    result += 2\n    return result\n",
+        "docstring": "Report, per number clearing the mark, how many later entries undercut or mirror it.",
+        "cc": 6,
+        "ast_depth": 5
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Compute, per number beyond the bar, how many later entries trail or tie with it.\"\"\"\n    total = 0\n    for sample in values:\n        if sample > 30:\n            for x in values:\n                if x < sample:\n                    total += 1\n                elif x == sample:\n                    total += 2\n    return total\n",
+        "docstring": "Compute, per number beyond the bar, how many later entries trail or tie with it.",
+        "cc": 6,
+        "ast_depth": 5
+      }
+    ]
+  },
+  "L3-parse-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      15,
+      21
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Return an aggregate that stops at the first drop, limits high values, counts the rest.\"\"\"\n    agg = 0\n    for item in values:\n        if item < 0:\n            break\n        elif item > 24:\n            agg += 24\n        else:\n            agg += item\n    return agg\n",
+        "docstring": "Return an aggregate that stops at the first drop, limits high values, counts the rest.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Build a sum that terminates at the first minus value, trims outsized values, keeps the rest.\"\"\"\n    result = 0\n    for val in entries:\n        if val < 0:\n            break\n        elif val > 27:\n            result += 27\n        else:\n            result += val\n    return result\n",
+        "docstring": "Build a sum that terminates at the first minus value, trims outsized values, keeps the rest.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Return a tally that terminates at the first minus value, caps outsized values, takes the rest.\"\"\"\n    total = 0\n    for sample in values:\n        if sample < 0:\n            break\n        elif sample > 33:\n            total += 33\n        else:\n            total += sample\n    return total\n",
+        "docstring": "Return a tally that terminates at the first minus value, caps outsized values, takes the rest.",
+        "cc": 4,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L3-range-count-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 2,
+    "expected_mutant_count": [
+      14,
+      20
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Find the tally of numbers inside the lower and upper bounds.\"\"\"\n    agg = 0\n    for item in values:\n        if item >= 9 and item <= 28:\n            agg += 1\n    return agg\n",
+        "docstring": "Find the tally of numbers inside the lower and upper bounds.",
+        "cc": 4,
+        "ast_depth": 2
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Give a count of numbers spanning the lower and upper bounds.\"\"\"\n    result = 0\n    for val in entries:\n        if val >= 10 and val <= 36:\n            result += 1\n    return result\n",
+        "docstring": "Give a count of numbers spanning the lower and upper bounds.",
+        "cc": 4,
+        "ast_depth": 2
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Find the quantity of numbers amid the lower and upper bounds.\"\"\"\n    total = 0\n    for sample in values:\n        if sample >= 13 and sample <= 32:\n            total += 1\n    return total\n",
+        "docstring": "Find the quantity of numbers amid the lower and upper bounds.",
+        "cc": 4,
+        "ast_depth": 2
+      }
+    ]
+  },
+  "L3-search-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      19,
+      25
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Give the earliest match index, an abort marker above the bound, or a sentinel code.\"\"\"\n    if not values:\n        return 2\n    for count in range(len(values)):\n        if values[count] == 7:\n            return count\n        elif values[count] > 49:\n            return 5\n    return 2\n",
+        "docstring": "Give the earliest match index, an abort marker above the bound, or a sentinel code.",
+        "cc": 5,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Find the soonest match index, a cutoff marker over-limit, or a reserve code.\"\"\"\n    if not entries:\n        return 4\n    for k in range(len(entries)):\n        if entries[k] == 4:\n            return k\n        elif entries[k] > 55:\n            return 8\n    return 4\n",
+        "docstring": "Find the soonest match index, a cutoff marker over-limit, or a reserve code.",
+        "cc": 5,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Locate the leading match index, a bail-out marker above the bound, or a fallback code.\"\"\"\n    if not values:\n        return 3\n    for idx in range(len(values)):\n        if values[idx] == 3:\n            return idx\n        elif values[idx] > 58:\n            return 8\n    return 3\n",
+        "docstring": "Locate the leading match index, a bail-out marker above the bound, or a fallback code.",
+        "cc": 5,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L3-sum-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      19,
+      25
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Accumulate a tally that boosts large numbers and reduces low ones.\"\"\"\n    agg = 0\n    for item in values:\n        if item > 29:\n            agg += item * 5\n        elif item < 2:\n            agg -= 5\n    return agg\n",
+        "docstring": "Accumulate a tally that boosts large numbers and reduces low ones.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Accumulate a score that weights top numbers and discounts low ones.\"\"\"\n    result = 0\n    for val in entries:\n        if val > 32:\n            result += val * 4\n        elif val < 12:\n            result -= 8\n    return result\n",
+        "docstring": "Accumulate a score that weights top numbers and discounts low ones.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Accumulate a total that weights high numbers and trims under-floor ones.\"\"\"\n    total = 0\n    for sample in values:\n        if sample > 38:\n            total += sample * 8\n        elif sample < 3:\n            total -= 9\n    return total\n",
+        "docstring": "Accumulate a total that weights high numbers and trims under-floor ones.",
+        "cc": 4,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L3-tally-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 4,
+    "expected_mutant_count": [
+      21,
+      27
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Produce a weighted sum rewarding three known keys individually and discarding the rest.\"\"\"\n    agg = 0\n    for item in values:\n        if item == 2:\n            agg += 5\n        elif item == 4:\n            agg += 5\n        elif item == 9:\n            agg += 6\n    return agg\n",
+        "docstring": "Produce a weighted sum rewarding three known keys individually and discarding the rest.",
+        "cc": 5,
+        "ast_depth": 4
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Tally a weighted sum weighting three known keys uniquely and passing over the rest.\"\"\"\n    result = 0\n    for val in entries:\n        if val == 3:\n            result += 4\n        elif val == 6:\n            result += 8\n        elif val == 9:\n            result += 6\n    return result\n",
+        "docstring": "Tally a weighted sum weighting three known keys uniquely and passing over the rest.",
+        "cc": 5,
+        "ast_depth": 4
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Return a weighted sum weighting three known keys distinctly and ignoring the rest.\"\"\"\n    total = 0\n    for sample in values:\n        if sample == 3:\n            total += 8\n        elif sample == 4:\n            total += 9\n        elif sample == 9:\n            total += 7\n    return total\n",
+        "docstring": "Return a weighted sum weighting three known keys distinctly and ignoring the rest.",
+        "cc": 5,
+        "ast_depth": 4
+      }
+    ]
+  },
+  "L3-transform-001": {
+    "declared_tier": "L3",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      21,
+      27
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef scan_sequence(values):\n    \"\"\"Assemble a list doubling halvable entries and overwriting high odd ones for a set figure.\"\"\"\n    agg = []\n    for item in values:\n        if item % 2 == 0:\n            agg.append(item * 9)\n        elif item > 11:\n            agg.append(5)\n        else:\n            agg.append(item)\n    return agg\n",
+        "docstring": "Assemble a list doubling halvable entries and overwriting high odd ones for a set figure.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef count_items(entries):\n    \"\"\"Assemble a list boosting two-fold entries and exchanging large odd ones for a preset.\"\"\"\n    result = []\n    for val in entries:\n        if val % 2 == 0:\n            result.append(val * 4)\n        elif val > 22:\n            result.append(6)\n        else:\n            result.append(val)\n    return result\n",
+        "docstring": "Assemble a list boosting two-fold entries and exchanging large odd ones for a preset.",
+        "cc": 4,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef parse_input(values):\n    \"\"\"Map to a list multiplying even entries and overwriting large odd ones for a fixed value.\"\"\"\n    total = []\n    for sample in values:\n        if sample % 2 == 0:\n            total.append(sample * 3)\n        elif sample > 30:\n            total.append(8)\n        else:\n            total.append(sample)\n    return total\n",
+        "docstring": "Map to a list multiplying even entries and overwriting large odd ones for a fixed value.",
+        "cc": 4,
+        "ast_depth": 3
+      }
+    ]
+  }
+}

@@ -1,0 +1,467 @@
+{
+  "L4-aggregate-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      34,
+      40
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Produce a result from large sums and small tallies, rebalanced after.\"\"\"\n    agg = 0\n    result = 0\n    for x in values:\n        if x > 39:\n            agg += x\n        elif x == 5:\n            result += 1\n    sum_ = 0\n    for item in values:\n        if item > result and item < 39:\n            sum_ += item\n        elif item == 5:\n            sum_ -= 1\n    return agg + sum_ - result\n",
+        "docstring": "Produce a result from large sums and small tallies, rebalanced after.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Build a result from large sums and small notes, trimmed after.\"\"\"\n    result = 0\n    sum_ = 0\n    for sample in entries:\n        if sample > 32:\n            result += sample\n        elif sample == 6:\n            sum_ += 1\n    agg = 0\n    for val in entries:\n        if val > sum_ and val < 32:\n            agg += val\n        elif val == 6:\n            agg -= 1\n    return result + agg - sum_\n",
+        "docstring": "Build a result from large sums and small notes, trimmed after.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Return a result from large sums and small counts, tuned after.\"\"\"\n    total = 0\n    sum_ = 0\n    for elem in values:\n        if elem > 30:\n            total += elem\n        elif elem == 12:\n            sum_ += 1\n    agg = 0\n    for sample in values:\n        if sample > sum_ and sample < 30:\n            agg += sample\n        elif sample == 12:\n            agg -= 1\n    return total + agg - sum_\n",
+        "docstring": "Return a result from large sums and small counts, tuned after.",
+        "cc": 8,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L4-bucketize-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 4,
+    "expected_mutant_count": [
+      34,
+      40
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Sort entries into three levels, then bank the leading band.\"\"\"\n    if not values:\n        return 0\n    agg = []\n    for elem in values:\n        if elem > 51:\n            agg.append(3)\n        elif elem > 23:\n            agg.append(2)\n        elif elem > 5:\n            agg.append(1)\n    result = 0\n    for x in agg:\n        if x == 3:\n            result += x\n    return result\n",
+        "docstring": "Sort entries into three levels, then bank the leading band.",
+        "cc": 8,
+        "ast_depth": 4
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Sort entries into three bins, then total the premier band.\"\"\"\n    if not entries:\n        return 0\n    result = []\n    for sample in entries:\n        if sample > 42:\n            result.append(3)\n        elif sample > 19:\n            result.append(2)\n        elif sample > 8:\n            result.append(1)\n    sum_ = 0\n    for val in result:\n        if val == 3:\n            sum_ += val\n    return sum_\n",
+        "docstring": "Sort entries into three bins, then total the premier band.",
+        "cc": 8,
+        "ast_depth": 4
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Rank entries into three tiers, then reward the upper band.\"\"\"\n    if not values:\n        return 0\n    total = []\n    for elem in values:\n        if elem > 40:\n            total.append(3)\n        elif elem > 25:\n            total.append(2)\n        elif elem > 3:\n            total.append(1)\n    sum_ = 0\n    for sample in total:\n        if sample == 3:\n            sum_ += sample\n    return sum_\n",
+        "docstring": "Rank entries into three tiers, then reward the upper band.",
+        "cc": 8,
+        "ast_depth": 4
+      }
+    ]
+  },
+  "L4-dispatch2-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 5,
+    "expected_mutant_count": [
+      35,
+      41
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Weigh ordered pairs by comparison, then shift for outlying singles.\"\"\"\n    if not values:\n        return 0\n    agg = 0\n    for elem in values:\n        for x in values:\n            if elem > x:\n                agg += 1\n            elif elem < x:\n                agg -= 1\n            elif elem == x:\n                agg += 2\n    result = 0\n    for sample in values:\n        if sample > 41:\n            result += sample\n        elif sample == 5:\n            result += 1\n    return agg + result\n",
+        "docstring": "Weigh ordered pairs by comparison, then shift for outlying singles.",
+        "cc": 10,
+        "ast_depth": 5
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Sort ordered pairs by standing, then tune for over-cap singles.\"\"\"\n    if not entries:\n        return 0\n    result = 0\n    for sample in entries:\n        for val in entries:\n            if sample > val:\n                result += 1\n            elif sample < val:\n                result -= 1\n            elif sample == val:\n                result += 2\n    sum_ = 0\n    for item in entries:\n        if item > 34:\n            sum_ += item\n        elif item == 11:\n            sum_ += 1\n    return result + sum_\n",
+        "docstring": "Sort ordered pairs by standing, then tune for over-cap singles.",
+        "cc": 10,
+        "ast_depth": 5
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Sort ordered pairs by relative order, then nudge for extreme singles.\"\"\"\n    if not values:\n        return 0\n    total = 0\n    for elem in values:\n        for sample in values:\n            if elem > sample:\n                total += 1\n            elif elem < sample:\n                total -= 1\n            elif elem == sample:\n                total += 2\n    sum_ = 0\n    for val in values:\n        if val > 46:\n            sum_ += val\n        elif val == 3:\n            sum_ += 1\n    return total + sum_\n",
+        "docstring": "Sort ordered pairs by relative order, then nudge for extreme singles.",
+        "cc": 10,
+        "ast_depth": 5
+      }
+    ]
+  },
+  "L4-flow-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      30,
+      36
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Build a primary extremes pass, then a back sweep crediting the mid-band.\"\"\"\n    if not values:\n        return 0\n    agg = 0\n    for elem in values:\n        if elem > 46:\n            agg += elem\n        elif elem < 10:\n            agg -= elem\n    result = 0\n    for x in values:\n        if x > 15:\n            result += x\n        elif x == 46:\n            result += 1\n    return agg + result\n",
+        "docstring": "Build a primary extremes pass, then a back sweep crediting the mid-band.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Stage an opening extremes pass, then a closing sweep rewarding the mid-band.\"\"\"\n    if not entries:\n        return 0\n    result = 0\n    for sample in entries:\n        if sample > 37:\n            result += sample\n        elif sample < 6:\n            result -= sample\n    sum_ = 0\n    for val in entries:\n        if val > 21:\n            sum_ += val\n        elif val == 37:\n            sum_ += 1\n    return result + sum_\n",
+        "docstring": "Stage an opening extremes pass, then a closing sweep rewarding the mid-band.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Run a primary extremes pass, then a secondary sweep favouring the mid-band.\"\"\"\n    if not values:\n        return 0\n    total = 0\n    for elem in values:\n        if elem > 35:\n            total += elem\n        elif elem < 3:\n            total -= elem\n    sum_ = 0\n    for sample in values:\n        if sample > 19:\n            sum_ += sample\n        elif sample == 35:\n            sum_ += 1\n    return total + sum_\n",
+        "docstring": "Run a primary extremes pass, then a secondary sweep favouring the mid-band.",
+        "cc": 8,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L4-grade-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      37,
+      43
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Bucket entries into three tiers, bank the strong and trim the weak.\"\"\"\n    if not values:\n        return 5\n    agg = []\n    for elem in values:\n        if elem > 36:\n            agg.append(3)\n        elif elem > 15:\n            agg.append(2)\n        else:\n            agg.append(1)\n    result = 0\n    for x in agg:\n        if x == 3:\n            result += x\n        elif x == 1:\n            result -= 1\n    return result\n",
+        "docstring": "Bucket entries into three tiers, bank the strong and trim the weak.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Bucket entries into three grades, reward the strong and cut the weak.\"\"\"\n    if not entries:\n        return 8\n    result = []\n    for sample in entries:\n        if sample > 29:\n            result.append(3)\n        elif sample > 11:\n            result.append(2)\n        else:\n            result.append(1)\n    sum_ = 0\n    for val in result:\n        if val == 3:\n            sum_ += val\n        elif val == 1:\n            sum_ -= 1\n    return sum_\n",
+        "docstring": "Bucket entries into three grades, reward the strong and cut the weak.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Sort entries into three tiers, credit the strong and cut the weak.\"\"\"\n    if not values:\n        return 9\n    total = []\n    for elem in values:\n        if elem > 23:\n            total.append(3)\n        elif elem > 10:\n            total.append(2)\n        else:\n            total.append(1)\n    sum_ = 0\n    for sample in total:\n        if sample == 3:\n            sum_ += sample\n        elif sample == 1:\n            sum_ -= 1\n    return sum_\n",
+        "docstring": "Sort entries into three tiers, credit the strong and cut the weak.",
+        "cc": 8,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L4-matrix-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 4,
+    "expected_mutant_count": [
+      29,
+      35
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Tally ordered pairs that are unequal and under-ceiling, plus over-cap singles.\"\"\"\n    if not values:\n        return 0\n    agg = 0\n    for elem in values:\n        for x in values:\n            if elem > x and elem < 36:\n                agg += 1\n            elif elem == x:\n                agg += 2\n    result = 0\n    for sample in values:\n        if sample > 36:\n            result += sample\n    return agg + result\n",
+        "docstring": "Tally ordered pairs that are unequal and under-ceiling, plus over-cap singles.",
+        "cc": 9,
+        "ast_depth": 4
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Rank ordered pairs that are top-leading and bounded, plus over-cap singles.\"\"\"\n    if not entries:\n        return 0\n    result = 0\n    for sample in entries:\n        for val in entries:\n            if sample > val and sample < 29:\n                result += 1\n            elif sample == val:\n                result += 2\n    sum_ = 0\n    for item in entries:\n        if item > 29:\n            sum_ += item\n    return result + sum_\n",
+        "docstring": "Rank ordered pairs that are top-leading and bounded, plus over-cap singles.",
+        "cc": 9,
+        "ast_depth": 4
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Count ordered pairs that are top-leading and within-cap, plus over-cap singles.\"\"\"\n    if not values:\n        return 0\n    total = 0\n    for elem in values:\n        for sample in values:\n            if elem > sample and elem < 41:\n                total += 1\n            elif elem == sample:\n                total += 2\n    sum_ = 0\n    for val in values:\n        if val > 41:\n            sum_ += val\n    return total + sum_\n",
+        "docstring": "Count ordered pairs that are top-leading and within-cap, plus over-cap singles.",
+        "cc": 9,
+        "ast_depth": 4
+      }
+    ]
+  },
+  "L4-mega-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 5,
+    "expected_mutant_count": [
+      36,
+      42
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Resolve ordered pairs by relation, then fold against two keys and a ceiling.\"\"\"\n    if not values:\n        return 0\n    agg = 0\n    for elem in values:\n        for x in values:\n            if elem == x:\n                agg += elem\n            elif elem > x:\n                agg += x\n            elif elem < x:\n                agg -= 1\n    result = 0\n    for sample in values:\n        if sample == 13:\n            result += sample\n        elif sample == 26:\n            result += 1\n        elif sample > 45:\n            result -= 1\n    return agg + result\n",
+        "docstring": "Resolve ordered pairs by relation, then fold against two keys and a ceiling.",
+        "cc": 11,
+        "ast_depth": 5
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Sweep ordered pairs by sizing, then distil against two keys and a ceiling.\"\"\"\n    if not entries:\n        return 0\n    result = 0\n    for sample in entries:\n        for val in entries:\n            if sample == val:\n                result += sample\n            elif sample > val:\n                result += val\n            elif sample < val:\n                result -= 1\n    sum_ = 0\n    for item in entries:\n        if item == 9:\n            sum_ += item\n        elif item == 33:\n            sum_ += 1\n        elif item > 39:\n            sum_ -= 1\n    return result + sum_\n",
+        "docstring": "Sweep ordered pairs by sizing, then distil against two keys and a ceiling.",
+        "cc": 11,
+        "ast_depth": 5
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Evaluate ordered pairs by relative size, then fold against two keys and a ceiling.\"\"\"\n    if not values:\n        return 0\n    total = 0\n    for elem in values:\n        for sample in values:\n            if elem == sample:\n                total += elem\n            elif elem > sample:\n                total += sample\n            elif elem < sample:\n                total -= 1\n    sum_ = 0\n    for val in values:\n        if val == 18:\n            sum_ += val\n        elif val == 23:\n            sum_ += 1\n        elif val > 53:\n            sum_ -= 1\n    return total + sum_\n",
+        "docstring": "Evaluate ordered pairs by relative size, then fold against two keys and a ceiling.",
+        "cc": 11,
+        "ast_depth": 5
+      }
+    ]
+  },
+  "L4-merge-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      35,
+      41
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Form an aggregate of the extremes, then layers on an interior tag.\"\"\"\n    agg = 0\n    for elem in values:\n        if elem > 46:\n            agg += elem\n        elif elem < 10:\n            agg += 1\n    result = 0\n    for x in values:\n        if x > 15 and x < 46:\n            result += x\n        elif x == 10:\n            result -= 1\n    return agg + result\n",
+        "docstring": "Form an aggregate of the extremes, then layers on an interior tag.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Derive a figure of the extremes, then adds a mid-band tag.\"\"\"\n    result = 0\n    for sample in entries:\n        if sample > 37:\n            result += sample\n        elif sample < 6:\n            result += 1\n    sum_ = 0\n    for val in entries:\n        if val > 21 and val < 37:\n            sum_ += val\n        elif val == 6:\n            sum_ -= 1\n    return result + sum_\n",
+        "docstring": "Derive a figure of the extremes, then adds a mid-band tag.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Build an aggregate of the extremes, then merges an in-range tag.\"\"\"\n    total = 0\n    for elem in values:\n        if elem > 35:\n            total += elem\n        elif elem < 3:\n            total += 1\n    sum_ = 0\n    for sample in values:\n        if sample > 19 and sample < 35:\n            sum_ += sample\n        elif sample == 3:\n            sum_ -= 1\n    return total + sum_\n",
+        "docstring": "Build an aggregate of the extremes, then merges an in-range tag.",
+        "cc": 8,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L4-orchestrate-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 4,
+    "expected_mutant_count": [
+      35,
+      41
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Build a pair-driven tally, then merges a mid-band flow.\"\"\"\n    if not values:\n        return 0\n    agg = 0\n    for elem in values:\n        for x in values:\n            if elem + x > 41:\n                agg += elem\n            elif elem == x:\n                agg += 1\n    result = 0\n    for sample in values:\n        if sample > 5 and sample < 41:\n            result += sample\n        elif sample == 41:\n            result -= 1\n    return agg + result\n",
+        "docstring": "Build a pair-driven tally, then merges a mid-band flow.",
+        "cc": 10,
+        "ast_depth": 4
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Coordinate a pair-driven reading, then adds a mid-band flow.\"\"\"\n    if not entries:\n        return 0\n    result = 0\n    for sample in entries:\n        for val in entries:\n            if sample + val > 34:\n                result += sample\n            elif sample == val:\n                result += 1\n    sum_ = 0\n    for item in entries:\n        if item > 11 and item < 34:\n            sum_ += item\n        elif item == 34:\n            sum_ -= 1\n    return result + sum_\n",
+        "docstring": "Coordinate a pair-driven reading, then adds a mid-band flow.",
+        "cc": 10,
+        "ast_depth": 4
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Coordinate a pair-driven score, then folds in a mid-band flow.\"\"\"\n    if not values:\n        return 0\n    total = 0\n    for elem in values:\n        for sample in values:\n            if elem + sample > 46:\n                total += elem\n            elif elem == sample:\n                total += 1\n    sum_ = 0\n    for val in values:\n        if val > 3 and val < 46:\n            sum_ += val\n        elif val == 46:\n            sum_ -= 1\n    return total + sum_\n",
+        "docstring": "Coordinate a pair-driven score, then folds in a mid-band flow.",
+        "cc": 10,
+        "ast_depth": 4
+      }
+    ]
+  },
+  "L4-partition-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      30,
+      36
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Divide entries into greater and small groups, then totals each.\"\"\"\n    agg = []\n    result = []\n    for x in values:\n        if x > 17:\n            agg.append(x)\n        elif x < 17:\n            result.append(x)\n        else:\n            agg.append(0)\n    sum_ = 0\n    for item in agg:\n        if item > 17:\n            sum_ += item\n    for sample in result:\n        if sample < 0:\n            sum_ -= 1\n    return sum_\n",
+        "docstring": "Divide entries into greater and small groups, then totals each.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Sort entries into greater and under-line groups, then collapses each.\"\"\"\n    result = []\n    sum_ = []\n    for sample in entries:\n        if sample > 19:\n            result.append(sample)\n        elif sample < 19:\n            sum_.append(sample)\n        else:\n            result.append(0)\n    agg = 0\n    for val in result:\n        if val > 19:\n            agg += val\n    for item in sum_:\n        if item < 0:\n            agg -= 1\n    return agg\n",
+        "docstring": "Sort entries into greater and under-line groups, then collapses each.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Route entries into upper and lesser groups, then reduces each.\"\"\"\n    total = []\n    sum_ = []\n    for elem in values:\n        if elem > 37:\n            total.append(elem)\n        elif elem < 37:\n            sum_.append(elem)\n        else:\n            total.append(0)\n    agg = 0\n    for sample in total:\n        if sample > 37:\n            agg += sample\n    for val in sum_:\n        if val < 0:\n            agg -= 1\n    return agg\n",
+        "docstring": "Route entries into upper and lesser groups, then reduces each.",
+        "cc": 8,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L4-pipeline-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 4,
+    "expected_mutant_count": [
+      35,
+      41
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Produce a two-phase result: rank pairs, then combine the survivors.\"\"\"\n    if not values:\n        return 5\n    agg = 0\n    for elem in values:\n        for x in values:\n            if elem + x > 31:\n                agg += 1\n            elif elem - x == 5:\n                agg += 2\n    result = 0\n    for sample in values:\n        if sample > agg:\n            result += sample\n        elif sample == 5:\n            result -= 1\n    return result + agg\n",
+        "docstring": "Produce a two-phase result: rank pairs, then combine the survivors.",
+        "cc": 9,
+        "ast_depth": 4
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Build a two-phase reading: flag pairs, then merge the survivors.\"\"\"\n    if not entries:\n        return 8\n    result = 0\n    for sample in entries:\n        for val in entries:\n            if sample + val > 24:\n                result += 1\n            elif sample - val == 11:\n                result += 2\n    sum_ = 0\n    for item in entries:\n        if item > result:\n            sum_ += item\n        elif item == 11:\n            sum_ -= 1\n    return sum_ + result\n",
+        "docstring": "Build a two-phase reading: flag pairs, then merge the survivors.",
+        "cc": 9,
+        "ast_depth": 4
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Return a two-phase tally: rank pairs, then merge the survivors.\"\"\"\n    if not values:\n        return 9\n    total = 0\n    for elem in values:\n        for sample in values:\n            if elem + sample > 36:\n                total += 1\n            elif elem - sample == 3:\n                total += 2\n    sum_ = 0\n    for val in values:\n        if val > total:\n            sum_ += val\n        elif val == 3:\n            sum_ -= 1\n    return sum_ + total\n",
+        "docstring": "Return a two-phase tally: rank pairs, then merge the survivors.",
+        "cc": 9,
+        "ast_depth": 4
+      }
+    ]
+  },
+  "L4-reduce-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      31,
+      37
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Screen the retained entries, then accrue the largest, or a reserve code.\"\"\"\n    agg = []\n    for elem in values:\n        if elem > 15:\n            agg.append(elem)\n        elif elem < 0:\n            agg.append(0)\n    if not agg:\n        return 5\n    result = 0\n    for x in agg:\n        if x > 41:\n            result += x\n        elif x == 15:\n            result -= 1\n    return result\n",
+        "docstring": "Screen the retained entries, then accrue the largest, or a reserve code.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Screen the passing entries, then total the largest, or a guard code.\"\"\"\n    result = []\n    for sample in entries:\n        if sample > 11:\n            result.append(sample)\n        elif sample < 0:\n            result.append(0)\n    if not result:\n        return 8\n    sum_ = 0\n    for val in result:\n        if val > 34:\n            sum_ += val\n        elif val == 11:\n            sum_ -= 1\n    return sum_\n",
+        "docstring": "Screen the passing entries, then total the largest, or a guard code.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Select the surviving entries, then bank the largest, or a default code.\"\"\"\n    total = []\n    for elem in values:\n        if elem > 10:\n            total.append(elem)\n        elif elem < 0:\n            total.append(0)\n    if not total:\n        return 3\n    sum_ = 0\n    for sample in total:\n        if sample > 46:\n            sum_ += sample\n        elif sample == 10:\n            sum_ -= 1\n    return sum_\n",
+        "docstring": "Select the surviving entries, then bank the largest, or a default code.",
+        "cc": 8,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L4-route-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 3,
+    "expected_mutant_count": [
+      32,
+      38
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Compute an upward and a downward balance, then reports the net.\"\"\"\n    if not values:\n        return 0\n    agg = 0\n    for elem in values:\n        if elem > 46:\n            agg += elem\n        elif elem == 10:\n            agg += 1\n    result = 0\n    for x in values:\n        if x < 10:\n            result += x\n        elif x > 46:\n            result -= 1\n    return agg - result\n",
+        "docstring": "Compute an upward and a downward balance, then reports the net.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Split an upward and a downward figure, then gives the gap.\"\"\"\n    if not entries:\n        return 0\n    result = 0\n    for sample in entries:\n        if sample > 37:\n            result += sample\n        elif sample == 6:\n            result += 1\n    sum_ = 0\n    for val in entries:\n        if val < 6:\n            sum_ += val\n        elif val > 37:\n            sum_ -= 1\n    return result - sum_\n",
+        "docstring": "Split an upward and a downward figure, then gives the gap.",
+        "cc": 8,
+        "ast_depth": 3
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Route an upward and a downward figure, then returns the spread.\"\"\"\n    if not values:\n        return 0\n    total = 0\n    for elem in values:\n        if elem > 35:\n            total += elem\n        elif elem == 12:\n            total += 1\n    sum_ = 0\n    for sample in values:\n        if sample < 12:\n            sum_ += sample\n        elif sample > 35:\n            sum_ -= 1\n    return total - sum_\n",
+        "docstring": "Route an upward and a downward figure, then returns the spread.",
+        "cc": 8,
+        "ast_depth": 3
+      }
+    ]
+  },
+  "L4-scan-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 5,
+    "expected_mutant_count": [
+      27,
+      33
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Build a tally, pairing only live entries and penalising the rest.\"\"\"\n    if not values:\n        return 0\n    agg = 0\n    for item in values:\n        if item > 12:\n            for sample in values:\n                if item + sample > 21:\n                    agg += item\n                elif item == sample:\n                    agg += 1\n        elif item < 12:\n            agg -= 1\n    return agg\n",
+        "docstring": "Build a tally, pairing only live entries and penalising the rest.",
+        "cc": 8,
+        "ast_depth": 5
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Build a result, pairing only live entries and dropping the rest.\"\"\"\n    if not entries:\n        return 0\n    result = 0\n    for val in entries:\n        if val > 6:\n            for item in entries:\n                if val + item > 32:\n                    result += val\n                elif val == item:\n                    result += 1\n        elif val < 6:\n            result -= 1\n    return result\n",
+        "docstring": "Build a result, pairing only live entries and dropping the rest.",
+        "cc": 8,
+        "ast_depth": 5
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Derive a figure, pairing only qualifying entries and skipping the rest.\"\"\"\n    if not values:\n        return 0\n    total = 0\n    for sample in values:\n        if sample > 8:\n            for x in values:\n                if sample + x > 40:\n                    total += sample\n                elif sample == x:\n                    total += 1\n        elif sample < 8:\n            total -= 1\n    return total\n",
+        "docstring": "Derive a figure, pairing only qualifying entries and skipping the rest.",
+        "cc": 8,
+        "ast_depth": 5
+      }
+    ]
+  },
+  "L4-tally2-001": {
+    "declared_tier": "L4",
+    "declared_ast_depth": 5,
+    "expected_mutant_count": [
+      29,
+      35
+    ],
+    "instances": [
+      {
+        "seed": 101,
+        "source": "\ndef dispatch_event(values):\n    \"\"\"Tally ordered pairs by sizing, then fold in an over-cap bonus.\"\"\"\n    if not values:\n        return 0\n    agg = 0\n    for elem in values:\n        for x in values:\n            if elem == x:\n                agg += 1\n            elif elem > x:\n                agg += 2\n            elif elem < x:\n                agg -= 1\n    result = 0\n    for sample in values:\n        if sample > 36:\n            result += sample\n    return agg + result\n",
+        "docstring": "Tally ordered pairs by sizing, then fold in an over-cap bonus.",
+        "cc": 9,
+        "ast_depth": 5
+      },
+      {
+        "seed": 102,
+        "source": "\ndef evaluate_state(entries):\n    \"\"\"Classify ordered pairs by relation, then layer on an over-cap bonus.\"\"\"\n    if not entries:\n        return 0\n    result = 0\n    for sample in entries:\n        for val in entries:\n            if sample == val:\n                result += 1\n            elif sample > val:\n                result += 2\n            elif sample < val:\n                result -= 1\n    sum_ = 0\n    for item in entries:\n        if item > 29:\n            sum_ += item\n    return result + sum_\n",
+        "docstring": "Classify ordered pairs by relation, then layer on an over-cap bonus.",
+        "cc": 9,
+        "ast_depth": 5
+      },
+      {
+        "seed": 103,
+        "source": "\ndef orchestrate(values):\n    \"\"\"Score ordered pairs by relation, then add an over-cap bonus.\"\"\"\n    if not values:\n        return 0\n    total = 0\n    for elem in values:\n        for sample in values:\n            if elem == sample:\n                total += 1\n            elif elem > sample:\n                total += 2\n            elif elem < sample:\n                total -= 1\n    sum_ = 0\n    for val in values:\n        if val > 41:\n            sum_ += val\n    return total + sum_\n",
+        "docstring": "Score ordered pairs by relation, then add an over-cap bonus.",
+        "cc": 9,
+        "ast_depth": 5
+      }
+    ]
+  }
+}
