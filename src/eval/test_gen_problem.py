@@ -11,7 +11,30 @@ REPO TARGET: src/eval/test_gen_problem.py
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
+
+
+def compute_model_label(model_id: str, adapter_path: str | None = None) -> str:
+    """The first-class identity of "which exact model produced these
+    outputs" — distinguishes a base model from any LoRA-adapted variant of
+    the same model_id/model_revision (adapters don't change the base
+    checkpoint's SHA, so those two fields alone can't tell them apart).
+
+    Matches the output-filename convention already used throughout the
+    harness (test_gen_runner.py, scripts/process_batch.py) exactly, so a
+    result file's name and its records' model_label field always agree:
+    '<model_id with / -> __>' or, with an adapter,
+    '<model_id with / -> __>__ft_<adapter_path's parent directory name>'
+    (e.g. adapter_path=".../qwen7b_lora_inst1/adapter_final" -> tag
+    "qwen7b_lora_inst1", matching how fine-tuning checkpoints are laid out
+    one experiment directory per run, adapter_final/ or checkpoint-N/ inside).
+    """
+    label = model_id.replace("/", "__")
+    if adapter_path:
+        adapter_tag = Path(adapter_path).parent.name
+        label = f"{label}__ft_{adapter_tag}"
+    return label
 
 
 @dataclass
@@ -93,3 +116,14 @@ class TestGenRecord:
     runtime_info: dict[str, Any] = field(default_factory=dict)
     baseline_passed: bool | None = None     # did the suite pass on the ORIGINAL?
     notes: str = ""                         # free-text flags (e.g. exec failure)
+
+    # --- model identity beyond model/model_revision (added 2026-07-09) ---
+    # A LoRA-adapted model shares model/model_revision with its own base
+    # model (the adapter doesn't change the base checkpoint's SHA), so those
+    # two fields alone cannot distinguish a fine-tuned run from a base run
+    # of the same model. model_label is the first-class, always-populated
+    # identity field for that; adapter_path/adapter_hash are populated only
+    # when an adapter was actually loaded (see src/models/local.py).
+    model_label: str = ""
+    adapter_path: str | None = None
+    adapter_hash: str | None = None         # sha256(adapter_config.json + weights file)

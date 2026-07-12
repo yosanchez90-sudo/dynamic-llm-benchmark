@@ -33,7 +33,7 @@ from typing import Any
 from dotenv import load_dotenv
 
 from src.data import test_gen
-from src.eval.test_gen_problem import TestGenRecord
+from src.eval.test_gen_problem import TestGenRecord, compute_model_label
 from src.eval.test_gen_scorer import extract_test_file, sanitize_test_file, score_problem
 from src.logging_utils import append_jsonl
 from src.models.base import GenerationConfig
@@ -113,13 +113,12 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
         problems = problems[shard_id::n_shards]
 
     run_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
-    safe_model = config["model"]["id"].replace("/", "__")
-    # Fine-tuned models share the same base model id — append the adapter tag so
-    # their output files don't collide with baseline runs or each other.
     adapter_path = config["model"].get("adapter_path")
-    if adapter_path:
-        adapter_tag = Path(adapter_path).parent.name   # e.g. "qwen7b_lora_inst1"
-        safe_model = f"{safe_model}__ft_{adapter_tag}"
+    # Fine-tuned models share the same base model id — the adapter tag in
+    # safe_model keeps their output files from colliding with baseline runs
+    # or each other; compute_model_label() is also what gets stamped into
+    # each record's model_label field below, so filename and field agree.
+    safe_model = compute_model_label(config["model"]["id"], adapter_path)
     out_dir = Path(config["output_dir"])
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -199,6 +198,9 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
             runtime_info=model_out.runtime_info,
             baseline_passed=result.baseline_passed,
             notes="; ".join(filter(None, [result.notes] + repairs)),
+            model_label=safe_model,
+            adapter_path=model_out.adapter_path,
+            adapter_hash=model_out.adapter_hash,
         )
         append_jsonl(record, out_path)
 
