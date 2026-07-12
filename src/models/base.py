@@ -39,6 +39,8 @@ class ModelOutput:
     runtime_info: dict[str, Any]
     provider: str = ""
     cost_usd: float | None = None
+    adapter_path: str | None = None    # LoRA adapter dir, if one was loaded (local models only)
+    adapter_hash: str | None = None    # sha256(adapter_config.json + weights file)
 
 
 class Model(ABC):
