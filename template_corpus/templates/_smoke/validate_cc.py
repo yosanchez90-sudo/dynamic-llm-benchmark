@@ -149,7 +149,8 @@ def main():
             for e in errs:
                 print(f"      - {e}")
 
-    print(f"\nTotal: 60, Failed: {total_failed}")
+    total = sum(len(v) for v in by_tier.values())
+    print(f"\nTotal: {total}, Failed: {total_failed}")
     return 0 if total_failed == 0 else 1
 
 

@@ -16,6 +16,7 @@ from pathlib import Path
 TEMPLATES_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(TEMPLATES_ROOT))
 
+
 def load_template(path: Path):
     spec = importlib.util.spec_from_file_location(path.stem, path)
     mod = importlib.util.module_from_spec(spec)
