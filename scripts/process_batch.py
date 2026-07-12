@@ -36,7 +36,7 @@ load_dotenv(ROOT / ".env")
 
 from openai import OpenAI  # noqa: E402
 from src.data import test_gen  # noqa: E402
-from src.eval.test_gen_problem import TestGenRecord  # noqa: E402
+from src.eval.test_gen_problem import TestGenRecord, compute_model_label  # noqa: E402
 from src.eval.test_gen_scorer import (  # noqa: E402
     extract_test_file, sanitize_test_file, score_problem,
 )
@@ -86,13 +86,16 @@ def build_problem_map(state: dict) -> dict[str, object]:
 
     problem_map: dict[str, object] = {}
     for config_name, reqs in by_config.items():
-        # All requests in a group share the same load() parameters.
+        # All requests in a group share the same load() parameters, except
+        # tier, which varies per-request — derive it from the group itself
+        # rather than assuming L1/L2 (batches can target L3/L4 too).
         r0 = reqs[0]
+        tiers = tuple(sorted({r["tier"] for r in reqs}))
         problems = test_gen.load(
             instantiation_id   = r0["instantiation_id"],
             instantiation_seed = r0.get("instantiation_seed", 1),
             instance_seeds     = (101,102,103,104,105),
-            tiers              = ("L1", "L2"),
+            tiers              = tiers,
             prompting_condition= r0["prompting_condition"],
         )
         # Index by (template_id, instance_seed) for fast lookup.
@@ -132,9 +135,16 @@ def process_results(
             continue
 
         # ── extract response ──────────────────────────────────────────────
-        resp_body = result.get("response", {}).get("body", {})
-        if not resp_body or result.get("error"):
-            print(f"  ERROR {custom_id}: {result.get('error')}")
+        # A row can fail in three shapes: top-level "error" set, an empty
+        # response body (transient 5xx with no body), or a populated body
+        # that itself holds an OpenAI error object instead of "choices"
+        # (e.g. 400 invalid_prompt, 500 server_error) — all three must be
+        # caught here or the "choices"[0] lookup below raises KeyError and
+        # aborts the whole batch mid-run.
+        resp_body  = result.get("response", {}).get("body", {})
+        body_error = result.get("error") or resp_body.get("error")
+        if not resp_body or body_error or not resp_body.get("choices"):
+            print(f"  ERROR {custom_id}: {body_error or 'no choices in response body'}")
             continue
 
         choice       = resp_body["choices"][0]
@@ -216,10 +226,11 @@ def process_results(
             notes                            = "; ".join(
                 filter(None, [scored.notes] + repairs)
             ),
+            model_label                      = compute_model_label(req["model_id"]),
         )
 
         # ── write to per-model output file ────────────────────────────────
-        safe_model = req["model_id"].replace("/", "__")
+        safe_model = compute_model_label(req["model_id"])
         out_dir    = Path(req["output_dir"])
         out_dir.mkdir(parents=True, exist_ok=True)
         # Use the state timestamp so all records from one batch land in one file.
