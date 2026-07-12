@@ -8,6 +8,12 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
 - Never call frontier APIs from a script that hasn't been reviewed for cost.
 - Never run compute on the login node. All GPU/CPU work goes through SLURM.
 - Every model call must log: model name, snapshot/revision, decoding params, seed, timestamp.
+  Adapter identity (path + hash) is part of model identity — a LoRA-adapted model is a
+  different model than its base checkpoint even though model/model_revision are identical.
+  Resolved generation config (do_sample, temperature, repetition_penalty incl. inherited
+  values and their source, no_repeat_ngram_size, max_new_tokens) is part of run identity —
+  an unlogged inherited default (e.g. from a base model's generation_config.json) can
+  silently differ between runs and change results without any code or YAML diff to show it.
 - Pin model versions exactly (e.g. `claude-opus-4-7`, HF revision SHA). Never use `-latest` tags.
 - HuggingFace cache lives on scratch, not home (set HF_HOME accordingly).
 

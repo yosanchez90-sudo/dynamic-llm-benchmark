@@ -5,20 +5,53 @@ so we don't pay the 14GB reload cost at every epoch. Only runs exec gate +
 baseline pass — mutation scoring is skipped to keep runtime tractable
 (~15 min per checkpoint × 3 instantiations vs ~6h with mutation).
 
+MEASUREMENT POLICY (fixed 2026-07-12 after a multi-session investigation —
+see PROJECT_BRIEF-adjacent notes / analysis/README.md — into a false
+"collapse" in three of six fine-tuning conditions):
+  - no_repeat_ngram_size is NEVER used here. It was added 2026-07-07 to
+    combat a genuine problem (see below) but the fix was wrong: HF's
+    generate() applies it over the FULL sequence including the prompt, and
+    the system prompt (src/data/test_gen.py:SYSTEM_INSTRUCTION) contains the
+    literal phrase "from under_test import <function_name>" as a formatting
+    instruction. Any checkpoint that correctly follows that instruction gets
+    its own mandatory first line corrupted, because generating it again
+    trips the n-gram repeat ban. Confirmed at n=50 (0/50 clean import lines
+    with it enabled vs 50/50 with it disabled, under both greedy and
+    sampling, independent of repetition_penalty) — this single setting
+    explained the entire recorded collapse in three of six conditions.
+  - The wall-clock stopping criteria (_TimeLimitCriteria) IS kept — job
+    9315777 (2026-07-05, the original bp_gpt5/7B sweep) hung for real: it
+    stalled at epoch 5/instantiation 1, generation 73/150, and produced zero
+    further output for ~11.5 hours until SLURM force-killed it at the
+    12-hour job limit. That was a genuine problem needing a genuine
+    safeguard. Its timeout is now deliberately sized rather than inherited:
+    measured throughput on V100 for this model is ~20 tok/s (min observed
+    15.8 tok/s across 100 timed generations, none of which came anywhere
+    near max_new_tokens=2048); at the slowest observed rate a full
+    2048-token generation would take ~129s. The default below (240s) clears
+    that with ~1.85x headroom while remaining orders of magnitude short of
+    an actual hang.
+  - repetition_penalty is set explicitly (not left to silently inherit from
+    the base model's own generation_config.json — confirmed via explicit A/B
+    toggling to have zero effect on the corruption either way, but per
+    CLAUDE.md's "resolved generation config is part of run identity" rule,
+    an inherited default must never be implicit).
+  - Every row logs the full resolved generation config, not just exec/
+    baseline outcomes.
+
 Usage:
     python scripts/eval_checkpoints.py \\
         --config configs/finetune_qwen7b_inst1_30ep.yaml \\
         --epochs 1 3 5 10 15 20 25 30 \\
         --instantiations 1 2 3 \\
-        --out analysis/epoch_perf_qwen7b.csv
+        --greedy --sampling-seeds 42 43 44
 
     # Also pass --baseline to include the no-adapter baseline (epoch 0):
     python scripts/eval_checkpoints.py \\
         --config configs/finetune_qwen7b_inst1_30ep.yaml \\
         --epochs 1 3 5 10 15 20 25 30 \\
         --instantiations 1 2 3 \\
-        --baseline \\
-        --out analysis/epoch_perf_qwen7b.csv
+        --baseline --greedy --sampling-seeds 42 43 44
 """
 from __future__ import annotations
 
@@ -37,6 +70,10 @@ sys.path.insert(0, str(ROOT))
 
 from src.data import test_gen  # noqa: E402
 from src.eval.test_gen_scorer import extract_test_file, sanitize_test_file  # noqa: E402
+
+REPETITION_PENALTY = 1.1  # matches the base model's own inherited generation_config.json
+REPETITION_PENALTY_SOURCE = "explicit (matches base model's inherited generation_config.json default)"
+DEFAULT_MAX_SECONDS = 240  # see module docstring for how this was sized
 
 
 # ── fast scorer (exec + baseline only) ───────────────────────────────────────
@@ -74,26 +111,72 @@ def _score_fast(fn_source: str, fn_name: str, test_source: str,
         return False, False
 
 
-# ── inference for one (adapter, instantiation) pair ──────────────────────────
+# ── inference for one (adapter, instantiation, draw) ──────────────────────────
 
-def _run_inference(model, tokenizer, problems, gen_cfg: dict) -> list[str]:
-    """Return raw response strings for each problem."""
+class _TimeLimitCriteria:
+    """Stop generation once a wall-clock budget is exceeded — a genuine
+    safety net for the real hang recorded in job 9315777 (see module
+    docstring), NOT a substitute for no_repeat_ngram_size, which must never
+    be re-added here (see module docstring for why).
+    """
+
+    def __init__(self, max_seconds: float):
+        import time
+        self._time = time
+        self.deadline = time.monotonic() + max_seconds
+
+    def __call__(self, input_ids, scores, **kwargs):
+        import torch
+        done = self._time.monotonic() > self.deadline
+        return torch.full((input_ids.shape[0],), done, dtype=torch.bool, device=input_ids.device)
+
+
+def resolved_generation_config(do_sample: bool, seed: int | None, max_seconds: float) -> dict:
+    """The full resolved generation config for one draw — logged into every
+    result row per CLAUDE.md's "resolved generation config is part of run
+    identity" rule.
+    """
+    return {
+        "do_sample": do_sample,
+        "temperature": 0.2 if do_sample else None,
+        "top_p": 1.0 if do_sample else None,
+        "repetition_penalty": REPETITION_PENALTY,
+        "repetition_penalty_source": REPETITION_PENALTY_SOURCE,
+        "no_repeat_ngram_size": 0,
+        "no_repeat_ngram_size_source": "explicitly disabled — see module docstring, confirmed root "
+                                        "cause of the 2026-07 false collapse",
+        "max_new_tokens": 2048,
+        "seed": seed,
+        "max_seconds": max_seconds,
+    }
+
+
+def _run_inference(model, tokenizer, problems, do_sample: bool, seed: int | None,
+                    max_seconds: float) -> list[str]:
+    """Return raw response strings for each problem, for one (do_sample, seed) draw."""
     import torch
+    from transformers import StoppingCriteriaList
+
     responses = []
     for prob in problems:
         prompt = tokenizer.apply_chat_template(
             prob.messages, tokenize=False, add_generation_prompt=True
         )
         inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-        torch.manual_seed(gen_cfg.get("seed", 42))
+        if seed is not None:
+            torch.manual_seed(seed)
+        stopping_criteria = StoppingCriteriaList([_TimeLimitCriteria(max_seconds)])
+        gen_kwargs: dict = dict(
+            max_new_tokens=2048,
+            do_sample=do_sample,
+            repetition_penalty=REPETITION_PENALTY,
+            stopping_criteria=stopping_criteria,
+        )
+        if do_sample:
+            gen_kwargs["temperature"] = 0.2
+            gen_kwargs["top_p"] = 1.0
         with torch.inference_mode():
-            out_ids = model.generate(
-                **inputs,
-                max_new_tokens=gen_cfg.get("max_new_tokens", 2048),
-                do_sample=gen_cfg.get("do_sample", True),
-                temperature=gen_cfg.get("temperature", 0.2),
-                top_p=gen_cfg.get("top_p", 1.0),
-            )
+            out_ids = model.generate(**inputs, **gen_kwargs)
         new_tokens = out_ids[0][inputs["input_ids"].shape[1]:]
         responses.append(tokenizer.decode(new_tokens, skip_special_tokens=True))
         print(".", end="", flush=True)
@@ -123,7 +206,8 @@ def _score_responses(problems, responses, timeout: int) -> dict:
 # ── main ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--epochs", type=int, nargs="+",
                         default=[1, 3, 5, 10, 15, 20, 25, 30])
@@ -133,35 +217,54 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--timeout", type=int, default=60,
                         help="Per-problem subprocess timeout in seconds")
+    parser.add_argument("--gen-max-seconds", type=float, default=DEFAULT_MAX_SECONDS,
+                        help=f"Wall-clock cutoff per generation call, guarding against a genuine "
+                             f"hang (see module docstring). Default {DEFAULT_MAX_SECONDS}s, sized "
+                             f"empirically from measured throughput, not inherited.")
+    parser.add_argument("--greedy", action=argparse.BooleanOptionalAction, default=True,
+                        help="Include a greedy (do_sample=False) draw — the primary measurement "
+                             "the checkpoint-selection rule gates on (default: on)")
+    parser.add_argument("--sampling-seeds", type=int, nargs="*", default=[],
+                        help="Seeds for additional temperature=0.2 sampling draws, e.g. "
+                             "--sampling-seeds 42 43 44 for the R=3 secondary measurement. "
+                             "Empty (default) means no sampling draws.")
     args = parser.parse_args()
+
+    if not args.greedy and not args.sampling_seeds:
+        parser.error("at least one of --greedy or --sampling-seeds is required")
 
     cfg = yaml.safe_load(args.config.read_text())
     model_cfg  = cfg["model"]
     train_cfg  = cfg["training"]
     ckpt_base  = ROOT / train_cfg["output_dir"]
 
-    out_path = args.out or ROOT / f"analysis/epoch_perf_{cfg['name']}.csv"
+    # New authoritative location — see analysis/README.md for why the old
+    # analysis/epoch_perf_*.csv files are quarantined, not overwritten.
+    out_path = args.out or ROOT / f"data/results/finetune_rebuild/epoch_perf_{cfg['name']}.csv"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Resume: read already-completed (epoch, instantiation) pairs.
-    fieldnames = ["model", "epoch", "instantiation", "n", "exec_rate", "baseline_pass"]
-    done_pairs: set[tuple[int, int]] = set()
+    draws: list[tuple[str, bool, int | None]] = []
+    if args.greedy:
+        draws.append(("greedy", False, None))
+    for s in args.sampling_seeds:
+        draws.append((f"sampling_seed{s}", True, s))
+
+    # Resume: read already-completed (epoch, instantiation, draw) triples.
+    fieldnames = [
+        "model", "epoch", "instantiation", "draw", "n", "exec_rate", "baseline_pass",
+        "do_sample", "temperature", "top_p", "repetition_penalty",
+        "repetition_penalty_source", "no_repeat_ngram_size", "no_repeat_ngram_size_source",
+        "max_new_tokens", "seed", "max_seconds",
+    ]
+    done_triples: set[tuple[int, int, str]] = set()
     if out_path.exists():
         with out_path.open(newline="") as f:
             for row in csv.DictReader(f):
-                done_pairs.add((int(row["epoch"]), int(row["instantiation"])))
-        print(f"Resuming: {len(done_pairs)} (epoch, inst) pairs already in {out_path.name}")
+                done_triples.add((int(row["epoch"]), int(row["instantiation"]), row["draw"]))
+        print(f"Resuming: {len(done_triples)} (epoch, inst, draw) triples already in {out_path.name}")
     else:
         with out_path.open("w", newline="") as f:
             csv.DictWriter(f, fieldnames=fieldnames).writeheader()
-
-    gen_cfg = {
-        "max_new_tokens": 2048,
-        "do_sample": True,
-        "temperature": 0.2,
-        "top_p": 1.0,
-        "seed": 42,
-    }
 
     # ── load base model (once) ────────────────────────────────────────────────
     import torch
@@ -252,32 +355,38 @@ def main() -> None:
             model = peft_model
 
         for inst_id in args.instantiations:
-            if (epoch, inst_id) in done_pairs:
-                print(f"  inst{inst_id}: already done, skipping")
-                continue
-
             problems = inst_problems[inst_id]
-            print(f"  inst{inst_id}: generating {len(problems)} responses…", flush=True)
-            responses = _run_inference(model, tokenizer, problems, gen_cfg)
 
-            print(f"  inst{inst_id}: scoring…", flush=True)
-            scores = _score_responses(problems, responses, args.timeout)
+            for draw_label, do_sample, seed in draws:
+                if (epoch, inst_id, draw_label) in done_triples:
+                    print(f"  inst{inst_id}/{draw_label}: already done, skipping")
+                    continue
 
-            row = {
-                "model":          model_cfg["id"],
-                "epoch":          epoch,
-                "instantiation":  inst_id,
-                "n":              scores["n"],
-                "exec_rate":      scores["exec_rate"],
-                "baseline_pass":  scores["baseline_pass"],
-            }
-            # Write immediately so partial progress survives a crash.
-            with out_path.open("a", newline="") as f:
-                csv.DictWriter(f, fieldnames=fieldnames).writerow(row)
-            done_pairs.add((epoch, inst_id))
+                print(f"  inst{inst_id}/{draw_label}: generating {len(problems)} responses…", flush=True)
+                responses = _run_inference(model, tokenizer, problems, do_sample, seed,
+                                            args.gen_max_seconds)
 
-            print(f"  inst{inst_id}: exec={scores['exec_rate']:.1%}  "
-                  f"baseline_pass={scores['baseline_pass']:.1%}")
+                print(f"  inst{inst_id}/{draw_label}: scoring…", flush=True)
+                scores = _score_responses(problems, responses, args.timeout)
+                resolved = resolved_generation_config(do_sample, seed, args.gen_max_seconds)
+
+                row = {
+                    "model":          model_cfg["id"],
+                    "epoch":          epoch,
+                    "instantiation":  inst_id,
+                    "draw":           draw_label,
+                    "n":              scores["n"],
+                    "exec_rate":      scores["exec_rate"],
+                    "baseline_pass":  scores["baseline_pass"],
+                    **resolved,
+                }
+                # Write immediately so partial progress survives a crash.
+                with out_path.open("a", newline="") as f:
+                    csv.DictWriter(f, fieldnames=fieldnames).writerow(row)
+                done_triples.add((epoch, inst_id, draw_label))
+
+                print(f"  inst{inst_id}/{draw_label}: exec={scores['exec_rate']:.1%}  "
+                      f"baseline_pass={scores['baseline_pass']:.1%}")
 
     print(f"\nResults saved: {out_path}")
 

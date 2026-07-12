@@ -13,11 +13,15 @@ unset BASH_ENV
 
 # Required: CONFIG — path to finetune YAML, e.g. configs/finetune_qwen7b_inst1_30ep.yaml
 # Optional: EPOCHS — space-separated list, defaults to "1 3 5 10 15 20 25 30"
-# Optional: OUT    — output CSV path, defaults to analysis/epoch_perf_<name>.csv
+# Optional: OUT    — output CSV path, defaults to data/results/finetune_rebuild/epoch_perf_<name>.csv
 # Optional: BASELINE — set to "1" to also score epoch 0 (no adapter)
+# Optional: SAMPLING_SEEDS — space-separated seeds for extra sampling draws, e.g. "42 43 44"
+# Optional: GREEDY — set to "0" to skip the greedy draw (default: on)
 CONFIG="${CONFIG:?CONFIG variable required}"
 EPOCHS="${EPOCHS:-1 3 5 10 15 20 25 30}"
 BASELINE="${BASELINE:-0}"
+SAMPLING_SEEDS="${SAMPLING_SEEDS:-}"
+GREEDY="${GREEDY:-1}"
 
 export HF_HOME="/mnt/scratch2/users/${USER}/.huggingface"
 export HF_HUB_OFFLINE=1
@@ -47,12 +51,22 @@ if [[ "$BASELINE" == "1" ]]; then
     BASELINE_FLAG="--baseline"
 fi
 
+GREEDY_FLAG="--greedy"
+if [[ "$GREEDY" == "0" ]]; then
+    GREEDY_FLAG="--no-greedy"
+fi
+
+SAMPLING_FLAG=""
+if [[ -n "$SAMPLING_SEEDS" ]]; then
+    SAMPLING_FLAG="--sampling-seeds $SAMPLING_SEEDS"
+fi
+
 _log "starting checkpoint evaluation"
 python scripts/eval_checkpoints.py \
     --config "$CONFIG" \
     --epochs $EPOCHS \
     --instantiations 1 2 3 \
-    $BASELINE_FLAG
+    $BASELINE_FLAG $GREEDY_FLAG $SAMPLING_FLAG
 
 _log "checkpoint evaluation complete"
 echo "Finished: $(date -u +%FT%TZ)"

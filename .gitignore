@@ -16,7 +16,10 @@ dissertation_env/
 .env
 
 # Data (all generated — batches, checkpoints, results, raw/processed)
-data/
+# Anchored to repo root: an unanchored "data/" also matches src/data/,
+# which silently hid new files there (found when src/data/ult_plt.py never
+# showed up in `git status` despite being a brand-new file).
+/data/
 
 # Fine-tuning outputs (adapters + checkpoints — regenerable from configs)
 data/finetune/
@@ -38,3 +41,9 @@ wandb/
 
 # OS
 .DS_Store
+
+# Regenerable analysis outputs — hand-authored docs (e.g. analysis/README.md)
+# are NOT covered by this and should be tracked normally.
+analysis/*.csv
+analysis/*.xlsx
+analysis/figures/
