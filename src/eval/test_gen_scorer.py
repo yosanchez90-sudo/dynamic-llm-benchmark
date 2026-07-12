@@ -1,4 +1,4 @@
-"""The test-generation evaluation harness: Exec@K, Cov-S/B@K, Mut@K.
+"""The test-generation evaluation harness: Exec@K, Cov-S@K, Cov-B@K, Mut@K.
 
 DESIGN DECISIONS (viva-relevant)
 -----------------------------------------------------------------

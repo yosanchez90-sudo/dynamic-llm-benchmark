@@ -3,8 +3,8 @@
 Turns the template corpus into TestGenProblem objects by:
   1. Loading each template (handles hyphenated filenames via importlib).
   2. Calling the engine's instantiate(template, seed) for each instance seed.
-  3. Precomputing the mutant set ONCE per instance (open question #1 resolved:
-     same mutants reused across all models — faster and fairer comparison).
+  3. Precomputing the mutant set ONCE per instance (same mutants reused
+     across all models — faster and fairer comparison).
   4. Building the zero-shot or one-shot prompt the model receives.
 
 Import paths for engine and spec use sys.path manipulation because

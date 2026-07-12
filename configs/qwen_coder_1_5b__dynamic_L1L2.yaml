@@ -1,5 +1,5 @@
 # Test-generation pilot: Qwen-1.5B on L1+L2 dynamic benchmark, zero-shot.
-# Inference settings match the spec (§2.5.6): temperature 0.2, max 2048 tokens.
+# Inference settings match the spec (2.5.6): temperature 0.2, max 2048 tokens.
 
 name: qwen_coder_1_5b__dynamic_L1L2__zeroshot__inst1
 
@@ -20,9 +20,9 @@ tiers: ["L1", "L2"]            # add L3, L4 later
 prompting_condition: zero_shot
 
 generation:
-  max_new_tokens: 2048         # spec §2.5.6 (was 512 for code-gen)
+  max_new_tokens: 2048         
   do_sample: true              # temperature 0.2 requires sampling
-  temperature: 0.2             # spec convention, matches ULT
+  temperature: 0.2             # matches ULT
   top_p: 1.0
   seed: 42
 
