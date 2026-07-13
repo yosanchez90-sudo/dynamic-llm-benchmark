@@ -11,6 +11,8 @@
 set -euo pipefail
 
 CONFIG="${CONFIG:-configs/qwen_coder_32b__dynamic_L1L2.yaml}"
+SHARD_ID="${SHARD_ID:-0}"
+N_SHARDS="${N_SHARDS:-1}"
 
 export HF_HOME="/mnt/scratch2/users/${USER}/.huggingface"
 export HF_HUB_CACHE="${HF_HOME}/hub"
@@ -32,6 +34,7 @@ _log "venv activated — $(python --version 2>&1)"
 
 echo "Job:     $SLURM_JOB_ID on $(hostname)"
 echo "Config:  $CONFIG"
+echo "Shard:   $SHARD_ID / $N_SHARDS"
 echo "HF_HOME: $HF_HOME"
 echo "Started: $(date -u +%FT%TZ)"
 echo
@@ -41,7 +44,7 @@ nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv,noheader | tee
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
 _log "launching python"
-python scripts/run_eval.py --config "$CONFIG" | tee -a "$PROGRESS"
+python scripts/run_eval.py --config "$CONFIG" --shard-id "$SHARD_ID" --n-shards "$N_SHARDS" | tee -a "$PROGRESS"
 _log "python exited cleanly"
 
 echo
