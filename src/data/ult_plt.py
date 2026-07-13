@@ -108,6 +108,7 @@ def load(
     max_n: int | None = None,
     sample_seed: int = 0,
     exclude_ult_overlap: bool = True,
+    task_ids: set[str] | None = None,
 ) -> list[TestGenProblem]:
     """Load ULT or PLT as a flat list of TestGenProblem, ready for the same
     model harness / scorer as the Dynamic benchmark.
@@ -116,10 +117,16 @@ def load(
     max_n: if given, draw a CC-stratified subsample of roughly this size
         (see PROJECT_BRIEF.md §9 — "300-500 subsample for closed-source
         APIs, full set for local open-source"). None loads everything that
-        passes the CC / overlap filters.
+        passes the CC / overlap filters. Ignored if `task_ids` is given.
     exclude_ult_overlap: for benchmark="plt", drop task_ids that also
         appear in ULT (ULT's ids are a 100% subset of PLT's) so Comparison B
         isn't circular. Ignored for benchmark="ult".
+    task_ids: if given, restrict to exactly these task_ids (post CC/overlap
+        filtering) instead of drawing a fresh sample — this is how a pinned
+        manifest (e.g. data/raw/ult_plt/subsample_manifest.json, see
+        load_manifest_subset()) is honoured exactly, rather than re-derived
+        via max_n/sample_seed each run. Raises if any requested id is not in
+        the filtered candidate pool (signals data drift — don't guess).
     """
     benchmark = benchmark.lower()
     if benchmark not in ("ult", "plt"):
@@ -141,7 +148,17 @@ def load(
             continue
         candidates.append({**r, "_cc": cc})
 
-    if max_n is not None and max_n < len(candidates):
+    if task_ids is not None:
+        pool_ids = {c["task_id"] for c in candidates}
+        missing = task_ids - pool_ids
+        if missing:
+            raise ValueError(
+                f"{benchmark}: {len(missing)} pinned task_id(s) not found in the "
+                f"current CC/overlap-filtered candidate pool (data drift?): "
+                f"{sorted(missing)[:10]}"
+            )
+        candidates = [c for c in candidates if c["task_id"] in task_ids]
+    elif max_n is not None and max_n < len(candidates):
         candidates = _stratified_sample(candidates, max_n, sample_seed)
 
     prefix = benchmark.upper()
@@ -163,3 +180,26 @@ def load(
             messages=_build_messages(source, prompting_condition),
         ))
     return problems
+
+
+_MANIFEST_PATH = _DATA_DIR / "subsample_manifest.json"
+
+
+def load_manifest_subset(
+    benchmark: str,
+    tag: str,
+    prompting_condition: str = "zero_shot",
+    manifest_path: Path | None = None,
+) -> list[TestGenProblem]:
+    """Load exactly the pinned task_ids for `tag` (e.g. "core_400", "qwen_1000")
+    from data/raw/ult_plt/subsample_manifest.json — the canonical, fixed
+    subsample every closed-source model (and Qwen's core_400 run) must share
+    so per-problem paired comparisons are computed over identical problem
+    sets. See scripts/generate_ult_plt_subsample.py for how the manifest is
+    built and PROVENANCE.md for the nested core_400/qwen_1000 rationale.
+    """
+    path = manifest_path or _MANIFEST_PATH
+    manifest = json.loads(path.read_text())
+    block = manifest[tag][benchmark.lower()]
+    ids = {p["task_id"] for p in block["problems"]}
+    return load(benchmark, prompting_condition=prompting_condition, task_ids=ids)

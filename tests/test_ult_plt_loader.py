@@ -132,3 +132,68 @@ def test_max_n_subsample_does_not_exceed_pool_or_request(fixture_dir):
     problems = ult_plt.load("ult", max_n=4, sample_seed=1)
     assert 0 < len(problems) <= 4
     assert len(problems) == len(set(p.template_id for p in problems))
+
+
+def test_task_ids_restricts_to_exactly_those_ids(fixture_dir):
+    records = [
+        {"task_id": str(i), "func_name": "high_cc", "code": HIGH_CC_SOURCE, "prompt": "p"}
+        for i in range(1, 11)
+    ]
+    _write(fixture_dir / "ULT.jsonl", records)
+    problems = ult_plt.load("ult", task_ids={"2", "5", "9"})
+    assert {p.template_id for p in problems} == {"ULT-2", "ULT-5", "ULT-9"}
+
+
+def test_task_ids_ignores_max_n(fixture_dir):
+    records = [
+        {"task_id": str(i), "func_name": "high_cc", "code": HIGH_CC_SOURCE, "prompt": "p"}
+        for i in range(1, 11)
+    ]
+    _write(fixture_dir / "ULT.jsonl", records)
+    problems = ult_plt.load("ult", max_n=1, task_ids={"2", "5", "9"})
+    assert len(problems) == 3
+
+
+def test_task_ids_raises_on_missing_id(fixture_dir):
+    _write(fixture_dir / "ULT.jsonl", [
+        {"task_id": "1", "func_name": "high_cc", "code": HIGH_CC_SOURCE, "prompt": "p"},
+    ])
+    with pytest.raises(ValueError, match="data drift"):
+        ult_plt.load("ult", task_ids={"1", "999"})
+
+
+def test_task_ids_raises_on_cc_filtered_id(fixture_dir):
+    _write(fixture_dir / "ULT.jsonl", [
+        {"task_id": "1", "func_name": "high_cc", "code": HIGH_CC_SOURCE, "prompt": "p"},
+        {"task_id": "2", "func_name": "low_cc", "code": LOW_CC_SOURCE, "prompt": "p"},
+    ])
+    with pytest.raises(ValueError, match="data drift"):
+        ult_plt.load("ult", task_ids={"1", "2"})  # "2" fails CC_MIN, not in pool
+
+
+def test_load_manifest_subset_reads_pinned_tag(fixture_dir, tmp_path):
+    ult_records = [
+        {"task_id": str(i), "func_name": "high_cc", "code": HIGH_CC_SOURCE, "prompt": "p"}
+        for i in range(1, 11)
+    ]
+    # Distinct task_id range so PLT has no ULT overlap to exclude.
+    plt_records = [
+        {"task_id": str(i), "func_name": "high_cc", "code": HIGH_CC_SOURCE, "prompt": "p"}
+        for i in range(101, 111)
+    ]
+    _write(fixture_dir / "ULT.jsonl", ult_records)
+    _write(fixture_dir / "PLT.jsonl", plt_records)
+
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps({
+        "core_400": {
+            "ult": {"problems": [{"task_id": "3"}, {"task_id": "7"}]},
+            "plt": {"problems": [{"task_id": "105"}]},
+        },
+    }))
+
+    ult_problems = ult_plt.load_manifest_subset("ult", "core_400", manifest_path=manifest_path)
+    assert {p.template_id for p in ult_problems} == {"ULT-3", "ULT-7"}
+
+    plt_problems = ult_plt.load_manifest_subset("plt", "core_400", manifest_path=manifest_path)
+    assert {p.template_id for p in plt_problems} == {"PLT-105"}

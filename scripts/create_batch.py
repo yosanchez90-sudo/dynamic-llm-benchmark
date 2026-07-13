@@ -31,7 +31,7 @@ sys.path.insert(0, str(ROOT))
 load_dotenv(ROOT / ".env")
 
 from openai import OpenAI  # noqa: E402
-from src.data import test_gen  # noqa: E402
+from src.eval.test_gen_runner import _load_problems  # noqa: E402
 
 # Reasoning-class models that reject custom temperature/top_p.
 # Detected experimentally; add new models here as needed.
@@ -83,13 +83,11 @@ def main() -> None:
         model_id   = config["model"]["id"]
         max_tokens = config["generation"]["max_new_tokens"]
 
-        problems = test_gen.load(
-            instantiation_id   = config["instantiation_id"],
-            instantiation_seed = config["instantiation_seed"],
-            instance_seeds     = tuple(config.get("instance_seeds", (101,102,103,104,105))),
-            tiers              = tuple(config.get("tiers", ("L1", "L2"))),
-            prompting_condition= config["prompting_condition"],
-        )
+        # Dispatches to the Dynamic loader or the ULT/PLT static-benchmark
+        # loader based on config["benchmark"] — same dispatch test_gen_runner.py
+        # uses for live eval, so batch-prepared requests and live-eval requests
+        # are guaranteed to load identical problems for a given config.
+        problems = _load_problems(config)
 
         print(f"{cfg_path.name}: {len(problems)} problems for {model_id}")
 
@@ -115,7 +113,7 @@ def main() -> None:
                 "instance_seed":      prob.instance_seed,
                 "tier":               prob.tier,
                 "instantiation_id":   prob.instantiation_id,
-                "instantiation_seed": config["instantiation_seed"],
+                "instantiation_seed": config.get("instantiation_seed"),  # None for ULT/PLT (no instantiations)
                 "prompting_condition":prob.prompting_condition,
                 "benchmark":          prob.benchmark,
                 "K":                  config.get("K", 1),

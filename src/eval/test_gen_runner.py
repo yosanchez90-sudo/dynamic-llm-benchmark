@@ -32,7 +32,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from src.data import test_gen
+from src.data import test_gen, ult_plt
 from src.eval.test_gen_problem import TestGenRecord, compute_model_label
 from src.eval.test_gen_scorer import extract_test_file, sanitize_test_file, score_problem
 from src.logging_utils import append_jsonl
@@ -88,6 +88,35 @@ def _find_resume_file(
     return resume_path, done
 
 
+def _load_problems(config: dict[str, Any]) -> list:
+    """Dispatch to the Dynamic loader or the ULT/PLT static-benchmark loader
+    based on config["benchmark"]. ULT/PLT are always tier="L4" (CC>=8) and
+    have no instantiations — they take either a pinned manifest subsample
+    (production: the same fixed problem set every model shares, see
+    data/raw/ult_plt/subsample_manifest.json) or an ad hoc max_n/sample_seed
+    draw (dry runs / exploration), never both.
+    """
+    if config["benchmark"] in ("ult", "plt"):
+        if "subsample_tag" in config:
+            return ult_plt.load_manifest_subset(
+                config["benchmark"], config["subsample_tag"],
+                prompting_condition=config["prompting_condition"],
+            )
+        return ult_plt.load(
+            config["benchmark"],
+            prompting_condition=config["prompting_condition"],
+            max_n=config.get("max_n"),
+            sample_seed=config.get("sample_seed", 0),
+        )
+    return test_gen.load(
+        instantiation_id=config["instantiation_id"],
+        instantiation_seed=config["instantiation_seed"],
+        instance_seeds=tuple(config.get("instance_seeds", (101, 102, 103, 104, 105))),
+        tiers=tuple(config.get("tiers", ("L1", "L2"))),
+        prompting_condition=config["prompting_condition"],
+    )
+
+
 def run_test_gen_experiment(config: dict[str, Any]) -> Path:
     """Run one test-generation config end-to-end. Returns the JSONL path."""
     model = build_model(config["model"])
@@ -97,13 +126,7 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
     n_workers = config.get("mutation_workers", 4)
     mutant_timeout = config.get("mutant_timeout_seconds", 30)
 
-    problems = test_gen.load(
-        instantiation_id=config["instantiation_id"],
-        instantiation_seed=config["instantiation_seed"],
-        instance_seeds=tuple(config.get("instance_seeds", (101, 102, 103, 104, 105))),
-        tiers=tuple(config.get("tiers", ("L1", "L2"))),
-        prompting_condition=config["prompting_condition"],
-    )
+    problems = _load_problems(config)
 
     # Level 2 parallelism: slice this task's shard of the problem list.
     # Strided slicing balances the workload — each shard gets a mix of tiers.
