@@ -66,19 +66,41 @@ the trigger** — the same text passed moderation on gpt-5 and passed 44/45
 other times under gpt-5-mini with the same fn_name and 5/6 other times with
 the same docstring intro word. This is model-specific and/or non-deterministic
 behavior of OpenAI's input-moderation classifier on gpt-5-mini, not a
-deterministic content trigger. Per session rule ("if evidence is ambiguous
-or contradicts expectations, STOP and report — no guessing"), this is
-reported as an unresolved, low-frequency (1/300 requests across both
-models) classifier false positive rather than attributed to a specific
-synonym-table word. **It is not predictable from vocabulary and may recur
-at a similar low, non-deterministic rate on future gpt-5-mini batches**, but
-not because any specific bank word is "unsafe."
+deterministic content trigger.
 
-## Disposition
+**Reclassified 2026-07-14: retryable, not a permanent exclusion.** Because
+the identical prompt succeeded on gpt-5, this is provider-side
+non-deterministic filtering rather than content this project's prompts
+must avoid — a plain retry (same template_id/instance_seed, new API call)
+has no structural reason to fail again. req-00100 is added to the
+supervisor retry batch below. It is *not* predictable from vocabulary and
+may recur at a similarly low, non-deterministic rate on a retry or on
+future batches, so the retry is not guaranteed to succeed — if it fails
+again with `invalid_prompt`, that would itself be new evidence worth
+re-opening this note for.
+
+## Disposition / retry status
 
 All 7 excluded (template_id, instance_seed) pairs are simply missing from
 the corresponding per-model dynamic-benchmark JSONL — analysis code must
 treat L3/L4 inst1 zero-shot as 144/150 (gpt-5) and 149/150 (gpt-5-mini)
-complete, not 150/150. No retry has been performed (would require a new,
-separately-timestamped batch submission and is out of scope for this
-verification pass).
+complete, not 150/150, **until the retry batch below is ingested.**
+
+**Supervisor retry batch — 7 IDs total** (he holds the OpenAI credits for
+L3/L4 generation per `PROJECT_BRIEF.md` §11):
+
+| Model | custom_id | template_id | seed | retry rationale |
+|---|---|---|---|---|
+| gpt-5 | req-00044 | L3-nested2-001 | 1105 | transient 503 |
+| gpt-5 | req-00078 | L4-aggregate-001 | 1104 | transient 503 |
+| gpt-5 | req-00105 | L4-mega-001 | 1101 | transient 503 |
+| gpt-5 | req-00107 | L4-mega-001 | 1103 | transient server_error |
+| gpt-5 | req-00110 | L4-merge-001 | 1101 | transient 503 |
+| gpt-5 | req-00125 | L4-pipeline-001 | 1101 | transient server_error |
+| gpt-5-mini | req-00100 | L4-matrix-001 | 1101 | non-deterministic provider-side filtering — same prompt succeeded on gpt-5 |
+
+No retry has been submitted yet from this repo (would require a new,
+separately-timestamped batch submission via `scripts/create_batch.py` +
+`scripts/process_batch.py`, and per session rules that's GPU/API-submission
+work requiring explicit sign-off, not a docs-only change). This table is
+the handoff artifact for that retry.
