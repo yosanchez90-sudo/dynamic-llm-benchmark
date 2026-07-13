@@ -16,6 +16,10 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   silently differ between runs and change results without any code or YAML diff to show it.
 - Pin model versions exactly (e.g. `claude-opus-4-7`, HF revision SHA). Never use `-latest` tags.
 - HuggingFace cache lives on scratch, not home (set HF_HOME accordingly).
+- Documentation and manifest files under `data/` are force-added (`git add -f`) —
+  the blanket `/data/` gitignore (generated batches/checkpoints/results) does not
+  exempt provenance docs. Applies to `data/raw/ult_plt/PROVENANCE.md` and to
+  `data/raw/ult_plt/subsample_manifest.json` when it's created.
 
 ## Layout
 - `src/` library code
