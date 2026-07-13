@@ -1,7 +1,12 @@
 # Contamination notice: `epoch_perf_finetune_*.csv`
 
-**Four of the six files in this directory were measured under a generation
-config that fabricated a near-total collapse. Do not use them as the
+**Corrected 2026-07-14 — see `analysis/README_QUARANTINE.md` for the
+evidence trail; that file is authoritative for the per-file classification
+below, this file's prose is kept in sync with it.**
+
+**Three of the six files in this directory were measured under a generation
+config that fabricated a near-total collapse (one of the three only
+partially — see table). Do not use the contaminated files as the
 "post-fine-tune" numbers for Comparison C. Do not edit or delete them —
 append-only applies to this quarantine too — this notice is the correction,
 not a rewrite of the data.**
@@ -10,12 +15,12 @@ not a rewrite of the data.**
 
 | File | Status |
 |---|---|
-| `epoch_perf_finetune_qwen1_5b_bp_own_30ep.csv` | **Contaminated** |
-| `epoch_perf_finetune_qwen1_5b_bp_gpt5_30ep.csv` | **Contaminated** |
-| `epoch_perf_finetune_qwen7b_bp_own_30ep.csv` | **Contaminated** |
-| `epoch_perf_finetune_qwen7b_bp_gpt5_30ep.csv` | **Contaminated** |
-| `epoch_perf_finetune_qwen1_5b_inst1_30ep.csv` | Unaffected (measured 2026-06-28/29, before the bug existed) |
-| `epoch_perf_finetune_qwen7b_inst1_30ep.csv` | Unaffected (measured 2026-06-28/29, before the bug existed) |
+| `epoch_perf_finetune_qwen1_5b_bp_own_30ep.csv` | **Contaminated, partially** — epochs 1–20 read healthy (exec_rate 0.90–0.99); epoch 25 (inst2/3) and epoch 30 (all insts) collapse to 0.0 |
+| `epoch_perf_finetune_qwen1_5b_bp_gpt5_30ep.csv` | **Contaminated** — collapses from epoch 3 onward |
+| `epoch_perf_finetune_qwen7b_bp_own_30ep.csv` | Unaffected — mtime 2026-07-06 03:18 predates the bug (2026-07-07) by ~1 day; every row is healthy (exec_rate 0.987–1.0, all 30 epochs, all 3 insts). Previously mislabeled "Contaminated" here; see README_QUARANTINE.md |
+| `epoch_perf_finetune_qwen7b_bp_gpt5_30ep.csv` | **Contaminated** — collapses from epoch 5 onward |
+| `epoch_perf_finetune_qwen1_5b_inst1_30ep.csv` | Unaffected (measured 2026-06-30, before the bug existed) |
+| `epoch_perf_finetune_qwen7b_inst1_30ep.csv` | Unaffected (measured 2026-06-29, before the bug existed) |
 | `stability_*.csv` | Unrelated — Dynamic-benchmark data via `src/models/local.py`, which never used the setting below |
 
 ## Root cause
@@ -36,10 +41,11 @@ every problem.
 Confirmed at n=50: 0/50 clean import lines with `no_repeat_ngram_size=4`
 enabled vs 50/50 with it disabled, reproduced under both greedy and
 sampling decoding, independent of `repetition_penalty`. This single setting
-explains the entire recorded collapse in `bp_own` (both sizes, which turned
-out to have been healthy the whole time) and the great majority of it in
-`bp_gpt5` (both sizes, which have a smaller genuine residual fragility —
-see below).
+explains the entire recorded collapse in `bp_gpt5` (both sizes) and the
+late-epoch (25/30) collapse in `qwen1_5b_bp_own`. `qwen7b_bp_own` was never
+actually run under the buggy script at all — its file predates the bug by a
+day — so it was healthy the whole time, but that's a timing accident, not
+evidence the bug is milder for `bp_own` as a condition.
 
 The wall-clock stopping criteria that was added alongside it (guarding
 against a checkpoint that never emits EOS) was solving a **real** problem —

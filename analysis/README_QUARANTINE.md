@@ -99,6 +99,74 @@ fine-tuning trajectory, and is what redirected the investigation toward
 `scripts/diagnose_collapse_ab.py`'s true config-A-vs-config-B test, which
 isolated the setting.
 
+## Open gap: the 240s wall-clock guard may not cover job 9315777's actual failure mode
+
+Added 2026-07-14, re-examining the job 9315777 hang more closely rather
+than taking the module docstring's framing ("a genuine safeguard") at
+face value.
+
+**Where it stalled, exactly:** `logs/eval-ckpts-9315777.out` shows
+generation dots for epoch 5/instantiation 1 stop at 74/150 — no
+`inst1: scoring…` line ever printed, so the process was inside
+`model.generate()` for problem 75, not in a scoring subprocess, when it
+stopped producing output. `logs/eval-ckpts-9315777.err`'s last line is the
+checkpoint-shard loading progress bar from job start; nothing after it
+until SLURM's cancellation message 11.5 hours later. No partial-generation
+text, no exception, no further tokenizer/model output of any kind.
+
+**Why this doesn't look like "slow generation":** `max_new_tokens=2048`
+caps every call, and measured worst-case throughput (15.8 tok/s, see the
+module docstring) puts a full 2048-token generation at ~130s even in the
+slowest observed case. 11.5 hours of *zero* incremental output — not
+slow-but-progressing output, literally nothing — is inconsistent with "the
+model is just grinding through 2048 tokens." It is consistent with the
+generate() call being genuinely stuck (a CUDA/driver-level hang on that
+V100 node, not a content-driven repetition loop).
+
+**Why the `_TimeLimitCriteria` guard may not actually cover this:**
+`StoppingCriteria` callbacks in HF's `generate()` loop are invoked
+*between* successfully generated tokens — the loop calls the model
+forward pass, gets a token, then checks stopping criteria, then repeats.
+If the hang is inside a single forward-pass call itself (consistent with
+the evidence above — no partial progress, ever), the stopping-criteria
+callback is never reached again, and the 240s wall-clock check never
+fires. What actually terminated job 9315777 was SLURM's own job-level
+`--time` limit (12h), not anything inside the Python generation loop. The
+current guard protects against "many slow steps add up to a long time,"
+which is a real but different failure mode from "one step never returns."
+
+**No fix applied** — shards are running/were running against
+`eval_checkpoints.py`'s current code path and this is explicitly out of
+scope while that's true. If a genuine guard against a stuck-forward-pass
+hang is wanted, it would need to be a process-external watchdog (e.g. run
+each checkpoint's generation batch in a subprocess with
+`subprocess.run(..., timeout=...)`, or a separate monitor thread with a
+hard `os.kill`) rather than an in-loop `StoppingCriteria`, since the latter
+depends on the loop still being alive to be checked. Proposed, not applied.
+
+## Subprocess timeout audit (eval/scoring path)
+
+Every `subprocess.run()` call in the eval/scoring hot path has an explicit
+`timeout=`:
+
+| Call site | Timeout |
+|---|---|
+| `src/eval/test_gen_scorer.py:156` (`_run_pytest`) | explicit, caller-supplied |
+| `src/eval/test_gen_scorer.py:173` (`_collect_ok`) | explicit, caller-supplied |
+| `src/eval/test_gen_scorer.py:209` (`_evaluate_mutant`'s import check) | explicit, caller-supplied |
+| `scripts/eval_checkpoints.py:95` (`_score_fast` import check) | explicit, default 60s |
+| `scripts/eval_checkpoints.py:103` (`_score_fast` pytest run) | explicit, default 60s |
+
+One call outside that hot path has **no timeout**:
+`scripts/submit_epoch_curve_shards.py:144` — the `sbatch` submission call
+itself (`subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)`).
+Lower risk than a generation/scoring hang (a stuck `sbatch` stalls job
+*submission*, not an in-flight run, and wouldn't corrupt results), but it
+is a real gap: if `sbatch`/`slurmctld` ever hangs, this call blocks
+forever with no recovery. Proposed fix (not applied): add
+`timeout=30` and catch `subprocess.TimeoutExpired` to skip/retry that
+shard's submission rather than blocking the whole submission loop.
+
 ## Where the corrected data lives
 
 `data/results/finetune_rebuild/epoch_perf_*.csv`, written by the patched
