@@ -1,0 +1,34 @@
+# Comparison A/B: GPT-5 on the pinned core_400 ULT subsample, zero-shot.
+# Supervisor holds the OpenAI credits — this config is for
+# scripts/create_batch.py --no-submit only; the batch input JSONL goes to the
+# supervisor to submit, never sbatch'd or hit with a real API call here.
+# core_400 is the universal 400-problem CC-stratified subsample every model
+# (closed-source + Qwen) shares — see data/raw/ult_plt/subsample_manifest.json.
+
+name: gpt_5__ult__core400__zeroshot
+
+task: test_generation
+
+model:
+  provider: openai
+  id: gpt-5-2025-08-07
+  revision: gpt-5-2025-08-07
+
+benchmark: ult
+subsample_tag: core_400
+instantiation_id: "core_400"
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 16384          # GPT-5 needs more headroom for long CoT
+  do_sample: true
+  temperature: 0.2               # ignored for reasoning models — see create_batch.py _FIXED_TEMP_MODELS
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/ult

@@ -1,0 +1,33 @@
+# Comparison A/B: Qwen-7B on the pinned core_400 ULT subsample, zero-shot.
+# core_400 is the universal 400-problem CC-stratified subsample every model
+# (closed-source + Qwen) shares — see data/raw/ult_plt/subsample_manifest.json
+# and data/raw/ult_plt/PROVENANCE.md for the nested core_400/qwen_1000 design.
+
+name: qwen_coder_7b__ult__core400__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: Qwen/Qwen2.5-Coder-7B-Instruct
+  revision: c03e6d358207e414f1eca0bb1891e29f1db0e242
+  dtype: bfloat16
+
+benchmark: ult
+subsample_tag: core_400
+instantiation_id: "core_400"
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4                  # must match --cpus-per-task in run_l1l2_7b.slurm
+mutant_timeout_seconds: 30
+
+output_dir: data/results/ult

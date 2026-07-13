@@ -1,0 +1,35 @@
+# Dry run (Comparison A/B pipeline sanity check): 5 PLT problems, Qwen-1.5B,
+# zero-shot. Confirms prompt build -> generation -> scope_fn_name mutation ->
+# scoring produces sane metric values before any core_400/qwen_1000 submission.
+# NOT the pinned canonical subsample — max_n/sample_seed here is an ad hoc
+# draw, unrelated to data/raw/ult_plt/subsample_manifest.json.
+
+name: dry_run__qwen1.5b__plt__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: 2e1fd397ee46e1388853d2af2c993145b0f1098a
+  dtype: bfloat16
+
+benchmark: plt
+instantiation_id: "dryrun"           # ULT/PLT have no real instantiations; fixed tag for filenames
+max_n: 5
+sample_seed: 1
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 2                  # MIG slice has limited cores
+mutant_timeout_seconds: 30
+
+output_dir: data/results/smoke
