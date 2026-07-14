@@ -10,8 +10,8 @@ task: test_generation
 
 model:
   provider: anthropic
-  id: claude-sonnet-4-6-20250620
-  revision: claude-sonnet-4-6-20250620
+  id: claude-sonnet-4-6        # pinned snapshot, no date suffix — verified via models.list(), -20250620 404s
+  revision: claude-sonnet-4-6
 
 benchmark: plt
 subsample_tag: core_400

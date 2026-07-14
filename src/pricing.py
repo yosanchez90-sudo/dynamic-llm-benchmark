@@ -15,7 +15,7 @@ PRICING: dict[str, tuple[float, float]] = {
     # Anthropic — pinned snapshot IDs (what the API receives and what we log)
     "claude-opus-4-7":                    (5.00, 25.00),
     "claude-opus-4-6":                    (5.00, 25.00),
-    "claude-sonnet-4-6-20250620":         (3.00, 15.00),
+    "claude-sonnet-4-6":                  (3.00, 15.00),   # no date suffix — verified via models.list(); -20250620 404s
     "claude-haiku-4-5-20251001":          (1.00,  5.00),
 
     # OpenAI — pinned snapshot IDs (what the API receives and what we log)

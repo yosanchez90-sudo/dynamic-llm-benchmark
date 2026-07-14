@@ -41,7 +41,7 @@ class ModelSpec:
 MODEL_SPECS: list[ModelSpec] = [
     ModelSpec("gpt-5-2025-08-07", "SUPERVISOR-GATED"),
     ModelSpec("gpt-5-mini-2025-08-07", "SUPERVISOR-GATED"),
-    ModelSpec("claude-sonnet-4-6-20250620", "RUNNABLE NOW BY US"),
+    ModelSpec("claude-sonnet-4-6", "RUNNABLE NOW BY US"),
     ModelSpec("claude-haiku-4-5-20251001", "RUNNABLE NOW BY US"),
     ModelSpec("gemini-2.5-pro", "RUNNABLE NOW BY US"),
     ModelSpec("gemini-2.5-flash", "RUNNABLE NOW BY US"),
