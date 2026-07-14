@@ -1,0 +1,37 @@
+# PILOT: Gemini 2.5 Flash, dynamic L1 only, instantiation 1 (75 problems).
+# Staged before the full API-model release per session plan: check
+# exec_rate/baseline_pass and inspect raw completions vs extracted test
+# files for extraction drift before spending on the full remaining matrix.
+# API model — no GPU needed; runs on k2-medpri via run_eval_api.slurm.
+# Cost estimate: 75 problems x ~150 input x ~323 output tokens (see
+# scripts/estimate_cost.py) x ($0.30, $2.50)/Mtok ~= $0.06
+
+name: gemini_2_5_flash__dynamic_L1__zeroshot__inst1__pilot
+
+task: test_generation
+
+model:
+  provider: gemini
+  id: gemini-2.5-flash
+  revision: gemini-2.5-flash
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic
