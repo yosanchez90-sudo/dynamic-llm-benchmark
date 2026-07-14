@@ -96,6 +96,21 @@ class LocalModel(Model):
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
 
         torch.manual_seed(cfg.seed)
+        # Anything not explicitly passed to generate() falls back to the
+        # checkpoint's own generation_config.json (loaded into
+        # self.model.generation_config at from_pretrained time) — silently,
+        # with no record of it anywhere. This is the same failure mode as
+        # the no_repeat_ngram_size collapse (analysis/README_QUARANTINE.md),
+        # just via a different unlogged inherited default: Qwen2.5-Coder's
+        # checkpoints ship repetition_penalty=1.1 (1.5B/7B) or 1.05 (32B) and
+        # top_k=20. Resolve and pin them explicitly here (values unchanged
+        # from what has always been in effect — this is a logging fix, not a
+        # behavior change) so run identity is actually complete and doesn't
+        # depend on whatever happens to be cached in HF_HOME.
+        ckpt_gen_cfg = self.model.generation_config
+        repetition_penalty = getattr(ckpt_gen_cfg, "repetition_penalty", 1.0)
+        top_k = getattr(ckpt_gen_cfg, "top_k", 50)
+
         gen_kwargs: dict[str, Any] = {
             "max_new_tokens": cfg.max_new_tokens,
             "do_sample": cfg.do_sample,
@@ -103,6 +118,8 @@ class LocalModel(Model):
         if cfg.do_sample:
             gen_kwargs["temperature"] = cfg.temperature
             gen_kwargs["top_p"] = cfg.top_p
+            gen_kwargs["repetition_penalty"] = repetition_penalty
+            gen_kwargs["top_k"] = top_k
 
         with torch.inference_mode():
             output_ids = self.model.generate(**inputs, **gen_kwargs)
@@ -125,6 +142,14 @@ class LocalModel(Model):
                 "temperature": cfg.temperature,
                 "top_p": cfg.top_p,
                 "seed": cfg.seed,
+                # Inherited from the checkpoint's generation_config.json, not
+                # this project's YAML configs — recorded explicitly so a
+                # future checkpoint update that changes these can't silently
+                # change results without showing up in the logged record.
+                "repetition_penalty": gen_kwargs.get("repetition_penalty"),
+                "repetition_penalty_source": "checkpoint_generation_config" if cfg.do_sample else None,
+                "top_k": gen_kwargs.get("top_k"),
+                "top_k_source": "checkpoint_generation_config" if cfg.do_sample else None,
             },
             timestamp=datetime.now(timezone.utc).isoformat(),
             runtime_info={

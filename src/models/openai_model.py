@@ -100,8 +100,12 @@ class OpenAIModel(Model):
             generation_config={
                 "max_new_tokens": cfg.max_new_tokens,
                 "do_sample": cfg.do_sample,
-                "temperature": temperature,
-                "top_p": cfg.top_p,
+                # Log what was actually sent, not the nominal cfg values —
+                # api_kwargs is the source of truth: a model that rejected
+                # temperature (e.g. gpt-5-mini) had it popped before the
+                # successful retry, and the record must reflect that.
+                "temperature": api_kwargs.get("temperature"),
+                "top_p": api_kwargs.get("top_p"),
                 "seed": cfg.seed,
             },
             timestamp=datetime.now(timezone.utc).isoformat(),
