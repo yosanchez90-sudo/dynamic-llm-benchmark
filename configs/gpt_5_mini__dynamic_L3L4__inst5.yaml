@@ -1,0 +1,33 @@
+# Test-generation L3L4: gpt-5-mini-2025-08-07 on dynamic benchmark, zero-shot, instantiation 5.
+# Coverage-gap backfill (scripts/coverage_matrix.py) — supervisor-gated, OpenAI Batch API.
+# gpt-5-mini reasons less heavily than gpt-5; 8192 is ample.
+
+name: gpt_5_mini__dynamic_L3L4__zeroshot__inst5
+
+task: test_generation
+
+model:
+  provider: openai
+  id: gpt-5-mini-2025-08-07             # pinned snapshot (CLAUDE.md: no aliases)
+  revision: gpt-5-mini-2025-08-07
+
+benchmark: dynamic
+instantiation_id: "5"
+instantiation_seed: 5
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L3", "L4"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 8192
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

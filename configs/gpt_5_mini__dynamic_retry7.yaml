@@ -1,0 +1,37 @@
+# Retry batch: the 1 gpt-5-mini request excluded from the inst1 L4 batch
+# (invalid_prompt classifier flag, reclassified retryable — see
+# analysis/EXCLUSIONS.md, "the exact same prompt succeeded on gpt-5").
+# only_instances selects exactly this (template_id, seed) pair through the
+# same create_batch.py path used for bulk configs.
+
+name: gpt_5_mini__dynamic_retry7__zeroshot__inst1
+
+task: test_generation
+
+model:
+  provider: openai
+  id: gpt-5-mini-2025-08-07
+  revision: gpt-5-mini-2025-08-07
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101]
+tiers: ["L4"]
+only_instances:
+  - [L4-matrix-001, 1101]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 8192
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

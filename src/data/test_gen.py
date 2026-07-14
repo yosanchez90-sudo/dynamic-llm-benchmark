@@ -88,12 +88,20 @@ def load(
     instance_seeds: tuple[int, ...] = (101, 102, 103, 104, 105),
     tiers: tuple[str, ...] = ("L1", "L2"),
     prompting_condition: str = "zero_shot",
+    only_instances: frozenset[tuple[str, int]] | None = None,
 ) -> list[TestGenProblem]:
     """Generate one benchmark instantiation as a flat list of TestGenProblem.
 
     Per the spec: 15 templates/tier × 5 instance seeds = 75 problems per tier.
     `instantiation_seed` offsets the per-instance seeds so five distinct
     instantiations produce genuinely different instances (stability analysis).
+
+    `only_instances`, if given, is a set of (template_id, seed) pairs (seed =
+    the full combined seed, e.g. 1101) — restricts output to exactly those
+    instances, skipping everything else in `tiers`/`instance_seeds`. Built
+    for retrying a handful of specific excluded requests (see
+    analysis/EXCLUSIONS.md) through the same create_batch.py path used for
+    bulk generation, without hand-building a separate problem list.
     """
     problems: list[TestGenProblem] = []
     for tier in tiers:
@@ -101,6 +109,8 @@ def load(
             tmpl = _load_template(tmpl_path)
             for base_seed in instance_seeds:
                 seed = instantiation_seed * 1000 + base_seed
+                if only_instances is not None and (tmpl.template_id, seed) not in only_instances:
+                    continue
                 inst = instantiate(tmpl, seed)
                 if inst.get("validation_errors"):
                     continue

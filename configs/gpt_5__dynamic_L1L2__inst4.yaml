@@ -1,0 +1,33 @@
+# Test-generation L1L2: gpt-5-2025-08-07 on dynamic benchmark, zero-shot, instantiation 4.
+# Coverage-gap backfill (scripts/coverage_matrix.py) — supervisor-gated, OpenAI Batch API.
+# gpt-5 reasons heavily; 16384 leaves ~2000 tokens for the test file after CoT.
+
+name: gpt_5__dynamic_L1L2__zeroshot__inst4
+
+task: test_generation
+
+model:
+  provider: openai
+  id: gpt-5-2025-08-07
+  revision: gpt-5-2025-08-07
+
+benchmark: dynamic
+instantiation_id: "4"
+instantiation_seed: 4
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 16384
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

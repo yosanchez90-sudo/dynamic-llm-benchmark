@@ -1,0 +1,42 @@
+# Retry batch: the 6 gpt-5 requests excluded from the inst1 L3/L4 batch
+# (transient 5xx errors) — see analysis/EXCLUSIONS.md "Disposition / retry
+# status". Uses only_instances to select exactly these (template_id, seed)
+# pairs out of the L3/L4 x inst1 problem set, so this goes through the same
+# create_batch.py path as every bulk config instead of a hand-built request list.
+
+name: gpt_5__dynamic_retry7__zeroshot__inst1
+
+task: test_generation
+
+model:
+  provider: openai
+  id: gpt-5-2025-08-07
+  revision: gpt-5-2025-08-07
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 103, 104, 105]
+tiers: ["L3", "L4"]
+only_instances:
+  - [L3-nested2-001, 1105]
+  - [L4-aggregate-001, 1104]
+  - [L4-mega-001, 1101]
+  - [L4-mega-001, 1103]
+  - [L4-merge-001, 1101]
+  - [L4-pipeline-001, 1101]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 16384
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

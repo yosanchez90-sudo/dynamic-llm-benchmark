@@ -108,12 +108,14 @@ def _load_problems(config: dict[str, Any]) -> list:
             max_n=config.get("max_n"),
             sample_seed=config.get("sample_seed", 0),
         )
+    only_instances = config.get("only_instances")
     return test_gen.load(
         instantiation_id=config["instantiation_id"],
         instantiation_seed=config["instantiation_seed"],
         instance_seeds=tuple(config.get("instance_seeds", (101, 102, 103, 104, 105))),
         tiers=tuple(config.get("tiers", ("L1", "L2"))),
         prompting_condition=config["prompting_condition"],
+        only_instances=frozenset((t, s) for t, s in only_instances) if only_instances else None,
     )
 
 
