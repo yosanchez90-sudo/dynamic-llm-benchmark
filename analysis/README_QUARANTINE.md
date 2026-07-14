@@ -135,14 +135,27 @@ fires. What actually terminated job 9315777 was SLURM's own job-level
 current guard protects against "many slow steps add up to a long time,"
 which is a real but different failure mode from "one step never returns."
 
-**No fix applied** — shards are running/were running against
-`eval_checkpoints.py`'s current code path and this is explicitly out of
-scope while that's true. If a genuine guard against a stuck-forward-pass
-hang is wanted, it would need to be a process-external watchdog (e.g. run
-each checkpoint's generation batch in a subprocess with
-`subprocess.run(..., timeout=...)`, or a separate monitor thread with a
-hard `os.kill`) rather than an in-loop `StoppingCriteria`, since the latter
-depends on the loop still being alive to be checked. Proposed, not applied.
+**Fixed 2026-07-14** (all 66 shards had finished by the time this was
+addressed, so this no longer competes with anything running). Added
+`_ProcessWatchdog` to `scripts/eval_checkpoints.py`: a background thread,
+kicked immediately before every `generate()` call, that calls `os._exit(99)`
+if no call has completed within `--watchdog-timeout` (default 900s — ~7x
+the slowest measured single generation). This works around the
+`StoppingCriteria` limitation because PyTorch's CUDA calls release the GIL
+while blocked on the device, so the watchdog thread keeps running and can
+force-exit the process even while the main thread is wedged inside a
+single stuck `generate()` call that will never return — no cooperation
+from the stuck call is required, unlike `StoppingCriteria` or a signal
+handler. This kills the whole shard (not just the stuck problem), which is
+intentional: there's no way to safely abandon one CUDA call and continue
+in the same process, and the existing sharded-submission design already
+treats "resubmit the failed shard" as normal recovery — this just detects
+the failure in minutes instead of waiting out the full `--time` limit.
+Covered by `tests/test_eval_checkpoints_watchdog.py` (4 tests, run in a
+real subprocess so `os._exit` can be exercised without killing the test
+runner: fires when never kicked, doesn't fire when kicked regularly,
+`stop()` suppresses it, and `--watchdog-timeout 0` disables it via `main()`
+rather than constructing a watchdog that fires immediately).
 
 ## Subprocess timeout audit (eval/scoring path)
 
@@ -157,15 +170,51 @@ Every `subprocess.run()` call in the eval/scoring hot path has an explicit
 | `scripts/eval_checkpoints.py:95` (`_score_fast` import check) | explicit, default 60s |
 | `scripts/eval_checkpoints.py:103` (`_score_fast` pytest run) | explicit, default 60s |
 
-One call outside that hot path has **no timeout**:
-`scripts/submit_epoch_curve_shards.py:144` — the `sbatch` submission call
-itself (`subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)`).
-Lower risk than a generation/scoring hang (a stuck `sbatch` stalls job
-*submission*, not an in-flight run, and wouldn't corrupt results), but it
-is a real gap: if `sbatch`/`slurmctld` ever hangs, this call blocks
-forever with no recovery. Proposed fix (not applied): add
-`timeout=30` and catch `subprocess.TimeoutExpired` to skip/retry that
-shard's submission rather than blocking the whole submission loop.
+One call outside that hot path had **no timeout**:
+`scripts/submit_epoch_curve_shards.py`'s `sbatch` submission call
+(`subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)`). Lower
+risk than a generation/scoring hang (a stuck `sbatch` stalls job
+*submission*, not an in-flight run, and wouldn't corrupt results), but a
+real gap: if `sbatch`/`slurmctld` ever hung, this call would block forever
+with no recovery. **Fixed 2026-07-14**: added `timeout=30` with a
+`subprocess.TimeoutExpired` handler that raises a clear `RuntimeError`
+instead of hanging the whole submission loop.
+
+## Also fixed while investigating: flat `--mem` OOM-killed 3 shards
+
+Not part of the original stall investigation, but found while confirming
+all 66 shards had actually finished: `sacct` showed 63 `COMPLETED` and
+**3 `OUT_OF_MEMORY`** — jobs `9372594`, `9372595` (`qwen1_5b_bp_gpt5`,
+epochs 3/5) and `9372627` (`qwen7b_bp_gpt5`, epoch 3), all 6.5–8.5h into
+an 8h-budgeted run. `run_eval_checkpoints_shard.slurm` requested a flat
+`--mem=16G` for every shard regardless of model size or condition — too
+tight for a 7B model (14GB bf16 weights alone) and, evidently, also too
+tight for `bp_gpt5` (the long-output condition) even at 1.5B, given enough
+elapsed time. Fixed by adding `_mem_for(config_name, is_slow)` to
+`scripts/submit_epoch_curve_shards.py`, sizing `--mem` per size × condition
+(24G/40G/32G/56G for 1.5B-fast/1.5B-slow/7B-fast/7B-slow) and passing it
+via `sbatch --mem=...` (CLI wins over the `.slurm` file's `#SBATCH`
+pragma). Covered by `tests/test_submit_epoch_curve_shards.py`, so a future
+flat-mem regression would fail CI, not just get caught after an 8h run.
+
+**No resubmission was needed.** Checked the 3 shards' own CSV output
+before resubmitting anything: each already contained all 3 expected
+(epoch, instantiation, draw) rows for a single-epoch greedy-only shard,
+with plausible values and a fully resolved generation config — e.g.
+`data/results/finetune_rebuild/shards/finetune_qwen7b_bp_gpt5_30ep__epoch03.csv`
+has 3/3 rows, exec_rate 0.83-0.93. The CSV mtimes line up almost exactly
+with the OOM event timestamps in each `.err` file, meaning the OOM killer
+struck during process teardown (CUDA context/tokenizer cleanup, Python GC
+at exit) *after* every row had already been written — rows are appended
+to disk immediately as each is computed, per `eval_checkpoints.py`'s
+resume-on-restart design, so nothing was lost. Confirmed with the
+authoritative check: `python scripts/merge_epoch_curve_shards.py --manifest
+data/results/finetune_rebuild/shards/manifests/manifest_20260712T222551Z.csv
+--check-only` reports **all 6 conditions complete, 36/36 expected triples
+each** (216 rows total) — that check reads shard CSV content directly and
+doesn't care what SLURM's `sacct` state says. Resubmitting would have
+spent GPU time to regenerate data that already exists and would just be
+skipped by the resume logic.
 
 ## Where the corrected data lives
 
