@@ -1,0 +1,38 @@
+# PILOT: Gemini 3.1 Pro Preview, dynamic L1 only, instantiation 1 (75 problems).
+# Staged before the full API-model release: check exec_rate/baseline_pass and
+# inspect raw completions vs extracted test files for extraction drift before
+# spending on the full remaining matrix. Also the first real usage data for
+# this model — used to correct the pre-spend cost estimate (see
+# scripts/estimate_cost.py; the Anthropic release showed the cross-model
+# proxy underestimated by ~2.5-3x, so treat any pre-pilot number as rough).
+# API model — no GPU needed; runs on k2-medpri via run_eval_api.slurm.
+
+name: gemini_3_1_pro_preview__dynamic_L1__zeroshot__inst1__pilot
+
+task: test_generation
+
+model:
+  provider: gemini
+  id: gemini-3.1-pro-preview
+  revision: gemini-3.1-pro-preview
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

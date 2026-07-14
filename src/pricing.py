@@ -26,8 +26,13 @@ PRICING: dict[str, tuple[float, float]] = {
     "gpt-5.4-mini":             (0.75,  4.50),
 
     # Google Gemini (standard context <= 200K tokens)
-    "gemini-2.5-pro":           (1.25, 10.00),
-    "gemini-2.5-flash":         (0.30,  2.50),
+    # gemini-2.5-pro/-flash retired 2026-07-14: "no longer available to new
+    # users" (404 on live generate_content calls despite still appearing in
+    # models.list() as Stable) — replaced with the 3.1 generation. Pricing
+    # verified 2026-07-14 against ai.google.dev/gemini-api/docs/pricing plus
+    # two independent secondary sources (all agreed).
+    "gemini-3.1-pro-preview":   (2.00, 12.00),   # preview — no non-preview Pro-class model exists right now
+    "gemini-3.1-flash-lite":    (0.25,  1.50),   # GA/stable
 }
 
 

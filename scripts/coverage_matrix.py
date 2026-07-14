@@ -43,8 +43,8 @@ MODEL_SPECS: list[ModelSpec] = [
     ModelSpec("gpt-5-mini-2025-08-07", "SUPERVISOR-GATED"),
     ModelSpec("claude-sonnet-4-6", "RUNNABLE NOW BY US"),
     ModelSpec("claude-haiku-4-5-20251001", "RUNNABLE NOW BY US"),
-    ModelSpec("gemini-2.5-pro", "RUNNABLE NOW BY US"),
-    ModelSpec("gemini-2.5-flash", "RUNNABLE NOW BY US"),
+    ModelSpec("gemini-3.1-pro-preview", "RUNNABLE NOW BY US"),   # replaces retired gemini-2.5-pro
+    ModelSpec("gemini-3.1-flash-lite", "RUNNABLE NOW BY US"),    # replaces retired gemini-2.5-flash
     ModelSpec("Qwen__Qwen2.5-Coder-32B-Instruct", "RUNNABLE NOW BY US"),
     ModelSpec("Qwen__Qwen2.5-Coder-7B-Instruct", "RUNNABLE NOW BY US"),
     ModelSpec("Qwen__Qwen2.5-Coder-1.5B-Instruct", "RUNNABLE NOW BY US"),

@@ -1,17 +1,21 @@
-# Comparison A/B: Gemini 2.5 Pro on the pinned core_400 PLT subsample,
+# Comparison A/B: Gemini 3.1 Pro Preview on the pinned core_400 PLT subsample,
 # zero-shot. API model — no GPU needed; runs on k2-medpri via run_eval_api.slurm.
 # core_400 is the universal 400-problem CC-stratified subsample every model
 # (closed-source + Qwen) shares — see data/raw/ult_plt/subsample_manifest.json.
-# Cost estimate (2026-07-13, real-time rates): ~$2.56 for this config.
+# Model updated 2026-07-14: gemini-2.5-pro retired ("no longer available to
+# new users") — see PROJECT_BRIEF.md Sec 11. Cost estimate not yet
+# re-verified against real usage for this model — get real per-problem cost
+# from a small run before trusting a number here (the old $2.56 was priced
+# at 2.5-pro's now-irrelevant rates).
 
-name: gemini_2_5_pro__plt__core400__zeroshot
+name: gemini_3_1_pro_preview__plt__core400__zeroshot
 
 task: test_generation
 
 model:
   provider: gemini
-  id: gemini-2.5-pro
-  revision: gemini-2.5-pro
+  id: gemini-3.1-pro-preview
+  revision: gemini-3.1-pro-preview
 
 benchmark: plt
 subsample_tag: core_400
