@@ -6,6 +6,18 @@
 # scripts/estimate_cost.py; the Anthropic release showed the cross-model
 # proxy underestimated by ~2.5-3x, so treat any pre-pilot number as rough).
 # API model — no GPU needed; runs on k2-medpri via run_eval_api.slurm.
+#
+# max_new_tokens=16384 (not 2048): 3.1 Pro Preview is a reasoning model —
+# Gemini's max_output_tokens caps thinking + visible output combined
+# (usage_metadata.thoughts_token_count is a separate field, but it counts
+# against the same budget). Confirmed empirically: a first pilot run at 2048
+# hit finish_reason=MAX_TOKENS on ~57% of L1 problems (the simplest tier),
+# producing 135-425 char truncated/invalid Python that failed the exec gate
+# — thoughts_token_count=1010 for a single TRIVIAL one-line-function prompt
+# in a live diagnostic call, before any visible output. Same lesson already
+# learned for gpt-5 in configs/gpt_5__dynamic_L1L2.yaml; sized to match.
+# gemini-3.1-flash-lite does NOT reason (thoughts_token_count=None,
+# confirmed the same way) — its 2048 config is correct as-is.
 
 name: gemini_3_1_pro_preview__dynamic_L1__zeroshot__inst1__pilot
 
@@ -25,7 +37,7 @@ tiers: ["L1"]
 prompting_condition: zero_shot
 
 generation:
-  max_new_tokens: 2048
+  max_new_tokens: 16384
   do_sample: true
   temperature: 0.2
   top_p: 1.0

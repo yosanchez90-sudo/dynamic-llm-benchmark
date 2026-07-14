@@ -7,6 +7,12 @@
 # re-verified against real usage for this model — get real per-problem cost
 # from a small run before trusting a number here (the old $2.56 was priced
 # at 2.5-pro's now-irrelevant rates).
+# max_new_tokens=16384 (not 2048): 3.1 Pro Preview is a reasoning model and
+# Gemini's max_output_tokens caps thinking + visible output combined —
+# confirmed empirically via the dynamic-benchmark pilot (2048 hit
+# finish_reason=MAX_TOKENS on ~57% of the simplest tier's problems). See
+# configs/gemini_3_1_pro_preview__dynamic_L1__inst1__pilot.yaml for the
+# full writeup.
 
 name: gemini_3_1_pro_preview__ult__core400__zeroshot
 
@@ -24,7 +30,7 @@ instantiation_id: "core_400"
 prompting_condition: zero_shot
 
 generation:
-  max_new_tokens: 2048
+  max_new_tokens: 16384
   do_sample: true
   temperature: 0.2
   top_p: 1.0
