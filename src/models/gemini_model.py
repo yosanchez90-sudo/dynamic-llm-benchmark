@@ -9,14 +9,25 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import time
 from datetime import datetime, timezone
 from typing import Any
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 
 from src.models.base import GenerationConfig, Model, ModelOutput
 from src.pricing import compute_cost
+
+# Transient (retryable) HTTP codes: 429 rate limit, 5xx server-side (e.g. the
+# 503 UNAVAILABLE "high demand" seen in practice on gemini-3.1-pro-preview —
+# the SDK's own internal retry wasn't enough to ride it out and crashed the
+# whole job with 25/75 problems done). Everything else (400 bad request, 404
+# model not found, etc.) is a permanent error — retrying wastes time hitting
+# the same wall, per session decision not to build batch infra for Gemini.
+_RETRYABLE_CODES = {429, 500, 502, 503, 504}
+_MAX_RETRIES = 5
+_BASE_BACKOFF_SECONDS = 2.0
 
 
 class GeminiModel(Model):
@@ -46,11 +57,7 @@ class GeminiModel(Model):
             system_instruction=system_instruction,
         )
 
-        response = self.client.models.generate_content(
-            model=self.model_id,
-            contents=contents,
-            config=gen_config,
-        )
+        response = self._generate_with_backoff(contents, gen_config)
 
         response_text = response.text or ""
 
@@ -91,6 +98,25 @@ class GeminiModel(Model):
             provider=self.provider,
             cost_usd=cost,
         )
+
+    def _generate_with_backoff(self, contents, gen_config):
+        attempt = 0
+        while True:
+            try:
+                return self.client.models.generate_content(
+                    model=self.model_id,
+                    contents=contents,
+                    config=gen_config,
+                )
+            except errors.APIError as exc:
+                attempt += 1
+                if exc.code not in _RETRYABLE_CODES or attempt > _MAX_RETRIES:
+                    raise
+                wait = _BASE_BACKOFF_SECONDS * (2 ** (attempt - 1))
+                print(f"[GeminiModel] {self.model_id} got {exc.code} "
+                      f"(attempt {attempt}/{_MAX_RETRIES}), retrying in {wait:.0f}s...",
+                      flush=True)
+                time.sleep(wait)
 
 
 def _to_gemini_format(
