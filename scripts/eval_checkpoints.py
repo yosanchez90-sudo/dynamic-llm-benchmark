@@ -38,6 +38,16 @@ see PROJECT_BRIEF-adjacent notes / analysis/README.md — into a false
     an inherited default must never be implicit).
   - Every row logs the full resolved generation config, not just exec/
     baseline outcomes.
+  - A process-level watchdog (_ProcessWatchdog, added 2026-07-14) runs
+    alongside _TimeLimitCriteria. Re-reading job 9315777's log more
+    closely: it stalled mid-generate() with zero incremental output for
+    11.5h, which _TimeLimitCriteria can't catch (that check only runs
+    between successfully generated tokens — a stuck forward pass never
+    gets back to it). The watchdog is a background thread that force-exits
+    the process after --watchdog-timeout seconds of no completed
+    generate() call, independent of the main thread's cooperation. See
+    _ProcessWatchdog's docstring for why this works and why it kills the
+    whole shard rather than just the stuck problem.
 
 Usage:
     python scripts/eval_checkpoints.py \\
@@ -118,6 +128,16 @@ class _TimeLimitCriteria:
     safety net for the real hang recorded in job 9315777 (see module
     docstring), NOT a substitute for no_repeat_ngram_size, which must never
     be re-added here (see module docstring for why).
+
+    LIMITATION (found 2026-07-14, re-examining job 9315777's log): this is
+    only checked BETWEEN successfully generated tokens, inside generate()'s
+    own loop. If a single forward pass hangs — the log shows zero
+    incremental output for 11.5h at epoch5/inst1/problem75, not slow-but-
+    progressing output, consistent with a CUDA/driver-level stall rather
+    than a token-generation loop — this criteria is never re-invoked, and
+    what actually ended job 9315777 was SLURM's job-level --time limit, not
+    this class. See _ProcessWatchdog below for the process-external guard
+    that covers that gap.
     """
 
     def __init__(self, max_seconds: float):
@@ -129,6 +149,75 @@ class _TimeLimitCriteria:
         import torch
         done = self._time.monotonic() > self.deadline
         return torch.full((input_ids.shape[0],), done, dtype=torch.bool, device=input_ids.device)
+
+
+WATCHDOG_TIMEOUT_S = 900  # ~7x the slowest measured single generate() call (~130s); see module docstring
+
+
+class _ProcessWatchdog:
+    """Background thread that force-kills the whole process if no
+    generate() call has completed for `timeout_s`.
+
+    Why a thread and not just a longer _TimeLimitCriteria: that criteria is
+    a callback inside generate()'s own token loop, so it can't fire if a
+    single forward pass never returns control (a stuck CUDA/driver call,
+    not a slow-but-progressing generation — see _TimeLimitCriteria's
+    docstring). A watchdog THREAD works around this because PyTorch's CUDA
+    calls release the GIL while blocked on the device (standard behavior,
+    needed for e.g. DataLoader workers to overlap with GPU compute) — so
+    this thread keeps running and can call os._exit() even while the main
+    thread is wedged inside a single generate() call that will never
+    return. os._exit() is an unconditional process kill: it does not
+    require the stuck thread's cooperation.
+
+    This kills the WHOLE shard job (not just the one stuck problem) — that
+    is intentional. There's no way to safely abandon one stuck CUDA call
+    and continue in the same process (the CUDA context may be corrupted).
+    The existing sharded-submission design already treats "resubmit only
+    the failed shards" as normal recovery (see submit_epoch_curve_shards.py
+    and merge_epoch_curve_shards.py), so a hard process exit here is a
+    faster-detecting version of the same recovery path SLURM's own --time
+    limit already provides — not a new failure mode, just a much shorter
+    time-to-detection (minutes instead of hours) than waiting for the full
+    job time limit to elapse.
+
+    kick() must be called immediately before each generate() call so the
+    deadline reflects "this call has this long to complete."
+    """
+
+    def __init__(self, timeout_s: float = WATCHDOG_TIMEOUT_S):
+        import threading
+        import time
+        self._time = time
+        self._timeout_s = timeout_s
+        self._deadline = time.monotonic() + timeout_s
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+
+    def start(self) -> "_ProcessWatchdog":
+        self._thread.start()
+        return self
+
+    def kick(self) -> None:
+        self._deadline = self._time.monotonic() + self._timeout_s
+
+    def stop(self) -> None:
+        self._stop.set()
+
+    def _run(self) -> None:
+        while not self._stop.wait(timeout=5):
+            if self._time.monotonic() > self._deadline:
+                import os
+                print(
+                    f"\n[WATCHDOG] no generate() call completed for "
+                    f"{self._timeout_s}s — forcing process exit so the "
+                    f"SLURM shard can be resubmitted (this is distinct "
+                    f"from the {DEFAULT_MAX_SECONDS}s in-generate() "
+                    f"_TimeLimitCriteria, which only fires between "
+                    f"tokens and would not catch a stuck forward pass).",
+                    flush=True,
+                )
+                os._exit(99)  # distinct exit code for triage in sacct/logs
 
 
 def resolved_generation_config(do_sample: bool, seed: int | None, max_seconds: float) -> dict:
@@ -152,8 +241,14 @@ def resolved_generation_config(do_sample: bool, seed: int | None, max_seconds: f
 
 
 def _run_inference(model, tokenizer, problems, do_sample: bool, seed: int | None,
-                    max_seconds: float) -> list[str]:
-    """Return raw response strings for each problem, for one (do_sample, seed) draw."""
+                    max_seconds: float, watchdog: "_ProcessWatchdog | None" = None) -> list[str]:
+    """Return raw response strings for each problem, for one (do_sample, seed) draw.
+
+    watchdog: kicked immediately before each generate() call so a stuck
+    forward pass (job 9315777's failure mode — see _ProcessWatchdog) is
+    caught even though _TimeLimitCriteria can't see it. Optional so this
+    function stays independently testable/callable without a live watchdog.
+    """
     import torch
     from transformers import StoppingCriteriaList
 
@@ -175,6 +270,8 @@ def _run_inference(model, tokenizer, problems, do_sample: bool, seed: int | None
         if do_sample:
             gen_kwargs["temperature"] = 0.2
             gen_kwargs["top_p"] = 1.0
+        if watchdog is not None:
+            watchdog.kick()
         with torch.inference_mode():
             out_ids = model.generate(**inputs, **gen_kwargs)
         new_tokens = out_ids[0][inputs["input_ids"].shape[1]:]
@@ -221,6 +318,10 @@ def main() -> None:
                         help=f"Wall-clock cutoff per generation call, guarding against a genuine "
                              f"hang (see module docstring). Default {DEFAULT_MAX_SECONDS}s, sized "
                              f"empirically from measured throughput, not inherited.")
+    parser.add_argument("--watchdog-timeout", type=float, default=WATCHDOG_TIMEOUT_S,
+                        help=f"Process-external guard against a stuck generate() call that "
+                             f"--gen-max-seconds can't catch (see _ProcessWatchdog). Default "
+                             f"{WATCHDOG_TIMEOUT_S}s. Set to 0 to disable.")
     parser.add_argument("--greedy", action=argparse.BooleanOptionalAction, default=True,
                         help="Include a greedy (do_sample=False) draw — the primary measurement "
                              "the checkpoint-selection rule gates on (default: on)")
@@ -288,6 +389,12 @@ def main() -> None:
         dtype=dtype, device_map="auto", local_files_only=True,
     )
     base.eval()
+
+    watchdog = None
+    if args.watchdog_timeout > 0:
+        watchdog = _ProcessWatchdog(args.watchdog_timeout).start()
+        print(f"Watchdog armed: {args.watchdog_timeout}s per generate() call "
+              f"(process-external — see _ProcessWatchdog docstring)")
 
     # ── discover checkpoint dirs ──────────────────────────────────────────────
     # SFTTrainer names them checkpoint-<step>. Map epoch → step dir.
@@ -364,7 +471,7 @@ def main() -> None:
 
                 print(f"  inst{inst_id}/{draw_label}: generating {len(problems)} responses…", flush=True)
                 responses = _run_inference(model, tokenizer, problems, do_sample, seed,
-                                            args.gen_max_seconds)
+                                            args.gen_max_seconds, watchdog=watchdog)
 
                 print(f"  inst{inst_id}/{draw_label}: scoring…", flush=True)
                 scores = _score_responses(problems, responses, args.timeout)
@@ -387,6 +494,9 @@ def main() -> None:
 
                 print(f"  inst{inst_id}/{draw_label}: exec={scores['exec_rate']:.1%}  "
                       f"baseline_pass={scores['baseline_pass']:.1%}")
+
+    if watchdog is not None:
+        watchdog.stop()
 
     print(f"\nResults saved: {out_path}")
 
