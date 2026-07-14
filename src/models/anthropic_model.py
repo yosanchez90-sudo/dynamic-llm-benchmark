@@ -49,8 +49,16 @@ class AnthropicModel(Model):
         }
         if system_msg:
             api_kwargs["system"] = system_msg
-        if cfg.do_sample and cfg.top_p is not None:
+        # Some Claude models 400 if both temperature and top_p are set
+        # ("cannot both be specified for this model") — found running the
+        # Haiku 4.5 pilot. temperature is this project's pinned methodological
+        # knob (PROJECT_BRIEF.md 5.4); top_p=1.0 in every config here is a
+        # mathematical no-op (no truncation) anyway, so only send top_p when
+        # it's an actual constraint (<1.0), and drop temperature in that case
+        # to respect the model's "only one" rule.
+        if cfg.do_sample and cfg.top_p is not None and cfg.top_p < 1.0:
             api_kwargs["top_p"] = cfg.top_p
+            del api_kwargs["temperature"]
 
         response = self.client.messages.create(**api_kwargs)
 
@@ -82,8 +90,11 @@ class AnthropicModel(Model):
             generation_config={
                 "max_new_tokens": cfg.max_new_tokens,
                 "do_sample": cfg.do_sample,
-                "temperature": temperature,
-                "top_p": cfg.top_p,
+                # Log what was actually sent, not the config's nominal values —
+                # api_kwargs is the source of truth since temperature/top_p are
+                # mutually exclusive on this API (see above).
+                "temperature": api_kwargs.get("temperature"),
+                "top_p": api_kwargs.get("top_p"),
                 "seed": cfg.seed,
             },
             timestamp=datetime.now(timezone.utc).isoformat(),
