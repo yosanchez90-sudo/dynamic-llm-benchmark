@@ -51,6 +51,24 @@ CONDITIONS = [
 ]
 
 
+def _mem_for(config_name: str, is_slow: bool) -> str:
+    """--mem was a flat 16G for every shard regardless of model size or
+    condition until 2026-07-14, when 3 of 66 shards (all bp_gpt5 -- the
+    long-output condition -- 2x 1.5B, 1x 7B) OOM-killed 6.5-8.5h into an
+    8h-budgeted run: jobs 9372594, 9372595, 9372627 (see
+    analysis/README_QUARANTINE.md). 16G left ~2GB headroom for a 7B model's
+    weights alone (14GB bf16), and bp_gpt5's longer generations (bigger
+    KV-cache / accumulated response text) push even the 1.5B variant over a
+    flat budget that was never differentiated by size or condition. V100
+    nodes have 512GB (see CLAUDE.md), so headroom here doesn't meaningfully
+    compete for scheduling.
+    """
+    is_7b = "qwen7b" in config_name
+    if is_7b:
+        return "56G" if is_slow else "32G"
+    return "40G" if is_slow else "24G"
+
+
 @dataclass
 class Shard:
     config_name: str
@@ -60,6 +78,7 @@ class Shard:
     sampling_flag: str
     baseline_flag: str
     time_limit: str
+    mem: str
     out_path: Path
 
 
@@ -68,6 +87,7 @@ def build_plan() -> list[Shard]:
     for config_name, is_slow in CONDITIONS:
         single_time = "10:00:00" if is_slow else "05:00:00"
         double_time = "16:00:00" if is_slow else "08:00:00"  # epoch1+baseline = 2x generations
+        mem = _mem_for(config_name, is_slow)
 
         # epoch 1, folded with the epoch=0 baseline (same instrument requirement:
         # each condition's own CSV carries its own pre-finetune measurement).
@@ -79,6 +99,7 @@ def build_plan() -> list[Shard]:
             sampling_flag="",
             baseline_flag="--baseline",
             time_limit=double_time,
+            mem=mem,
             out_path=SHARD_DIR / f"{config_name}__epoch01_baseline.csv",
         ))
 
@@ -91,6 +112,7 @@ def build_plan() -> list[Shard]:
                 sampling_flag="",
                 baseline_flag="",
                 time_limit=single_time,
+                mem=mem,
                 out_path=SHARD_DIR / f"{config_name}__epoch{ep:02d}.csv",
             ))
 
@@ -103,6 +125,7 @@ def build_plan() -> list[Shard]:
             sampling_flag="",
             baseline_flag="",
             time_limit=single_time,
+            mem=mem,
             out_path=SHARD_DIR / f"{config_name}__epoch30_greedy.csv",
         ))
         for seed in SAMPLING_SEEDS:
@@ -114,6 +137,7 @@ def build_plan() -> list[Shard]:
                 sampling_flag=f"--sampling-seeds {seed}",
                 baseline_flag="",
                 time_limit=single_time,
+                mem=mem,
                 out_path=SHARD_DIR / f"{config_name}__epoch30_sampling_seed{seed}.csv",
             ))
 
@@ -132,16 +156,31 @@ def submit(shard: Shard) -> str:
     ])
     job_name = f"epc_{shard.config_name.replace('finetune_', '')}_{shard.label}"
     # env -u BASH_ENV per CLAUDE.md — avoids BASH_ENV hook conflicts on sbatch.
+    # --mem overrides run_eval_checkpoints_shard.slurm's flat #SBATCH --mem=16G
+    # default (sbatch CLI args win over in-script pragmas) — see _mem_for()'s
+    # docstring for why a flat value across model sizes/conditions OOM-killed
+    # 3 of the first 66 shards.
     cmd = [
         "env", "-u", "BASH_ENV",
         "sbatch",
         f"--job-name={job_name}",
         f"--time={shard.time_limit}",
+        f"--mem={shard.mem}",
         f"--export={env_exports}",
         "--parsable",
         str(SLURM_SCRIPT),
     ]
-    result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+    # sbatch itself has no built-in call timeout (see analysis/README_QUARANTINE.md's
+    # subprocess-timeout audit) — a hung slurmctld would otherwise block this
+    # call, and every shard after it in the submission loop, forever.
+    try:
+        result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=30)
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError(
+            f"sbatch timed out after 30s for {job_name} — slurmctld may be "
+            f"unresponsive; not retried automatically, rerun the submission "
+            f"script once it's confirmed healthy (squeue/sinfo)"
+        ) from e
     if result.returncode != 0:
         raise RuntimeError(f"sbatch failed for {job_name}: {result.stderr}")
     return result.stdout.strip().split(";")[0]  # --parsable prints "<jobid>;<cluster>" or just "<jobid>"
@@ -156,7 +195,7 @@ def main() -> None:
     print(f"Shard plan: {len(plan)} shards across {len(CONDITIONS)} conditions "
           f"({len(NON_FINAL_EPOCHS) + 1} epoch shards + 4 epoch-30 draw shards each)")
     for s in plan:
-        print(f"  {s.config_name:35s} {s.label:26s} time={s.time_limit} out={s.out_path.name}")
+        print(f"  {s.config_name:35s} {s.label:26s} time={s.time_limit} mem={s.mem} out={s.out_path.name}")
 
     if args.dry_run:
         print("\n--dry-run: no jobs submitted.")
@@ -176,6 +215,7 @@ def main() -> None:
             "epoch_arg": s.epoch_arg,
             "out_path": str(s.out_path.relative_to(ROOT)),
             "time_limit": s.time_limit,
+            "mem": s.mem,
         })
 
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")

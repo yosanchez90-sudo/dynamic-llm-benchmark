@@ -3,7 +3,13 @@
 #SBATCH --partition=k2-gpu-v100
 #SBATCH --gres=gpu:v100:1
 #SBATCH --time=08:00:00
-#SBATCH --mem=16G
+#SBATCH --mem=32G
+# NOTE: submit_epoch_curve_shards.py normally overrides this per-shard via
+# `sbatch --mem=...` (CLI args win over #SBATCH pragmas) — see that script's
+# _mem_for(): a flat mem request regardless of model size/condition
+# OOM-killed 3 of the first 66 shards (all bp_gpt5, the long-output
+# condition). This 32G is only the fallback for a direct/manual sbatch of
+# this file, sized to the smaller (1.5B fast) case, not the 7B/bp_gpt5 ones.
 #SBATCH --cpus-per-task=4
 #SBATCH --output=/mnt/scratch2/users/%u/dissertation/logs/%x-%j.out
 #SBATCH --error=/mnt/scratch2/users/%u/dissertation/logs/%x-%j.err
