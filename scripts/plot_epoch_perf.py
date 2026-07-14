@@ -16,6 +16,16 @@ Usage:
               analysis/epoch_perf_finetune_qwen1_5b_inst1_30ep.csv \\
         --metric baseline_pass \\
         --out analysis/figures/epoch_perf_combined.pdf
+
+NOTE on --draw: the finetune_rebuild/epoch_perf_*.csv files (written by the
+post-2026-07-12 eval_checkpoints.py) carry a greedy row for every epoch PLUS
+3 extra sampling_seed{42,43,44} rows at epoch 30 only (R=3 secondary draws).
+plot() groups purely by (instantiation, epoch) x-position, so leaving all
+draws in would put 4 stacked points at x=30 per instantiation and draw a
+zigzag between them. --draw greedy (the default) keeps one consistent
+value per epoch, which is what a curve needs; the sampling draws are a
+separate endpoint-table concern (mean+-SD at epoch 30), not part of the
+curve.
 """
 from __future__ import annotations
 
@@ -105,6 +115,12 @@ def main() -> None:
                         help="CSV file(s) from eval_checkpoints.py")
     parser.add_argument("--metric", choices=["baseline_pass", "exec_rate"],
                         default="baseline_pass")
+    parser.add_argument("--draw", default="greedy",
+                        help="Which 'draw' column value to plot as the curve (default: greedy, "
+                             "the primary measurement present at every epoch). CSVs written after "
+                             "2026-07-12 also carry sampling_seed{42,43,44} rows at epoch 30 only "
+                             "-- left in, they'd stack multiple points at x=30. Pass '' to disable "
+                             "filtering (e.g. for older single-draw CSVs with no 'draw' column).")
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
 
@@ -112,6 +128,8 @@ def main() -> None:
     model_names: list[str] = []
     for csv_path in args.csv:
         rows = _read_csv(csv_path)
+        if args.draw and rows and "draw" in rows[0]:
+            rows = [r for r in rows if r["draw"] == args.draw]
         all_rows.extend(rows)
         if rows:
             model_names.append(_model_shortname(rows[0].get("model", csv_path.stem)))
