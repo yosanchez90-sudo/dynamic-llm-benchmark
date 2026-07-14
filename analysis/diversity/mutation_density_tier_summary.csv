@@ -1,0 +1,5 @@
+tier,n_templates,mean_mutants,min,max,in_band,within_soft_margin
+L1,15,7.7,5,11,15,15
+L2,15,13.4,10,15,15,15
+L3,15,21.1,17,26,15,15
+L4,15,35.6,30,40,15,15

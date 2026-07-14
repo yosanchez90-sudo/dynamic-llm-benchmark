@@ -628,5 +628,635 @@
     },
     "in_band": true,
     "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-bucket-001",
+    "tier": "L3",
+    "expected_band": [
+      17,
+      23
+    ],
+    "actual_total": 20,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 6,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 4,
+      "SDL": 3,
+      "RSM": 1,
+      "TOTAL": 20
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-clamp-seq-001",
+    "tier": "L3",
+    "expected_band": [
+      18,
+      24
+    ],
+    "actual_total": 21,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 6,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 4,
+      "SDL": 4,
+      "RSM": 1,
+      "TOTAL": 21
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-count-001",
+    "tier": "L3",
+    "expected_band": [
+      19,
+      25
+    ],
+    "actual_total": 22,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 6,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 4,
+      "SDL": 4,
+      "RSM": 1,
+      "TOTAL": 22
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-dispatch-001",
+    "tier": "L3",
+    "expected_band": [
+      23,
+      29
+    ],
+    "actual_total": 26,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 7,
+      "LOR": 1,
+      "CR": 12,
+      "BM": 0,
+      "SDL": 4,
+      "RSM": 2,
+      "TOTAL": 26
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-filter-001",
+    "tier": "L3",
+    "expected_band": [
+      16,
+      22
+    ],
+    "actual_total": 19,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 6,
+      "LOR": 0,
+      "CR": 4,
+      "BM": 4,
+      "SDL": 3,
+      "RSM": 1,
+      "TOTAL": 19
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-max-001",
+    "tier": "L3",
+    "expected_band": [
+      17,
+      23
+    ],
+    "actual_total": 20,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 4,
+      "LOR": 1,
+      "CR": 6,
+      "BM": 2,
+      "SDL": 4,
+      "RSM": 2,
+      "TOTAL": 20
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-minmax-001",
+    "tier": "L3",
+    "expected_band": [
+      18,
+      24
+    ],
+    "actual_total": 21,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 6,
+      "LOR": 1,
+      "CR": 3,
+      "BM": 4,
+      "SDL": 4,
+      "RSM": 2,
+      "TOTAL": 21
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-nested-001",
+    "tier": "L3",
+    "expected_band": [
+      19,
+      25
+    ],
+    "actual_total": 22,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 6,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 4,
+      "SDL": 3,
+      "RSM": 1,
+      "TOTAL": 22
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-nested2-001",
+    "tier": "L3",
+    "expected_band": [
+      16,
+      22
+    ],
+    "actual_total": 19,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 7,
+      "LOR": 0,
+      "CR": 6,
+      "BM": 2,
+      "SDL": 3,
+      "RSM": 1,
+      "TOTAL": 19
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-parse-001",
+    "tier": "L3",
+    "expected_band": [
+      15,
+      21
+    ],
+    "actual_total": 18,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 6,
+      "LOR": 0,
+      "CR": 4,
+      "BM": 4,
+      "SDL": 3,
+      "RSM": 1,
+      "TOTAL": 18
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-range-count-001",
+    "tier": "L3",
+    "expected_band": [
+      14,
+      20
+    ],
+    "actual_total": 17,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 6,
+      "LOR": 1,
+      "CR": 3,
+      "BM": 4,
+      "SDL": 2,
+      "RSM": 1,
+      "TOTAL": 17
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-search-001",
+    "tier": "L3",
+    "expected_band": [
+      19,
+      25
+    ],
+    "actual_total": 22,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 4,
+      "LOR": 1,
+      "CR": 9,
+      "BM": 4,
+      "SDL": 0,
+      "RSM": 4,
+      "TOTAL": 22
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-sum-001",
+    "tier": "L3",
+    "expected_band": [
+      19,
+      25
+    ],
+    "actual_total": 22,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 6,
+      "LOR": 0,
+      "CR": 7,
+      "BM": 4,
+      "SDL": 3,
+      "RSM": 1,
+      "TOTAL": 22
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-tally-001",
+    "tier": "L3",
+    "expected_band": [
+      21,
+      27
+    ],
+    "actual_total": 24,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 3,
+      "LOR": 0,
+      "CR": 10,
+      "BM": 6,
+      "SDL": 4,
+      "RSM": 1,
+      "TOTAL": 24
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L3-transform-001",
+    "tier": "L3",
+    "expected_band": [
+      21,
+      27
+    ],
+    "actual_total": 24,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 4,
+      "LOR": 0,
+      "CR": 9,
+      "BM": 4,
+      "SDL": 4,
+      "RSM": 1,
+      "TOTAL": 24
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-aggregate-001",
+    "tier": "L4",
+    "expected_band": [
+      34,
+      40
+    ],
+    "actual_total": 37,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 11,
+      "LOR": 1,
+      "CR": 7,
+      "BM": 8,
+      "SDL": 7,
+      "RSM": 1,
+      "TOTAL": 37
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-bucketize-001",
+    "tier": "L4",
+    "expected_band": [
+      34,
+      40
+    ],
+    "actual_total": 37,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 10,
+      "LOR": 1,
+      "CR": 10,
+      "BM": 8,
+      "SDL": 6,
+      "RSM": 2,
+      "TOTAL": 37
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-dispatch2-001",
+    "tier": "L4",
+    "expected_band": [
+      35,
+      41
+    ],
+    "actual_total": 38,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 11,
+      "LOR": 1,
+      "CR": 12,
+      "BM": 4,
+      "SDL": 7,
+      "RSM": 2,
+      "TOTAL": 38
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-flow-001",
+    "tier": "L4",
+    "expected_band": [
+      30,
+      36
+    ],
+    "actual_total": 33,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 10,
+      "LOR": 1,
+      "CR": 5,
+      "BM": 8,
+      "SDL": 6,
+      "RSM": 2,
+      "TOTAL": 33
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-grade-001",
+    "tier": "L4",
+    "expected_band": [
+      37,
+      43
+    ],
+    "actual_total": 40,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 8,
+      "LOR": 1,
+      "CR": 14,
+      "BM": 8,
+      "SDL": 7,
+      "RSM": 2,
+      "TOTAL": 40
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-matrix-001",
+    "tier": "L4",
+    "expected_band": [
+      29,
+      35
+    ],
+    "actual_total": 32,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 10,
+      "LOR": 2,
+      "CR": 8,
+      "BM": 4,
+      "SDL": 5,
+      "RSM": 2,
+      "TOTAL": 32
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-mega-001",
+    "tier": "L4",
+    "expected_band": [
+      36,
+      42
+    ],
+    "actual_total": 39,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 12,
+      "LOR": 1,
+      "CR": 9,
+      "BM": 6,
+      "SDL": 8,
+      "RSM": 2,
+      "TOTAL": 39
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-merge-001",
+    "tier": "L4",
+    "expected_band": [
+      35,
+      41
+    ],
+    "actual_total": 38,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 13,
+      "LOR": 1,
+      "CR": 6,
+      "BM": 10,
+      "SDL": 6,
+      "RSM": 1,
+      "TOTAL": 38
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-orchestrate-001",
+    "tier": "L4",
+    "expected_band": [
+      35,
+      41
+    ],
+    "actual_total": 38,
+    "by_operator": {
+      "AOR": 2,
+      "ROR": 11,
+      "LOR": 2,
+      "CR": 7,
+      "BM": 8,
+      "SDL": 6,
+      "RSM": 2,
+      "TOTAL": 38
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-partition-001",
+    "tier": "L4",
+    "expected_band": [
+      30,
+      36
+    ],
+    "actual_total": 33,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 12,
+      "LOR": 0,
+      "CR": 4,
+      "BM": 8,
+      "SDL": 8,
+      "RSM": 1,
+      "TOTAL": 33
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-pipeline-001",
+    "tier": "L4",
+    "expected_band": [
+      35,
+      41
+    ],
+    "actual_total": 38,
+    "by_operator": {
+      "AOR": 3,
+      "ROR": 8,
+      "LOR": 1,
+      "CR": 12,
+      "BM": 6,
+      "SDL": 6,
+      "RSM": 2,
+      "TOTAL": 38
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-reduce-001",
+    "tier": "L4",
+    "expected_band": [
+      31,
+      37
+    ],
+    "actual_total": 34,
+    "by_operator": {
+      "AOR": 0,
+      "ROR": 10,
+      "LOR": 1,
+      "CR": 7,
+      "BM": 8,
+      "SDL": 6,
+      "RSM": 2,
+      "TOTAL": 34
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-route-001",
+    "tier": "L4",
+    "expected_band": [
+      32,
+      38
+    ],
+    "actual_total": 35,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 10,
+      "LOR": 1,
+      "CR": 7,
+      "BM": 8,
+      "SDL": 6,
+      "RSM": 2,
+      "TOTAL": 35
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-scan-001",
+    "tier": "L4",
+    "expected_band": [
+      27,
+      33
+    ],
+    "actual_total": 30,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 10,
+      "LOR": 1,
+      "CR": 6,
+      "BM": 6,
+      "SDL": 4,
+      "RSM": 2,
+      "TOTAL": 30
+    },
+    "in_band": true,
+    "within_soft_margin": true
+  },
+  {
+    "template_id": "L4-tally2-001",
+    "tier": "L4",
+    "expected_band": [
+      29,
+      35
+    ],
+    "actual_total": 32,
+    "by_operator": {
+      "AOR": 1,
+      "ROR": 10,
+      "LOR": 1,
+      "CR": 10,
+      "BM": 2,
+      "SDL": 6,
+      "RSM": 2,
+      "TOTAL": 32
+    },
+    "in_band": true,
+    "within_soft_margin": true
   }
 ]
