@@ -1,0 +1,35 @@
+# Coverage backfill: Claude Sonnet 4.6 on dynamic L1L2, zero-shot, instantiation 5.
+# API model — no GPU needed; runs on k2-medpri via run_eval_api.slurm.
+# Real-time API (Anthropic SDK's built-in retry/backoff on 429/5xx) — no
+# batch path built for Anthropic per session decision (discount doesn't
+# repay the engineering here).
+
+name: claude_sonnet_4_6__dynamic_L1L2__zeroshot__inst5
+
+task: test_generation
+
+model:
+  provider: anthropic
+  id: claude-sonnet-4-6
+  revision: claude-sonnet-4-6
+
+benchmark: dynamic
+instantiation_id: "5"
+instantiation_seed: 5
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic
