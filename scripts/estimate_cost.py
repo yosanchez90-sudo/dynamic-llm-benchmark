@@ -23,15 +23,25 @@ ASSUMPTIONS (read before trusting the numbers):
    file), so this is the correct number for THEIR cost, but must not be
    reused as a proxy for non-reasoning models.
 
-3. Output tokens/problem for Claude Sonnet/Haiku and Gemini Pro/Flash (no
-   logged usage exists for them yet) are estimated from the VISIBLE response
-   text length (chars / 4) pooled across every existing non-reasoning-visible
-   generation on disk (GPT-5's and GPT-5-mini's visible `extracted_test_file`
-   text, plus all three Qwen sizes) — i.e. "how many characters of pytest
-   code did a model actually write for a problem at this tier", independent
-   of any one model's reasoning-token overhead. This is a real assumption,
-   not measured data for these four models specifically; treat the resulting
-   dollar figures as an estimate, not a quote.
+3. Per-(model, tier) cost is priced from that model's own real logged
+   `cost_usd`, averaged, whenever ANY real usage exists for that (model,
+   tier) pair — preferred over every proxy below, learned the hard way: the
+   first Anthropic release used the pooled-proxy estimate (assumption 3 as
+   it read before this was fixed) and it underestimated real cost by
+   2.5-3x, because Claude writes far more verbose test suites than GPT-5's
+   reasoning-inflated / Qwen's terse output suggested. Once a model has run
+   anywhere, its own numbers win — this is why re-running this script after
+   each tranche matters, not just before the first one.
+
+   For (model, tier) pairs with zero real data (typically L4, and any
+   model that hasn't been piloted yet), output tokens/problem fall back to
+   the VISIBLE response text length (chars / 4) pooled across every
+   existing non-reasoning-visible generation on disk — i.e. "how many
+   characters of pytest code did a model actually write for a problem at
+   this tier", independent of any one model's reasoning-token overhead.
+   This is a real assumption for those still-missing cells, not measured
+   data; the per-tier breakdown printed for each model tags which of its
+   tiers are (real) vs (proxy) so this is never silently hidden.
 
 4. Batch discount: OpenAI's Batch API bills at 50% of the real-time rates in
    src/pricing.py's PRICING table (see that file's docstring) — applied here
@@ -129,6 +139,20 @@ def _pooled_visible_output_tokens(rows) -> dict[str, float]:
     return {t: (sum(v) / len(v)) / CHARS_PER_TOKEN for t, v in by_tier.items() if v}
 
 
+def _real_cost_per_problem(rows) -> dict[tuple[str, str], float]:
+    """Directly average logged cost_usd per (model_label, tier) — the
+    source of truth once a model has any real usage at all, preferred over
+    every token-based proxy below. Learned the hard way: the Anthropic
+    release showed the cross-model output-token proxy underestimated real
+    cost by 2.5-3x; a model's own billed dollars beats any proxy."""
+    by_model_tier = defaultdict(list)
+    for d in rows:
+        cost = d.get("cost_usd")
+        if cost is not None:
+            by_model_tier[(d["model_label"], d["tier"])].append(cost)
+    return {k: sum(v) / len(v) for k, v in by_model_tier.items()}
+
+
 def _qwen_latency(rows) -> dict[str, dict[str, float]]:
     by_model_tier = defaultdict(lambda: defaultdict(list))
     for d in rows:
@@ -145,6 +169,7 @@ def main() -> None:
     openai_out = _openai_output_tokens(rows)
     pooled_out = _pooled_visible_output_tokens(rows)
     qwen_lat = _qwen_latency(rows)
+    real_cost = _real_cost_per_problem(rows)
 
     # Tier-to-tier growth ratio (relative to L1), from the pooled visible-text
     # proxy — used to project Qwen L3/L4 latency where no local data exists yet.
@@ -209,16 +234,24 @@ def main() -> None:
         rate_note = "batch, 50% off" if is_openai else "real-time (no batch path built)"
 
         cost = 0.0
+        detail = []
         for tier, n in gap_problems_by_tier.items():
-            it = input_tok.get(tier, 0)
-            if is_openai:
-                ot = openai_out.get(model.model_label, {}).get(tier, pooled_out.get(tier, 0))
+            real = real_cost.get((model.model_label, tier))
+            if real is not None:
+                per_problem = real * discount
+                detail.append(f"{tier}:{n}@${per_problem:.5f}(real)")
             else:
-                ot = pooled_out.get(tier, 0)
-            cost += n * (it * in_rate + ot * out_rate) / 1_000_000 * discount
+                it = input_tok.get(tier, 0)
+                if is_openai:
+                    ot = openai_out.get(model.model_label, {}).get(tier, pooled_out.get(tier, 0))
+                else:
+                    ot = pooled_out.get(tier, 0)
+                per_problem = (it * in_rate + ot * out_rate) / 1_000_000 * discount
+                detail.append(f"{tier}:{n}@${per_problem:.5f}(proxy)")
+            cost += n * per_problem
         grand_total_usd += cost
         print(f"{model.model_label:<34} {total_missing:4d} problems  "
-              f"${cost:.2f}  ({rate_note})")
+              f"${cost:.2f}  ({rate_note})  [{', '.join(detail)}]")
 
     print()
     print(f"TOTAL projected spend (Claude + Gemini + GPT, GPT at batch rate): ${grand_total_usd:.2f}")
