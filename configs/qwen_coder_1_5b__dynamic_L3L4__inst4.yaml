@@ -1,0 +1,34 @@
+# Coverage-gap backfill: Qwen2.5-Coder-1.5bB on dynamic L3L4, zero-shot, instantiation 4.
+# Local GPU model — k2-gpu-a100mig, gpu:2g.20gb:1. V100 is off-limits (66 epoch-curve shards).
+# Cost: GPU-hours only, see scripts/estimate_cost.py.
+
+name: qwen_coder_1_5b__dynamic_L3L4__zeroshot__inst4
+
+task: test_generation
+
+model:
+  provider: local
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: 2e1fd397ee46e1388853d2af2c993145b0f1098a   # pinned SHA
+  dtype: bfloat16
+
+benchmark: dynamic
+instantiation_id: "4"
+instantiation_seed: 4
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L3", "L4"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic
