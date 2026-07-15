@@ -41,10 +41,33 @@ Usage:
         data/results/finetune_rebuild/epoch_perf_finetune_qwen1_5b_{inst1,bp_own,bp_gpt5}_30ep.csv \\
         --out analysis/figures/epoch_perf_qwen1_5b_bp_comparison.pdf \\
         --also-png \\
-        --gap-csv analysis/figures/epoch_perf_qwen1_5b_bp_gap.csv
+        --gap-csv analysis/derived/epoch_perf_qwen1_5b_bp_gap.csv
 
     # If the greedy draw is labelled differently in some CSV:
     python scripts/plot_epoch_perf_comparison.py ... --draw <real_label>
+
+    # Treat a missing epoch-0 baseline row as an error instead of a warning:
+    python scripts/plot_epoch_perf_comparison.py ... --strict
+
+Hardening notes (2026-07-15, external review):
+  - load_condition() raises ValueError on a duplicate (epoch, instantiation)
+    row instead of silently letting the later row win. The --draw filter is
+    the first line of defense against the multi-draw stacking bug (see
+    point 1 above), but it only works if DRAW_COLS actually contains the
+    real draw-column name; if a CSV ever renames that column to something
+    not yet in DRAW_COLS, --draw filtering silently does nothing and a
+    zero-valued sampling row would overwrite/stack on the real one. The
+    duplicate-row guard is what actually catches that, not the filter.
+  - Missing epoch 0 (no pre-fine-tune baseline anchor -- the other symptom
+    the old legacy figures had) prints a warning to stderr by default, or
+    raises with --strict.
+  - main() refuses to plot CSVs that span more than one model value --
+    exits with the offending model list rather than silently blending
+    them into one "Model A & Model B" title.
+  - _pass_rate() raises if a rate-column value exceeds 1.0: PASS_RATE_COLS
+    assumes a 0-1 fraction (true of the real 'baseline_pass' column); a
+    value >1 means that assumption is violated for this schema (e.g. it
+    actually stores a 0-100 percent), not that the value is fine.
 """
 from __future__ import annotations
 
@@ -79,7 +102,16 @@ def _pass_rate(row: dict, fieldnames: list[str]) -> float:
     store raw counts instead."""
     rate_col = _first_present(fieldnames, PASS_RATE_COLS)
     if rate_col is not None and row.get(rate_col) not in (None, ""):
-        return float(row[rate_col])
+        value = float(row[rate_col])
+        if value > 1.0:
+            raise ValueError(
+                f"{rate_col}={value!r} exceeds 1.0 -- PASS_RATE_COLS assumes a 0-1 "
+                f"fraction (true of the real 'baseline_pass' column). This schema "
+                f"appears to store percent (0-100) instead, so the column-list "
+                f"assumption is violated for {rate_col!r}; fix the source data or "
+                f"add a percent-scaled column list before trusting this value."
+            )
+        return value
     pass_col = _first_present(fieldnames, N_PASS_COLS)
     total_col = _first_present(fieldnames, N_TOTAL_COLS)
     if pass_col and total_col and row.get(total_col):
@@ -99,9 +131,13 @@ CONDITION_LABELS = {
     "bp_gpt5": "bp_gpt5 (leaked-twin FT)",
 }
 CONDITION_COLORS = {
-    "inst1":   "#2ca02c",  # green
-    "bp_own":  "#ff7f0e",  # orange
-    "bp_gpt5": "#d62728",  # red
+    # Okabe-Ito colourblind-safe palette. The prior green/orange/red set
+    # (2026-07-14) made inst1 (control) vs bp_gpt5 (leaked-twin FT) --
+    # exactly the two conditions the headline contrast is between --
+    # indistinguishable under deuteranopia.
+    "inst1":   "#0072B2",  # blue
+    "bp_own":  "#009E73",  # green
+    "bp_gpt5": "#D55E00",  # vermillion
 }
 
 
@@ -128,11 +164,14 @@ def _model_shortname(model_id: str) -> str:
 
 # ── data loading ────────────────────────────────────────────────────────────
 
-def load_condition(path: Path, draw: str) -> dict:
+def load_condition(path: Path, draw: str, strict: bool = False) -> dict:
     """Returns {"epochs": [...], "seen": [...], "unseen": [...], "model": str},
     sorted by epoch, where seen = instantiation-1 pass rate and unseen =
     mean(instantiation 2, instantiation 3), filtered to a single `draw`
     value (skipped if the CSV has no draw column at all).
+
+    strict: raise instead of warn when epoch 0 (the pre-fine-tune baseline)
+    is missing.
     """
     rows = list(csv.DictReader(path.open()))
     if not rows:
@@ -156,7 +195,26 @@ def load_condition(path: Path, draw: str) -> dict:
     for r in rows:
         epoch = int(r["epoch"])
         inst = int(r[inst_col])
+        if inst in by_epoch_inst[epoch]:
+            raise ValueError(
+                f"duplicate row for (epoch={epoch}, instantiation={inst}) in {path} "
+                f"(detected draw column: {draw_col!r}, --draw={draw!r}) -- this is "
+                f"the multi-draw stacking bug: more than one row maps to the same "
+                f"(epoch, instantiation) point. The duplicate-row guard, not the "
+                f"--draw filter, is the real protection here -- it catches a "
+                f"draw column renamed past DRAW_COLS (so --draw filtering silently "
+                f"does nothing) before a zero-valued sampling row can silently "
+                f"overwrite or stack on the real one."
+            )
         by_epoch_inst[epoch][inst] = _pass_rate(r, fieldnames)
+
+    if 0 not in by_epoch_inst:
+        msg = (f"{path}: no epoch 0 (pre-fine-tune baseline) row -- no baseline "
+               f"anchor for the seen/unseen curves (the other symptom the old "
+               f"legacy comparison figures had)")
+        if strict:
+            raise ValueError(msg)
+        print(f"WARNING: {msg}", file=sys.stderr)
 
     epochs = sorted(by_epoch_inst)
     seen, unseen = [], []
@@ -270,6 +328,8 @@ def main() -> None:
                          help="Also save a .png next to --out for quick visual inspection")
     parser.add_argument("--gap-csv", type=Path, default=None,
                          help="Write the seen/unseen/gap table (at each condition's final epoch) here")
+    parser.add_argument("--strict", action="store_true",
+                         help="Raise instead of warn when a CSV is missing its epoch-0 baseline row")
     args = parser.parse_args()
 
     conditions: dict[str, dict] = {}
@@ -279,14 +339,19 @@ def main() -> None:
             print(f"WARNING: multiple input files map to condition {cond!r}; "
                   f"keeping the first, ignoring {csv_path}", file=sys.stderr)
             continue
-        conditions[cond] = load_condition(csv_path, args.draw)
+        conditions[cond] = load_condition(csv_path, args.draw, strict=args.strict)
 
     if not conditions:
         print("No usable data in the given CSV(s).", file=sys.stderr)
         sys.exit(1)
 
     model_names = {c["model"] for c in conditions.values() if c["model"]}
-    model_label = " & ".join(sorted(_model_shortname(m) for m in model_names)) or "?"
+    if len(model_names) > 1:
+        sys.exit(
+            f"ERROR: input CSVs span more than one model: {sorted(model_names)} -- "
+            f"pass one model's CSVs per invocation (per-model file lists), not a mix."
+        )
+    model_label = _model_shortname(next(iter(model_names))) if model_names else "?"
     title = (f"Contamination experiment — {model_label}\n"
              f"Seen (inst1, train) vs unseen (mean inst2/inst3, held-out) by condition")
 

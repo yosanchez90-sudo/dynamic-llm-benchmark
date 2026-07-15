@@ -6,11 +6,14 @@ colouring by instantiation instead of by condition so overlaid conditions
 were indistinguishable. Also checks the column-detection candidate lists
 against the real epoch_perf_*.csv schema when that data is present
 (data/ is gitignored, so it won't exist on a fresh clone -- skipped then,
-not failed).
+not failed), and the 2026-07-15 hardening fixes: duplicate-row guard,
+missing-epoch-0 warning/--strict, mixed-model refusal, and the >1.0
+pass-rate unit-sanity check.
 """
 from __future__ import annotations
 
 import csv
+import subprocess
 import sys
 from pathlib import Path
 
@@ -195,3 +198,187 @@ def test_real_condition_csv_loads_and_has_epoch_zero():
         assert data["epochs"][0] == 0, f"{csv_path.name} ({cond}) should include epoch 0"
         assert len(data["seen"]) == len(data["epochs"])
         assert len(data["unseen"]) == len(data["epochs"])
+
+
+# ── hardening fix 1: duplicate-row guard ─────────────────────────────────────
+# The --draw filter is the *first* line of defense against the multi-draw
+# stacking bug, but only if DRAW_COLS actually contains the real draw-column
+# name. These tests target the guard itself, independent of the filter, by
+# constructing a duplicate (epoch, instantiation) pair that survives
+# filtering (e.g. because the "draw" concept isn't in DRAW_COLS at all).
+
+def test_duplicate_epoch_instantiation_raises_even_with_no_draw_column(tmp_path):
+    """A CSV with no draw-like column at all (so --draw filtering is a
+    no-op) but two rows for the same (epoch, instantiation) must be
+    rejected outright, not silently let the second row win."""
+    csv_path = tmp_path / "epoch_perf_finetune_qwen1_5b_inst1_30ep.csv"
+    fieldnames = ["model", "epoch", "instantiation", "baseline_pass"]
+    rows = [
+        {"model": "m", "epoch": "30", "instantiation": "1", "baseline_pass": "0.5"},
+        {"model": "m", "epoch": "30", "instantiation": "1", "baseline_pass": "0.0"},  # duplicate!
+        {"model": "m", "epoch": "30", "instantiation": "2", "baseline_pass": "0.1"},
+    ]
+    with csv_path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        w.writerows(rows)
+
+    with pytest.raises(ValueError, match="duplicate row") as exc_info:
+        pepc.load_condition(csv_path, draw="greedy")
+
+    msg = str(exc_info.value)
+    assert str(csv_path) in msg
+    assert "epoch=30" in msg
+    assert "instantiation=1" in msg
+    assert "multi-draw stacking bug" in msg
+    assert "draw column: None" in msg  # no DRAW_COLS match in this fixture
+
+
+def test_duplicate_row_message_names_detected_draw_column(tmp_path):
+    """When a draw column IS present, the error should name it (so a
+    mis-set --draw value or a genuinely duplicated draw is diagnosable)."""
+    csv_path = tmp_path / "epoch_perf_finetune_qwen1_5b_inst1_30ep.csv"
+    rows = [
+        _row(30, 1, "greedy", 0.5),
+        _row(30, 1, "greedy", 0.5),  # exact duplicate under the active filter
+        _row(30, 2, "greedy", 0.1),
+    ]
+    _write_csv(csv_path, rows)
+
+    with pytest.raises(ValueError, match="duplicate row") as exc_info:
+        pepc.load_condition(csv_path, draw="greedy")
+    assert "draw column: 'draw'" in str(exc_info.value)
+
+
+# ── hardening fix 2: missing epoch 0 -- warn by default, raise with --strict ─
+
+def _no_epoch0_csv(path: Path) -> None:
+    rows = [_row(ep, inst, "greedy", 0.5) for ep in (1, 3, 30) for inst in (1, 2, 3)]
+    _write_csv(path, rows)
+
+
+def test_missing_epoch_zero_warns_to_stderr_by_default(tmp_path, capsys):
+    csv_path = tmp_path / "epoch_perf_finetune_qwen1_5b_inst1_30ep.csv"
+    _no_epoch0_csv(csv_path)
+
+    data = pepc.load_condition(csv_path, draw="greedy")  # strict=False by default
+
+    assert data["epochs"] == [1, 3, 30]  # still loads
+    captured = capsys.readouterr()
+    assert "WARNING" in captured.err
+    assert str(csv_path) in captured.err
+    assert "epoch 0" in captured.err
+
+
+def test_missing_epoch_zero_raises_with_strict(tmp_path):
+    csv_path = tmp_path / "epoch_perf_finetune_qwen1_5b_inst1_30ep.csv"
+    _no_epoch0_csv(csv_path)
+
+    with pytest.raises(ValueError, match="epoch 0"):
+        pepc.load_condition(csv_path, draw="greedy", strict=True)
+
+
+def test_present_epoch_zero_is_silent(tmp_path, capsys):
+    csv_path = tmp_path / "epoch_perf_finetune_qwen1_5b_inst1_30ep.csv"
+    _multidraw_condition_csv(csv_path)  # includes epoch 0
+
+    pepc.load_condition(csv_path, draw="greedy", strict=True)  # must not raise
+
+    captured = capsys.readouterr()
+    assert "WARNING" not in captured.err
+
+
+# ── hardening fix 3: refuse to mix models ────────────────────────────────────
+
+def test_main_refuses_mixed_models(tmp_path):
+    csv_1_5b = tmp_path / "epoch_perf_finetune_qwen1_5b_inst1_30ep.csv"
+    csv_7b = tmp_path / "epoch_perf_finetune_qwen7b_bp_own_30ep.csv"
+    _write_csv(csv_1_5b, [
+        _row(30, 1, "greedy", 0.5, model="Qwen/Qwen2.5-Coder-1.5B-Instruct"),
+        _row(30, 2, "greedy", 0.1, model="Qwen/Qwen2.5-Coder-1.5B-Instruct"),
+        _row(30, 3, "greedy", 0.1, model="Qwen/Qwen2.5-Coder-1.5B-Instruct"),
+    ])
+    _write_csv(csv_7b, [
+        _row(30, 1, "greedy", 0.6, model="Qwen/Qwen2.5-Coder-7B-Instruct"),
+        _row(30, 2, "greedy", 0.5, model="Qwen/Qwen2.5-Coder-7B-Instruct"),
+        _row(30, 3, "greedy", 0.5, model="Qwen/Qwen2.5-Coder-7B-Instruct"),
+    ])
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), str(csv_1_5b), str(csv_7b),
+         "--out", str(tmp_path / "out.pdf")],
+        cwd=ROOT, capture_output=True, text=True, timeout=30,
+    )
+    assert result.returncode != 0
+    combined = result.stdout + result.stderr
+    assert "Qwen/Qwen2.5-Coder-1.5B-Instruct" in combined
+    assert "Qwen/Qwen2.5-Coder-7B-Instruct" in combined
+    assert not (tmp_path / "out.pdf").exists(), "must refuse before plotting anything"
+
+
+def test_main_accepts_single_model_across_conditions(tmp_path):
+    """Sanity check that the mixed-model guard doesn't false-positive on
+    the normal case: 3 conditions, all the same model."""
+    paths = []
+    for cond, model in [
+        ("inst1", "Qwen/Qwen2.5-Coder-1.5B-Instruct"),
+        ("bp_own", "Qwen/Qwen2.5-Coder-1.5B-Instruct"),
+        ("bp_gpt5", "Qwen/Qwen2.5-Coder-1.5B-Instruct"),
+    ]:
+        p = tmp_path / f"epoch_perf_finetune_qwen1_5b_{cond}_30ep.csv"
+        _write_csv(p, [
+            _row(0, 1, "greedy", 0.5, model=model),
+            _row(0, 2, "greedy", 0.1, model=model),
+            _row(0, 3, "greedy", 0.1, model=model),
+            _row(30, 1, "greedy", 0.5, model=model),
+            _row(30, 2, "greedy", 0.1, model=model),
+            _row(30, 3, "greedy", 0.1, model=model),
+        ])
+        paths.append(p)
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), *[str(p) for p in paths],
+         "--out", str(tmp_path / "out.pdf")],
+        cwd=ROOT, capture_output=True, text=True, timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "out.pdf").exists()
+
+
+# ── hardening fix 5: pass-rate unit sanity (>1.0 means percent, not fraction) ─
+
+def test_pass_rate_over_one_raises(tmp_path):
+    csv_path = tmp_path / "epoch_perf_finetune_qwen1_5b_inst1_30ep.csv"
+    rows = [
+        _row(30, 1, "greedy", 54.0),  # looks like a 0-100 percent, not a 0-1 fraction
+        _row(30, 2, "greedy", 0.02),
+        _row(30, 3, "greedy", 0.01),
+    ]
+    _write_csv(csv_path, rows)
+
+    with pytest.raises(ValueError, match="exceeds 1.0"):
+        pepc.load_condition(csv_path, draw="greedy")
+
+
+def test_pass_rate_at_exactly_one_is_fine(tmp_path):
+    csv_path = tmp_path / "epoch_perf_finetune_qwen1_5b_inst1_30ep.csv"
+    rows = [
+        _row(30, 1, "greedy", 1.0),
+        _row(30, 2, "greedy", 1.0),
+        _row(30, 3, "greedy", 1.0),
+    ]
+    _write_csv(csv_path, rows)
+
+    data = pepc.load_condition(csv_path, draw="greedy")  # must not raise
+    assert data["seen"] == pytest.approx([1.0])
+
+
+# ── hardening fix 4: colourblind-safe palette ────────────────────────────────
+
+def test_condition_colors_are_the_okabe_ito_values():
+    assert pepc.CONDITION_COLORS["inst1"] == "#0072B2"
+    assert pepc.CONDITION_COLORS["bp_own"] == "#009E73"
+    assert pepc.CONDITION_COLORS["bp_gpt5"] == "#D55E00"
+    # the old green/red pairing that was indistinguishable under deuteranopia
+    assert pepc.CONDITION_COLORS["inst1"] != "#2ca02c"
+    assert pepc.CONDITION_COLORS["bp_gpt5"] != "#d62728"
