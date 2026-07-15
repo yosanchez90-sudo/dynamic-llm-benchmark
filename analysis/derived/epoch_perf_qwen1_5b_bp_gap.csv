@@ -1,0 +1,4 @@
+condition,epoch,seen_pct,unseen_pct,gap_pp
+inst1,30,10.0,7.7,2.3
+bp_own,30,27.3,18.7,8.7
+bp_gpt5,30,54.0,1.3,52.7
