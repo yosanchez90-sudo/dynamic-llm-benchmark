@@ -217,3 +217,82 @@ Both matches are within ~2pp, and the 7B match is within 0.2pp. **Interpretation
 ## Commands run (for reproducibility)
 
 All commands above are read-only: `csv.DictReader`, `json.loads`, `yaml.safe_load`, `safetensors.safe_open`, `ast.literal_eval`, `diff`. No `sbatch`/`srun`, no writes under `data/`, no edits to any script outside `analysis/inst1_control_*.py` (new files) and this report.
+
+---
+
+## Addendum (2026-07-16): direct verification via one authorized inference pass
+
+The original investigation above was read-only and, for steps E(ii)/(iii) and F, had to substitute aggregate-level proxies for literal per-problem checks that `eval_checkpoints.py` doesn't support (it discards raw text and per-problem pass/fail by design). This addendum closes those two gaps directly, via one explicitly authorized inference pass: load the epoch-30 inst1-condition adapter for each model, greedy-generate on inst1/inst2/inst3 (same adapter, same pass), and keep everything `eval_checkpoints.py` throws away.
+
+**Schema change** (the one code change explicitly authorized for this task, no re-runs of historical data): `scripts/eval_checkpoints.py` now logs `adapter_path` and `adapter_weights_hash` (sha256 of `adapter_model.safetensors`, computed once per epoch) into every CSV row — closing the E(i) provenance gap found in the base investigation. Covered by `tests/test_eval_checkpoints_adapter_provenance.py` (6 tests). Existing `data/results/finetune_rebuild/epoch_perf_*.csv` files are unchanged; this only affects future runs.
+
+### Setup
+
+New script `analysis/inst1_control_generate_epoch30.py` reuses `eval_checkpoints.py`'s actual functions (`_run_inference`, `_score_fast`, `_ProcessWatchdog`, `adapter_weights_hash`, imported not reimplemented) so generation is identical in every parameter to every other checkpoint eval in this project — same `_TimeLimitCriteria`/watchdog protection, same greedy config, same problem reconstruction via `test_gen.load()`. Submitted via SLURM (`scripts/slurm/run_inst1_control_generate_epoch30.slurm`, `k2-gpu-v100`, confirmed idle capacity beforehand):
+
+```
+CONFIG=configs/finetune_qwen1_5b_inst1_30ep.yaml OUT=analysis/derived/inst1_control_epoch30_generation_qwen1_5b.jsonl EPOCH=30 \
+  sbatch scripts/slurm/run_inst1_control_generate_epoch30.slurm
+CONFIG=configs/finetune_qwen7b_inst1_30ep.yaml   OUT=analysis/derived/inst1_control_epoch30_generation_qwen7b.jsonl   EPOCH=30 \
+  sbatch scripts/slurm/run_inst1_control_generate_epoch30.slurm
+```
+
+**Process note, reported rather than hidden**: the first attempt (jobs `9389597`/`9389598`, 2h budget) was killed partway through — throughput on V100 turned out to be ~3.4–3.8 problems/min, not the ~20 min/model originally guessed, projecting to ~2–2.2h for a full 3-instantiation run. Worse, that first version of the script only wrote output in one batch at the very end, so a timeout would have lost all results, not just the incomplete instantiation. Fixed before resubmitting: records are now appended and flushed immediately after each problem is scored, and the script resumes from whatever's already in `--out` (skips completed `(instantiation, template_id, instance_seed)` triples) — the same "write immediately so partial progress survives a crash" pattern `eval_checkpoints.py` itself uses. No data was actually lost (the killed jobs' batched writes never reached disk), but the design flaw was real. Resubmitted (jobs `9389614`/`9389615`, 5h budget) and both completed cleanly: 1.5B in 1:45:26, 7B in 1:32:59.
+
+**Reproducibility check**: per-instantiation `baseline_passed` counts from this fresh generation matched the original `eval_checkpoints.py` epoch-30 CSV rows exactly in all 6 cells —
+
+| Model | inst1 (seen) | inst2 (unseen) | inst3 (unseen) |
+|---|---|---|---|
+| 1.5B | 15/150 | 10/150 | 13/150 |
+| 7B | 47/150 | 51/150 | 50/150 |
+
+— identical to the numbers in §F above, from an entirely separate generation run. Greedy decoding with a fixed adapter is fully deterministic here.
+
+Adapter hashes used (also now the exact values that would be logged by the schema change above): 1.5B `4d7b7072575480ef2dbae09b75765b9ea9291c396379837ac79036ee311ee796`, 7B `65a8f6ea1a07f0cc9a528710a4a77169e9ec37383d3add0899e9fbd7f61c5d79`.
+
+### Part 1: seen (inst1) vs. training target — % token-identical, edit distance
+
+`analysis/inst1_control_analyze_generation.py` joins each inst1-generated problem back to its target in the training JSONL (by `template_id`+`instance_seed` — direct match here, no prefixing issue, since both were produced by the same `instantiation_id=1` `test_gen.load()` call). Compared field: `extracted_test_file.strip()` on both sides, matching exactly what `scripts/prepare_finetune_data.py` uses as the fine-tuning target (not the sanitized/scored version). Token-identity uses the actual model tokenizer (`AutoTokenizer.from_pretrained`, exact token-ID-sequence equality); edit distance is character-level Levenshtein normalized by `max(len_a, len_b)`.
+
+| Model | matched to a target | token-identical | mean normalized edit distance |
+|---|---|---|---|
+| 1.5B | 131/150 | **108/131 (82.4%)** | **0.0449** |
+| 7B | 149/150 | **147/149 (98.7%)** | **0.0043** |
+
+Sanity cross-check: among token-identical rows, `baseline_passed` in the fresh generation is 9/108 (1.5B) and 47/147 (7B) — the 7B figure matches the 47/149 "also baseline_passed" count from the memorization-ceiling calculation in §G exactly, as it must: reproducing a training target verbatim reproduces its correctness (or lack of it) too.
+
+Spot-read (as requested, to confirm real generation differences rather than artifacts):
+- **Near-identical case** (1.5B, `L2-bucket-001`/1103, normalized edit distance 0.0035): generated and target text match character-for-character for the first 300+ characters checked; the tiny remaining diff is a minor formatting/wording difference later in the file, not a structural change.
+- **Substantially different case** (1.5B, `L1-arithmetic-002`/1105, normalized edit distance 0.77): generated output uses a different test structure entirely (bare `normal_cases`/`edge_cases` lists, no `pytest.mark.parametrize`, different — and arithmetically inconsistent — expected values in the comments) versus the target's `@pytest.mark.parametrize`-based test with different numbers. These are genuinely different generations, not a truncation or extraction artifact.
+
+**Interpretation** (per the task's own framework): both models show high-to-very-high identity/similarity to their own training targets (7B especially, at 98.7% exact token match). This is the "high identity" branch: **the seen plateau is reproduction of memorised targets**, strengthening rather than complicating the memorisation-without-inflation story from the base investigation — the model isn't doing something unrelated to its training data on the seen split, it's reproducing that data almost verbatim, and that reproduction is exactly what the memorization-ceiling calculation (§G) already predicted the pass rate would be.
+
+### Part 2: paired McNemar, seen vs. unseen (bug found and fixed)
+
+First run of this analysis produced `n_paired=0` for every comparison — investigated rather than accepted: `instance_seed` turned out to be **instantiation-prefixed** by `test_gen.load()` (inst1 uses 1101–1105, inst2 2101–2105, inst3 3101–3105 for what is conceptually the same 5 base seeds), so the naive pairing key `(template_id, instance_seed)` never matched across instantiations even though `template_id` sets were confirmed identical. Fixed by pairing on `(template_id, instance_seed % 1000)`, verified to recover a full 150/150 key overlap between every instantiation pair before trusting it for the real test.
+
+With correct pairing, using the exact (sign-test-based) McNemar test on `baseline_passed`:
+
+| Model | comparison | n paired | both pass | both fail | seen-only | unseen-only | McNemar exact p |
+|---|---|---|---|---|---|---|---|
+| 1.5B | inst1 vs inst2 | 150 | 2 | 127 | 13 | 8 | **0.383** |
+| 1.5B | inst1 vs inst3 | 150 | 5 | 127 | 10 | 8 | **0.815** |
+| 7B | inst1 vs inst2 | 150 | 34 | 86 | 13 | 17 | **0.585** |
+| 7B | inst1 vs inst3 | 150 | 38 | 91 | 9 | 12 | **0.664** |
+
+All four paired tests fail to reject the null at any conventional threshold — consistent with, and now directly confirming with a proper paired test (rather than the unpaired two-proportion proxy used in §F), the "pass flat" finding from the base investigation.
+
+### Updated verdict
+
+No change to the base investigation's verdict — this addendum adds direct confirmation where the base investigation could only proxy:
+
+| Model | loss↓ | ‖B‖ grows | outputs differ (now: literal, not just proxy) | pass flat (now: paired McNemar) | **Verdict** |
+|---|---|---|---|---|---|
+| 1.5B | ✅ | ✅ | ✅ 82.4% token-identical to own targets, real diffs on the rest | ✅ paired p=0.38/0.82 | **Strongest control — memorisation of a partly-incorrect training set, not an eval bug** |
+| 7B | ✅ | ✅ | ✅ 98.7% token-identical to own targets, real diffs on the rest | ✅ paired p=0.59/0.66 | **Strongest control — memorisation of a partly-incorrect training set, not an eval bug** |
+
+### Files under `analysis/derived/`
+
+- `inst1_control_epoch30_generation_{qwen1_5b,qwen7b}.jsonl` — raw per-problem generations (450 rows each: 3 instantiations × 150 problems), including `raw_response`, `extracted_test_file`, `sanitized_test_file`, `exec_ok`, `baseline_passed`, `adapter_path`, `adapter_weights_hash`.
+- `inst1_control_epoch30_{qwen1_5b,qwen7b}_vs_training_target.csv` — per-problem token-identity/edit-distance comparison (seen only).
+- `inst1_control_epoch30_{qwen1_5b,qwen7b}_mcnemar.csv` — paired McNemar summary tables.

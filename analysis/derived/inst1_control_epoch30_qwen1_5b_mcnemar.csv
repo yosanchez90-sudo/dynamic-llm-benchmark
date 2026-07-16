@@ -1,0 +1,3 @@
+seen,unseen,n_paired,both_pass,both_fail,seen_pass_unseen_fail,seen_fail_unseen_pass,mcnemar_p_exact
+1,2,150,2,127,13,8,0.38331
+1,3,150,5,127,10,8,0.814529
