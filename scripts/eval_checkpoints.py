@@ -48,6 +48,19 @@ see PROJECT_BRIEF-adjacent notes / analysis/README.md — into a false
     generate() call, independent of the main thread's cooperation. See
     _ProcessWatchdog's docstring for why this works and why it kills the
     whole shard rather than just the stuck problem.
+  - Every row logs adapter_path and adapter_weights_hash (added
+    2026-07-16, see analysis/reports/inst1_control_verification.md's
+    addendum). Previously there was no per-row record of which adapter
+    directory produced a given row at all — CLAUDE.md's "adapter identity
+    (path + hash) is part of model identity" rule had been retrofitted
+    into the dynamic-benchmark JSONL pipeline (process_batch.py/
+    run_eval.py) but never into this script. adapter_weights_hash is a
+    sha256 of the checkpoint's adapter_model.safetensors file (None for
+    the no-adapter epoch-0 baseline), computed once per epoch via
+    adapter_weights_hash() — not per row, since hashing a several-
+    hundred-MB file for every (instantiation, draw) row in that epoch
+    would be wasteful. This is a schema addition only: existing
+    epoch_perf_*.csv files are not backfilled or re-run.
 
 Usage:
     python scripts/eval_checkpoints.py \\
@@ -281,6 +294,30 @@ def _run_inference(model, tokenizer, problems, do_sample: bool, seed: int | None
     return responses
 
 
+def adapter_weights_hash(ckpt_dir: Path) -> str | None:
+    """sha256 of the adapter weights file, for CSV provenance (CLAUDE.md:
+    "Adapter identity (path + hash) is part of model identity"). None for
+    the no-adapter baseline. Hashes the file on disk directly rather than
+    tensor contents, so it also catches a same-weights-different-format
+    resave, which existing consumers don't need to distinguish but which
+    is cheap to be strict about here.
+    """
+    import hashlib
+
+    if ckpt_dir is None:
+        return None
+    adapter_file = ckpt_dir / "adapter_model.safetensors"
+    if not adapter_file.exists():
+        adapter_file = ckpt_dir / "adapter_model.bin"
+    if not adapter_file.exists():
+        return None
+    h = hashlib.sha256()
+    with adapter_file.open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def _score_responses(problems, responses, timeout: int) -> dict:
     exec_ok_total = 0
     bp_total = 0
@@ -355,7 +392,7 @@ def main() -> None:
         "model", "epoch", "instantiation", "draw", "n", "exec_rate", "baseline_pass",
         "do_sample", "temperature", "top_p", "repetition_penalty",
         "repetition_penalty_source", "no_repeat_ngram_size", "no_repeat_ngram_size_source",
-        "max_new_tokens", "seed", "max_seconds",
+        "max_new_tokens", "seed", "max_seconds", "adapter_path", "adapter_weights_hash",
     ]
     done_triples: set[tuple[int, int, str]] = set()
     if out_path.exists():
@@ -438,12 +475,14 @@ def main() -> None:
         if epoch == 0:
             # Baseline: no adapter
             model = base
+            current_ckpt_dir = None
             print(f"\n=== Epoch 0 (baseline, no adapter) ===")
         else:
             ckpt_dir = _ckpt_for_epoch(epoch)
             if ckpt_dir is None:
                 print(f"  WARNING: no checkpoint found for epoch {epoch}, skipping")
                 continue
+            current_ckpt_dir = ckpt_dir
             print(f"\n=== Epoch {epoch} ({ckpt_dir.name}) ===")
 
             if peft_model is None:
@@ -460,6 +499,11 @@ def main() -> None:
                     else torch.load(str(adapter_file), map_location="cpu")
                 set_peft_model_state_dict(peft_model, state)
             model = peft_model
+
+        # Computed once per epoch (not per row) -- hashing a several-hundred-MB
+        # safetensors file for every (instantiation, draw) row would be wasteful.
+        current_adapter_path = str(current_ckpt_dir) if current_ckpt_dir is not None else None
+        current_adapter_hash = adapter_weights_hash(current_ckpt_dir)
 
         for inst_id in args.instantiations:
             problems = inst_problems[inst_id]
@@ -486,6 +530,8 @@ def main() -> None:
                     "exec_rate":      scores["exec_rate"],
                     "baseline_pass":  scores["baseline_pass"],
                     **resolved,
+                    "adapter_path":         current_adapter_path,
+                    "adapter_weights_hash": current_adapter_hash,
                 }
                 # Write immediately so partial progress survives a crash.
                 with out_path.open("a", newline="") as f:
