@@ -64,9 +64,11 @@ ASSUMPTIONS (read before trusting the numbers):
 
 Usage:
     python scripts/estimate_cost.py
+    python scripts/estimate_cost.py --target-instantiations 1,2,3,4   # scenario comparison
 """
 from __future__ import annotations
 
+import argparse
 import glob
 import json
 import sys
@@ -164,6 +166,14 @@ def _qwen_latency(rows) -> dict[str, dict[str, float]]:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--target-instantiations", default=",".join(INSTANTIATIONS),
+                         help="Comma-separated instantiation IDs to price toward "
+                              "(default: all 5). E.g. '1,2,3,4' to compare a "
+                              "reduced-scope scenario.")
+    args = parser.parse_args()
+    target_instantiations = args.target_instantiations.split(",")
+
     rows = _load_raw_rows()
     input_tok = _tier_input_tokens(rows)
     openai_out = _openai_output_tokens(rows)
@@ -179,6 +189,8 @@ def main() -> None:
     main_cells, _, _ = load_coverage(RESULTS_DIR)
 
     print("=== Cost/wall-clock estimate for RUNNABLE-NOW-BY-US + SUPERVISOR-GATED gaps ===")
+    print(f"Target instantiations: {target_instantiations} "
+          f"({'full 5-instantiation plan' if target_instantiations == list(INSTANTIATIONS) else 'reduced-scope scenario'})")
     print("(see this script's module docstring for every estimation assumption)\n")
 
     print(f"Empirical input tokens/problem by tier (GPT-5/-mini real usage): "
@@ -192,7 +204,7 @@ def main() -> None:
     for model in MODEL_SPECS:
         gap_problems_by_tier = defaultdict(int)
         for tier in TIERS:
-            for inst in INSTANTIATIONS:
+            for inst in target_instantiations:
                 actual = len(main_cells.get((model.model_label, tier, inst), ()))
                 missing = EXPECTED_PER_CELL - actual
                 if missing > 0:
@@ -231,7 +243,7 @@ def main() -> None:
         in_rate, out_rate = rate
         is_openai = model.model_label in OPENAI_LABELS
         discount = OPENAI_BATCH_DISCOUNT if is_openai else 1.0
-        rate_note = "batch, 50% off" if is_openai else "real-time (no batch path built)"
+        rate_note = "batch, 50% off (create_batch.py --submit, your own OpenAI credits)" if is_openai else "real-time (no batch path built)"
 
         cost = 0.0
         detail = []
