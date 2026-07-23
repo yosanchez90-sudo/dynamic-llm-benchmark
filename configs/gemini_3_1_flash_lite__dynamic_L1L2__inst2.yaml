@@ -1,0 +1,34 @@
+# Coverage-gap backfill: Gemini 3.1 Flash-Lite on dynamic L1L2, zero-shot, instantiation 2.
+# N=4 scope (PROJECT_BRIEF.md Sec 11, 2026-07-15) -- inst5 deliberately not targeted.
+# API model -- no GPU needed; runs on k2-medpri via run_eval_api.slurm.
+# does not reason (thoughts_token_count=None, confirmed empirically) -- 2048 is correct
+
+name: gemini_3_1_flash_lite__dynamic_L1L2__zeroshot__inst2
+
+task: test_generation
+
+model:
+  provider: gemini
+  id: gemini-3.1-flash-lite
+  revision: gemini-3.1-flash-lite
+
+benchmark: dynamic
+instantiation_id: "2"
+instantiation_seed: 2
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

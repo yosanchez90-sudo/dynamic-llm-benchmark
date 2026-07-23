@@ -1,0 +1,34 @@
+# Coverage-gap backfill: Gemini 3.1 Pro Preview on dynamic L3L4, zero-shot, instantiation 2.
+# N=4 scope (PROJECT_BRIEF.md Sec 11, 2026-07-15) -- inst5 deliberately not targeted.
+# API model -- no GPU needed; runs on k2-medpri via run_eval_api.slurm.
+# reasoning model -- max_new_tokens caps thinking+output combined, see pilot config for the writeup
+
+name: gemini_3_1_pro_preview__dynamic_L3L4__zeroshot__inst2
+
+task: test_generation
+
+model:
+  provider: gemini
+  id: gemini-3.1-pro-preview
+  revision: gemini-3.1-pro-preview
+
+benchmark: dynamic
+instantiation_id: "2"
+instantiation_seed: 2
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L3", "L4"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 16384
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic
