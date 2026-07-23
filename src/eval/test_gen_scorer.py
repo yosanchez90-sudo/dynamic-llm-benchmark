@@ -206,10 +206,22 @@ def _evaluate_mutant(args: tuple[str, str, int]) -> str:
     with tempfile.TemporaryDirectory() as d:
         wd = Path(d)
         _write_case(wd, mutant_source, test_source)
-        chk = subprocess.run(
-            [sys.executable, "-c", "import under_test"],
-            cwd=wd, capture_output=True, text=True, timeout=timeout,
-        )
+        try:
+            chk = subprocess.run(
+                [sys.executable, "-c", "import under_test"],
+                cwd=wd, capture_output=True, text=True, timeout=timeout,
+            )
+        except subprocess.TimeoutExpired:
+            # Same treatment as returncode != 0 below: this mutant didn't
+            # import cleanly, so it's dropped, not scored as killed/survived.
+            # Unlike _run_pytest/_collect_ok (which already caught this),
+            # this call site let the exception propagate through the thread
+            # pool's fut.result() and crash the whole job — seen in practice
+            # on 4 separate SLURM jobs (subprocess.TimeoutExpired: 'import
+            # under_test' after 30s), losing all progress on problems after
+            # the one that hit it despite results being written incrementally
+            # up to that point.
+            return "dropped"
         if chk.returncode != 0:
             return "dropped"
         code, _ = _run_pytest(wd, timeout)
