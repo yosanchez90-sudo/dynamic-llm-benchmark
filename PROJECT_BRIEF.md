@@ -235,15 +235,19 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
   Sonnet/Haiku/Gemini/GPT was projected at ~$82.56 in further API spend vs ~$63.17 for
   N=4 (see `scripts/estimate_cost.py --target-instantiations`). Stability evidence
   available at decision time (mean pairwise Kendall tau approx 0.84 across partial
-  data, `analyze_stability.py`) showed high cross-instantiation agreement, suggesting
-  the 5th instantiation would mostly sharpen precision on an already-clear signal
-  rather than change the qualitative stability conclusion. Reduces StableMut@K's
-  pairwise-tau comparisons from 10 (N=5) to 6 (N=4) — report the SD/CI on the 6-pair
-  mean explicitly in the write-up, not just the point estimate, to keep the narrower
-  evidence base visible rather than implied. $3.63 of already-spent real money
-  (Sonnet $2.55 + Haiku $1.09, instantiation 5 specifically) falls outside the N=4
-  scope as a result — not discarded (still valid, usable data), just not part of the
-  headline analysis; available as supplementary evidence if useful later.
+  data, ~61/180 cells) showed high cross-instantiation agreement, suggesting the 5th
+  instantiation would mostly sharpen precision on an already-clear signal rather than
+  change the qualitative stability conclusion. That figure moved as more data landed
+  — down to 0.593 at ~104/180 cells, then up to 0.746 once N=4 was fully closed for
+  Sonnet/Haiku/Qwen (all sizes) and partially for Gemini Pro Preview — a reminder that
+  early-partial-data stability reads are noisy and shouldn't be over-trusted; the
+  qualitative conclusion (high stability) held throughout, but the point estimate did
+  not. Full results and interpretation: `analysis/STABILITY.md`. Reduces StableMut@K's
+  pairwise-tau comparisons from 10 (N=5) to 6 (N=4) — SD/CI on the 6-pair mean is
+  reported in that file, not just the point estimate. $3.63 of already-spent real
+  money (Sonnet $2.55 + Haiku $1.09, instantiation 5 specifically) falls outside the
+  N=4 scope as a result — not discarded (still valid, usable data), just not part of
+  the headline analysis; available as supplementary evidence if useful later.
 - **Gemini model substitution (2026-07-14):** Gemini 2.5 Pro/Flash retired ("no longer
   available to new users" — 404 on live `generate_content` despite still listing as
   Stable in `models.list()`) before any run completed against them. Replaced with
