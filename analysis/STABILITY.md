@@ -26,6 +26,31 @@ below) — **N=4 mean pairwise tau moves from 0.746 to 0.675**. The qualitative
 conclusion (high stability, majority of pairs significant at n=7-8 models) is
 unchanged; the point estimate is not. All numbers below are post-fix.
 
+**Full per-pair matrix preserved here (2026-07-26, Part-1 follow-up D)** — since
+`analysis/stability_kendall.csv` is gitignored/regenerable, the pre-fix state would
+otherwise be lost outside this document. This is itself a real stability result, not
+just a bugfix log: several individual pairs moved by more than the mean did (e.g.
+2-5 and 4-5 both dropped from a perfect 1.000 to 0.800 — the early tau=1.000 read
+was the easy case flagged as a risk in earlier partial-data commentary, not a
+robust ceiling), while others were largely unaffected (1-5, untouched by the
+Sonnet/Haiku duplicate files, is identical in both columns).
+
+| Pair | n models | tau (pre-fix) | tau (post-fix) | p (pre-fix) | p (post-fix) |
+|---|---|---|---|---|---|
+| 1-2 | 8 | 0.786 | 0.857 | 0.0055 | 0.0017 |
+| 1-3 | 8 | 0.929 | 0.786 | 0.0004 | 0.0055 |
+| 1-4 | 7 | 0.619 | 0.429 | 0.0690 | 0.2389 |
+| 1-5 | 5 | 0.600 | 0.600 | 0.2333 | 0.2333 |
+| 2-3 | 8 | 0.714 | 0.643 | 0.0141 | 0.0312 |
+| 2-4 | 7 | 0.905 | 0.619 | 0.0028 | 0.0690 |
+| 2-5 | 5 | 1.000 | 0.800 | 0.0167 | 0.0833 |
+| 3-4 | 7 | 0.524 | 0.714 | 0.1361 | 0.0302 |
+| 3-5 | 5 | 0.400 | 0.600 | 0.4833 | 0.2333 |
+| 4-5 | 5 | 1.000 | 0.800 | 0.0167 | 0.0833 |
+
+Mean pairwise tau: N=4 (pairs 1-2..3-4, 6 pairs) 0.746 pre-fix -> 0.675 post-fix;
+N=5 (all 10 pairs) 0.748 pre-fix -> 0.685 post-fix.
+
 ## Data completeness at time of writing
 
 N=4 (`PROJECT_BRIEF.md` §11) is the target scope. As of this write-up:
@@ -58,6 +83,26 @@ this file before treating any figure here as final for the dissertation.
 (SD 0.042), is an order of magnitude noisier than the rest; worth a specific note in
 the write-up as a capability-related finding, not a benchmark-stability problem (see
 tier breakdown below).
+
+**Verified 2026-07-26 (Part-1 follow-up C): Qwen 1.5B's zero-scorable-L4 pattern is
+a genuine capability limitation, not an extraction or scoring bug.** Inspected 3 raw
+L4 completions from `Qwen__Qwen2.5-Coder-1.5B-Instruct__dynamic__zero_shot__inst1__20260609T221336.jsonl`
+(`L4-aggregate-001`, seeds 1101/1102/1103) end to end — `extracted_test_file` matches
+the raw `response` verbatim in every case (extraction did its job), and the failures
+split into two distinct, genuine model failure modes:
+- **Seeds 1101/1102** (`exec_rate=0.0`, "exec gate failed (collection error)"): the
+  model's own generation degenerates into a runaway, near-duplicate
+  `@pytest.mark.parametrize` list (e.g. `10, 10, 10, ...` repeated dozens of times,
+  growing until the response is cut off mid-list) — a repetition-collapse failure
+  mode under L4 complexity, producing syntactically invalid/truncated Python that
+  can't even be collected.
+- **Seed 1103** (`exec_rate=1.0`, `baseline_passed=False`, "suite failed on
+  original"): a syntactically clean, well-formed parametrized test — that asserts
+  wrong expected values for `orchestrate`'s actual behavior. The model can write a
+  valid test but reasons incorrectly about a complex function's real output.
+
+Both are RQ2-relevant tier-effect findings (a 1.5B model's reasoning and generation
+reliability breaking down at CC>=8), not artifacts of this project's own pipeline.
 
 ## By tier
 
