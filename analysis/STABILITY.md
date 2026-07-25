@@ -5,6 +5,27 @@ Source data: `analysis/stability_stablemut.csv`, `analysis/stability_stablemut_b
 `analysis/stability_kendall.csv` (regenerate with `python scripts/analyze_stability.py`
 after any new tranche lands — the numbers below are a snapshot, not a fixed record).
 
+**Corrected 2026-07-25 — `src/Analysis/loader.py` had no dedup logic at all.**
+`claude-sonnet-4-6` and `claude-haiku-4-5-20251001` each have a stale, superseded
+partial-tier retry file left in `data/results/dynamic/` alongside the complete rerun
+that replaced it (e.g. `..._inst1__20260714T141018.jsonl`, 69 L3-only rows dated
+2026-07-14, sitting next to `..._inst1__20260714T141014.jsonl`, the complete 300-row
+2026-07-23 rerun of the same problems) — an artifact of the same backfill pattern
+documented in `PROJECT_BRIEF.md` §11, just never cleaned up. `load_records` loaded
+every file in the directory with no dedup, so ~560 problems were silently
+double-counted (old and new scored outcomes for the same (model, instantiation,
+template, seed, tier) both entering the mean). Comparison A/B were **not** affected
+(Comparison A filters to tier=L4, which none of the stale files contain; Comparison B
+reads `data/results/ult|plt/`, which have zero duplicate keys). Fixed by deduping on
+the natural key, keeping the newest row by `timestamp`
+(`tests/test_analysis_loader.py` covers the regression). Impact: StableMut@K shifted
+by <0.002 for both models (not meaningful — the per-model table below is essentially
+unchanged); Kendall tau shifted more, being a rank statistic sensitive to score
+swaps between closely-ranked models (see "Why score-level stability reads higher"
+below) — **N=4 mean pairwise tau moves from 0.746 to 0.675**. The qualitative
+conclusion (high stability, majority of pairs significant at n=7-8 models) is
+unchanged; the point estimate is not. All numbers below are post-fix.
+
 ## Data completeness at time of writing
 
 N=4 (`PROJECT_BRIEF.md` §11) is the target scope. As of this write-up:
@@ -24,8 +45,8 @@ this file before treating any figure here as final for the dissertation.
 
 | Model | StableMut@K | SD | n instantiations |
 |---|---|---|---|
-| claude-sonnet-4-6 | 0.957 | 0.003 | 5 |
-| claude-haiku-4-5-20251001 | 0.958 | 0.007 | 5 |
+| claude-sonnet-4-6 | 0.956 | 0.004 | 5 |
+| claude-haiku-4-5-20251001 | 0.956 | 0.005 | 5 |
 | gemini-3.1-pro-preview | 0.973 | 0.004 | 4 |
 | gemini-3.1-flash-lite | 0.954 | 0.004 | 4 |
 | Qwen 32B | 0.955 | 0.003 | 5 |
@@ -59,26 +80,25 @@ Full table: `analysis/stability_stablemut_by_tier.csv`. Two patterns worth calli
 
 | Pair | tau | n models | p |
 |---|---|---|---|
-| inst1-inst2 | 0.786 | 8 | 0.006 |
-| inst1-inst3 | 0.929 | 8 | 0.0004 |
-| inst1-inst4 | 0.619 | 7 | 0.069 |
-| inst2-inst3 | 0.714 | 8 | 0.014 |
-| inst2-inst4 | 0.905 | 7 | 0.003 |
-| inst3-inst4 | 0.524 | 7 | 0.136 |
+| inst1-inst2 | 0.857 | 8 | 0.0017 |
+| inst1-inst3 | 0.786 | 8 | 0.0055 |
+| inst1-inst4 | 0.429 | 7 | 0.239 |
+| inst2-inst3 | 0.643 | 8 | 0.031 |
+| inst2-inst4 | 0.619 | 7 | 0.069 |
+| inst3-inst4 | 0.714 | 7 | 0.030 |
 
-**Mean pairwise tau (N=4): 0.746.** Four of six pairs are significant at p<0.05; the
-other two (inst1-inst4, inst3-inst4) are not, at n=7 models — expected given how few
-models drive each pairwise comparison, not evidence of instability by itself.
+**Mean pairwise tau (N=4): 0.675.** Four of six pairs are significant at p<0.05
+(inst1-inst4 and inst2-inst4 are not, at n=7 models — expected given how few models
+drive each pairwise comparison, not evidence of instability by itself).
 
 For context, the full N=5 table (10 pairs, includes instantiation 5, out of the
 headline N=4 scope) is in `analysis/stability_kendall.csv` — mean pairwise tau there is
-0.748, essentially identical to the N=4 figure, i.e. **including the 5th instantiation
-would not have changed the conclusion**, consistent with the reasoning behind the N=4
-cut in `PROJECT_BRIEF.md` §11.
+0.685, close to but not identical to the N=4 figure; the qualitative read (moderate-
+to-high rank agreement, most pairs significant) is unchanged either way.
 
-### Why score-level stability (0.75-0.96) reads higher than rank-level tau (0.75)
+### Why score-level stability (0.82-0.97) reads higher than rank-level tau (0.68)
 
-Both are actually in a similar range here, but earlier interim reads of tau (0.84 on
+The gap is a genuine rank-vs-score effect, not a data problem — earlier interim reads of tau (0.84 on
 ~61/180 cells, then 0.593 on ~104/180 cells — see `PROJECT_BRIEF.md` §11) swung much
 more than the StableMut@K point estimates did, because **many models cluster closely
 in absolute score** (0.82-0.97 for six of the ten model variants). Tau is a rank
@@ -93,7 +113,7 @@ significant, rather than have that folded into one mean.
 ## Recommendation for the write-up
 
 Report both: StableMut@K (the primary, low-variance stability claim, per model and per
-tier) and the N=4 mean pairwise tau (0.746, with the full 6-pair breakdown, not just
+tier) and the N=4 mean pairwise tau (0.675, with the full 6-pair breakdown, not just
 the mean) as the ranking-stability claim. Flag Qwen 1.5B and Qwen-32B-at-L4 as the two
 genuine outliers worth a sentence each, rather than smoothing them into the aggregate.
 Note the data-completeness caveats above explicitly if this is written up before
