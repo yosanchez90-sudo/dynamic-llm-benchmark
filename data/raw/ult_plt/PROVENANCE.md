@@ -138,6 +138,39 @@ seen set, so the 112/400 figure above is unaffected) →
 distribution: mean 940 tokens, p99 1,987 — comfortably under 3,072 for the
 remainder.
 
+**Training-file pre-flight (2026-07-26, `scripts/verify_finetune_readiness.py`,
+run against the real tokenizer and TRL 1.6's actual `SFTTrainer` code path):**
+
+- **Loss is computed over the full formatted sequence, not completion-only.**
+  `finetune_qwen7b.py`'s config never sets `completion_only_loss` or
+  `assistant_only_loss`; TRL resolves `completion_only_loss=None` to
+  `"prompt" in sample and "completion" in sample` (our records only have
+  `messages` -> a flat `text` field, so this is False), and
+  `assistant_only_loss` defaults False and is never overridden. The model is
+  therefore trained to predict the system instruction and the "Function under
+  test" block too, not only the assistant's test-file completion — unchanged
+  from all six existing supplementary runs (identical script/config shape), not
+  a new issue introduced here, but not previously documented either.
+- **EOS termination confirmed, with one benign wrinkle.** Qwen's chat template
+  ends an assistant turn with `<|im_end|>\n` (trailing newline) — since that
+  doesn't literally end with `tok.eos_token`, TRL's `add_eos` step appends a
+  second `<|im_end|>`, so the real tokenized sequence ends
+  `...<|im_end|>\n<|im_end|>` (double EOS with an interstitial newline).
+  Verified on 50 sampled records: the final token ID is always
+  `tokenizer.eos_token_id`. Harmless in practice — greedy/sampling generation
+  halts at the *first* emitted EOS, so the redundant second token and the
+  newline before it are never exercised at inference time.
+- **Training prompts are byte-identical to the already-landed PRE core_400
+  eval prompts, verified not assumed.** Recomputed `prompt_hash`
+  (`sha256(apply_chat_template(messages, add_generation_prompt=True))`,
+  `src/models/local.py`'s exact formula) for every training record that
+  overlaps the PRE eval file and compared against the PRE run's own recorded
+  `prompt_hash`: 112/112 (all seen core_400 problems) match exactly, 0
+  mismatches. Memorization retrieval at eval time depends on this — both
+  paths call `src/data/test_gen.py:_build_messages()` on the same raw `code`
+  by construction, but this confirms it empirically against the real landed
+  data rather than trusting the shared code path alone.
+
 **core_400 coverage: 112/400 (28.0%)** of the ULT evaluation problems have a
 verified seen-in-training pair — well short of the ~90% target. Ceiling analysis:
 STRUCTURAL (34.5%) is a hard floor under the no-touching-`code` constraint above,
