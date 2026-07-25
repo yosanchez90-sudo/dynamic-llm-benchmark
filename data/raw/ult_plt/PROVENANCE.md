@@ -72,10 +72,89 @@ expected "large ULT gain" (PROJECT_BRIEF.md Sec 7). Filtering training data down
 only the 253 internally-consistent records instead preserves per-example validity
 but only contains 26/400 (6.5%) of the core_400 ULT evaluation problems — breaking
 the "core_400 guaranteed seen-in-training" property the full-effective-ULT scope
-was chosen for. Session policy is to stop and report ambiguous/expectation-
-contradicting evidence rather than pick a resolution silently; the training-set
-scope decision in PROJECT_BRIEF.md Sec 11 / Sec 7 is pending the user's read of
-this finding.
+was chosen for.
+
+## Repair pipeline — decided 2026-07-25, still short of the 90% core_400 target
+
+User's decision on the finding above: repair `tests` to be self-consistent rather
+than use as-shipped or filter-to-clean-only (see options weighed at the time in
+session record; not reproduced here). Constraint set alongside that decision: never
+touch `code` itself, because PRE-fine-tune baselines already landed against the
+unrepaired `code` (Part 1 item 3, "PRE baselines — reuse, don't re-run... same eval
+config as post, or the DiD is invalid") — repairing a record whose *code* needs a
+missing import to run at all would silently diverge POST's eval config from PRE's
+for that record, regardless of what the model learns. Only the assertion's
+recorded expected VALUE may be corrected; `code` stays byte-identical to what PRE
+already measured.
+
+**Pipeline** (`scripts/repair_ult_ground_truth.py`, SLURM jobs 9488135 [crashed,
+see below] / 9488141 [completed], k2-medpri, 16 workers): every harness call goes
+through the real scoring primitives (`src/eval/test_gen_scorer.py`'s
+`_write_case`/`_collect_ok`/`_run_pytest` — real subprocess + pytest +
+`--import-mode=importlib`, not an ad hoc in-process check), so a "pass" here means
+the same thing a "pass" means at actual eval time.
+
+1. **Taxonomy** — run each record's (code, shipped-tests) pair once; failing
+   records re-run once more to catch flakiness (unseeded randomness/wall-clock
+   dependence); the rest classified by exception type.
+2. **Repair** (ASSERTION_MISMATCH only, i.e. code runs cleanly, an expected value
+   is wrong) — for the common ULT shape `def test_x(): assert <call-expr> ==
+   <literal>` (single statement), re-evaluate `<call-expr>` against the
+   *unmodified* code and rewrite the literal to match. Any test whose shape isn't
+   exactly one such statement is left alone, not guessed at.
+3. **Verify** — every repaired test file is re-scored through the same real
+   harness; only `baseline_passed=True` outcomes enter the training set. This
+   caught a real bug in step 2 (below) rather than silently shipping it.
+
+**Final taxonomy, n=2,986 CC>=8 records with parseable code+tests** (690 further
+CC>=8 records were dropped before this stage — `code` or one of the 5 shipped
+tests itself doesn't parse as Python; not attempted here):
+
+| Category | Count | % |
+|---|---|---|
+| CLEAN (already passed, no repair needed) | 251 | 8.4% |
+| ASSERTION_MISMATCH_REPAIRED_VERIFIED | 602 | 20.2% |
+| ASSERTION_MISMATCH_REPAIRED_DEGENERATE (repaired, verified, but the 5 repaired expected-values are all identical — see caveat below) | 164 | 5.5% |
+| ASSERTION_MISMATCH_VERIFY_FAILED (repair attempted, didn't verify) | 9 | 0.3% |
+| SHAPE_NOT_REPAIRABLE (not a single `assert x == y` statement) | 927 | 31.0% |
+| STRUCTURAL (code itself can't run cleanly — missing import, etc.) | 1,031 | 34.5% |
+| FLAKY | 2 | 0.1% |
+
+**Final verified training set: 1,017 records** (CLEAN + REPAIRED_VERIFIED +
+REPAIRED_DEGENERATE) → `data/finetune/train_ult_repaired.jsonl`. Full per-record
+detail: `analysis/ult_ground_truth_taxonomy.csv`.
+
+**core_400 coverage: 112/400 (28.0%)** of the ULT evaluation problems have a
+verified seen-in-training pair — well short of the ~90% target. Ceiling analysis:
+STRUCTURAL (34.5%) is a hard floor under the no-touching-`code` constraint above,
+so even a hypothetically perfect repair of every SHAPE_NOT_REPAIRABLE record could
+reach at most (2986-1031)/2986 = 65.5% of the parseable pool, i.e. ~53.2% of the
+full effective-ULT (3,676) — **90% core_400 coverage is not achievable within this
+design's constraints, not just not-yet-achieved.** This is now itself a reportable
+methodological finding (real-world scraped-benchmark ground truth is largely
+internally inconsistent even for the dataset's own answers), not only a blocker —
+flagged for the user/supervisor before proceeding past this point.
+
+**Degenerate-repair caveat:** verify-via-scorer only checks internal consistency
+(does the function, called this way, return the claimed value) — it can't check
+that the value is a *meaningful* exercise of the function. A minority of repaired
+records (164, the DEGENERATE bucket) come back with the same repaired value across
+all 5 of ULT's differently-parameterised test cases, typically because the
+function silently swallows an exception (e.g. a missing test-fixture file inside
+this sandbox) and returns `None` regardless of input. These are flagged, not
+excluded, and are individually inspectable via `source: "ult_ground_truth_repaired_degenerate"`
+in the training JSONL.
+
+**Bug found and fixed during the first full run (job 9488135, crashed):**
+`repair_test()` blindly embedded `repr(actual)` as a source-code literal — invalid
+for any type without a literal repr (an Enum member reprs as `<Matches.BothSame:
+5>`, not valid Python syntax to re-embed; ULT-2453's `classify_match` hit this
+exactly). The crash lost the entire partial run's output since results were only
+written at the end. Fixed by (a) validating the candidate repaired source
+re-parses before accepting it — falls through to SHAPE_NOT_REPAIRABLE instead of
+crashing — and (b) switching to incremental, flushed-per-record writes so a future
+edge case can't erase completed work. See `scripts/repair_ult_ground_truth.py`'s
+module docstring and commit `2c5a2c3`.
 
 ## Tier / CC scoping — confirmed with the user (2026-07-08)
 
