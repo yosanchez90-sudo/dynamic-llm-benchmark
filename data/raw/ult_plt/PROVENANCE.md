@@ -27,6 +27,56 @@ this project's own mutation engine, exactly as for the Dynamic benchmark. The
 ground-truth-tests-present-despite-notice discrepancy is worth a line to the
 supervisor before citing ULT/PLT results, but doesn't block the pipeline.
 
+## Ground-truth `tests` quality — found 2026-07-25, building Comparison C training data
+
+The above discrepancy became directly load-bearing once the 2026-07-25 supervisor
+meeting approved the canonical Comparison C design (fine-tune Qwen-1.5B on ULT,
+PROJECT_BRIEF.md Sec 11): that design uses ULT's shipped `tests` field as the
+fine-tune's training TARGET, so its internal correctness now matters, not just its
+presence.
+
+**Checked empirically (`scripts/check_ult_ground_truth_baseline.py`, SLURM job
+9488064, k2-medpri, 2026-07-25): only 253/2,986 (8.5%) of CC>=8-filtered ULT
+records have ALL 5 shipped `tests` pass when run directly against the record's own
+`code` field.** 91.5% fail at least one assertion, raise, or (rarely) time out.
+Breakdown of the 2,733 failing records' first error (`analysis/ult_ground_truth_baseline.csv`
+has the per-record detail):
+
+| Cause | Count | % of failures |
+|---|---|---|
+| AssertionError (code runs, shipped expected value is wrong) | 1,807 | 66.6% |
+| NameError (usually a top-level import the original source file had, dropped when ULT extracted just the target function/helpers) | 615 | 22.7% |
+| TypeError / AttributeError / IndexError / KeyError / ValueError / StopIteration / other runtime error | 273 | 10.1% |
+| Timeout (3s cap) / code itself doesn't exec / other | 18 | 0.7% |
+
+This is **not** an artifact of this project's loader or of
+`scripts/build_ult_training_pairs.py`'s test-file construction (verified: the
+`from under_test import ...` header correctly includes every helper name a test
+body references — the NameErrors are for names `code` never defines at all, e.g.
+a bare `random.shuffle(...)` call with no `import random` anywhere in the vendored
+snippet). It is a property of the vendored ULT.jsonl data itself: `code` is an
+isolated function (+ occasionally its helper classes) lifted out of a real source
+file, without that file's own top-level imports, and a nontrivial fraction of the
+shipped `tests` were seemingly written against a different version of the function
+than the one shipped in `code`, or exercise inputs the shipped implementation
+doesn't handle as the test expects.
+
+**Consequence for Comparison C's causal design, flagged not resolved here:** this
+project's own `baseline_passed` gate (a suite must pass on the original code before
+Mut@K is scored — src/eval/test_gen_scorer.py) would already exclude these same
+2,733 records if a MODEL produced this exact test file at eval time. If the
+canonical fine-tune trains on the raw, unfiltered `tests` field for all ~3,676
+records, the 91.5% majority of memorized targets would still fail `baseline_passed`
+post-fine-tune even under perfect memorization — capping, not just denting, the
+expected "large ULT gain" (PROJECT_BRIEF.md Sec 7). Filtering training data down to
+only the 253 internally-consistent records instead preserves per-example validity
+but only contains 26/400 (6.5%) of the core_400 ULT evaluation problems — breaking
+the "core_400 guaranteed seen-in-training" property the full-effective-ULT scope
+was chosen for. Session policy is to stop and report ambiguous/expectation-
+contradicting evidence rather than pick a resolution silently; the training-set
+scope decision in PROJECT_BRIEF.md Sec 11 / Sec 7 is pending the user's read of
+this finding.
+
 ## Tier / CC scoping — confirmed with the user (2026-07-08)
 
 - ULT is CC-filtered by its own authors to **CC >= 10 exclusively** (min 10,
