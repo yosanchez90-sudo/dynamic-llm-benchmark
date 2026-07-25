@@ -57,15 +57,26 @@ MANIFEST_PATH = ROOT / "data" / "raw" / "ult_plt" / "subsample_manifest.json"
 
 
 def _module_level_names(code: str, exclude: str) -> set[str]:
-    """Top-level class/function names defined in `code` besides the target
-    function -- candidate helper names a ground-truth test might reference
-    (see module docstring's "helper classes" note).
+    """Top-level names defined in `code` besides the target function --
+    candidate helper names a ground-truth test might reference (see module
+    docstring's "helper classes" note). Covers class/function defs AND
+    module-level constant assignments (`FOO = ...`, `FOO: int = ...`) --
+    an earlier version only collected def/class names, which meant a test
+    referencing a module-level constant got a spurious NameError that was a
+    bug in THIS builder, not a real ULT data problem (see
+    scripts/repair_ult_ground_truth.py's harness-incompatibility category).
     """
     tree = ast.parse(code)
     names = set()
     for node in tree.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name != exclude:
             names.add(node.name)
+        elif isinstance(node, ast.Assign):
+            for t in node.targets:
+                if isinstance(t, ast.Name):
+                    names.add(t.id)
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            names.add(node.target.id)
     return names
 
 
@@ -77,10 +88,14 @@ def _referenced_names(test_src: str) -> set[str]:
 def build_test_file(func_name: str, code: str, tests: list[str]) -> str:
     """Concatenate ULT's ground-truth test functions into one pytest file.
 
-    Imports the target function plus any module-level helper (class/
-    function) the test bodies actually reference -- not every helper `code`
-    defines, only the ones a test needs, keeping the import line minimal and
-    matching how a real model response would import exactly what it uses.
+    Imports the target function plus any module-level helper (class,
+    function, or constant) the test bodies actually reference -- not every
+    helper `code` defines, only the ones a test needs, keeping the import
+    line minimal and matching how a real model response would import
+    exactly what it uses. Also adds a bare `import pytest` when a test body
+    references the name `pytest` (e.g. `pytest.approx`, `pytest.raises`) and
+    it isn't already one of `code`'s own helper names -- ULT's shipped test
+    snippets are bare function bodies with no import preamble of their own.
     """
     helpers = _module_level_names(code, exclude=func_name)
     used: set[str] = set()
@@ -89,8 +104,11 @@ def build_test_file(func_name: str, code: str, tests: list[str]) -> str:
     needed_helpers = sorted(helpers & used)
     import_names = [func_name, *needed_helpers]
     import_line = f"from under_test import {', '.join(import_names)}"
+    prelude = import_line
+    if "pytest" in used and "pytest" not in helpers:
+        prelude = f"import pytest\n{prelude}"
     body = "\n\n".join(t.strip() for t in tests)
-    return f"{import_line}\n\n{body}\n"
+    return f"{prelude}\n\n{body}\n"
 
 
 def main() -> None:
