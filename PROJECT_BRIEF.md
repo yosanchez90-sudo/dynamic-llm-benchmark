@@ -257,6 +257,33 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
   Pro-class Gemini model exists at all currently — 3.1 Pro Preview carries genuine
   preview-track deprecation risk that the original 2.5 Pro did not; note this as a
   limitation in the write-up.
+- **Supervisor meeting outcomes (2026-07-25):**
+  - **Corpus sign-off received.** P2 gate (60 templates pass validation, supervisor
+    sign-off on corpus — §8) is now fully closed.
+  - **Two-experiment framing APPROVED**, resolving the ambiguity that previously
+    blocked evaluating fine-tuned checkpoints on ULT/PLT:
+    (a) the six existing Dynamic-trained LoRA runs (`data/results/finetune_rebuild/`,
+    the `inst1`/`bp_own`/`bp_gpt5` x Qwen-1.5B/7B conditions) are recharacterised as a
+    **supplementary memorisation-stability study** — not Comparison C. Their
+    seen-vs-unseen (inst1-train-split vs inst2/3-held-out) gap is the relevant
+    readout for that study (see `analysis/FINETUNE_ENDPOINT_PROVENANCE.md`).
+    (b) the **canonical Comparison C** is a **new** LoRA fine-tune of Qwen-1.5B on
+    **ULT** (not Dynamic), evaluated pre/post on ULT, PLT, and Dynamic for the 2x3
+    DiD table specified in §7/§3.1 (H2). This is the experiment §11's roadmap
+    always intended; the six existing runs answer a different, useful question
+    (does fine-tuning on one's own prior Dynamic output inflate scores?) but were
+    never a substitute for it.
+  - **Gate lifted:** the previous "do NOT evaluate fine-tuned checkpoints on
+    ULT/PLT" instruction (a scope guard from when Comparison C's design was still
+    the six Dynamic-trained runs) is **lifted specifically for the new canonical
+    Comparison C experiment** in (b) above — evaluating those checkpoints on
+    ULT/PLT is now the explicit point, not an accidental scope violation.
+  - **Equivalent-mutant validation** (§5.5: 30 mutants/tier hand-inspected, 120
+    total) is tracked as a **P4-gate item** — it produces the validated Mut@K
+    variant that feeds the Comparison-A table (raw score is the default/pessimistic
+    headline; validated score is the sample-corrected companion figure). Recorded
+    here to resolve a checklist-mapping gap an earlier diversity/equivalent-mutant
+    audit flagged (validation work existed but wasn't tied to a named gate).
 
 ---
 
