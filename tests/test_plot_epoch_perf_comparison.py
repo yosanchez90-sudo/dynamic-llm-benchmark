@@ -148,9 +148,9 @@ def test_gap_table_matches_known_reference_value(tmp_path):
     row = table[0]
     assert row["condition"] == "bp_gpt5"
     assert row["epoch"] == 30
-    assert row["seen_pct"] == pytest.approx(54.0, abs=0.1)
-    assert row["unseen_pct"] == pytest.approx(1.3, abs=0.1)
-    assert row["gap_pp"] == pytest.approx(52.7, abs=0.1)
+    assert row["seen_baseline_pass_pct"] == pytest.approx(54.0, abs=0.1)
+    assert row["unseen_baseline_pass_pct"] == pytest.approx(1.3, abs=0.1)
+    assert row["gap_pp_baseline_pass"] == pytest.approx(52.7, abs=0.1)
 
 
 # ── pass-rate column fallback (n_pass/n_total division) ─────────────────────

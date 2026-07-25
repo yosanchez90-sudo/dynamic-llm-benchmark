@@ -95,16 +95,22 @@ def endpoint_rows(path: Path) -> list[dict]:
             "epoch": FINAL_EPOCH,
             "n": n,
             "split": split,
-            "greedy_pct": round(greedy_pct, 1),
-            "sampling_mean_pct": round(statistics.mean(sampling_vals), 1),
-            "sampling_sd_pct": round(statistics.stdev(sampling_vals), 1),
+            # Column names spell out the metric explicitly (baseline_pass, not
+            # exec_rate) -- these are percentages of `baseline_pass` == True
+            # (src/eval/test_gen_scorer.py's ScoreResult.baseline_passed),
+            # i.e. the suite passes against the ORIGINAL function, not the
+            # Exec@K collection-only gate. Flagged 2026-07-26: the ambiguous
+            # prior names ("greedy_pct" etc.) read as if they could be either.
+            "baseline_pass_greedy_pct": round(greedy_pct, 1),
+            "baseline_pass_sampling_mean_pct": round(statistics.mean(sampling_vals), 1),
+            "baseline_pass_sampling_sd_pct": round(statistics.stdev(sampling_vals), 1),
             "n_sampling_draws": len(sampling_vals),
         })
     gap_greedy = seen_greedy - unseen_greedy
     gap_sampling = statistics.mean(seen_sampling) - statistics.mean(unseen_sampling)
     for r in rows:
-        r["gap_pp_greedy"] = round(gap_greedy, 1)
-        r["gap_pp_sampling_mean"] = round(gap_sampling, 1)
+        r["baseline_pass_gap_pp_greedy"] = round(gap_greedy, 1)
+        r["baseline_pass_gap_pp_sampling_mean"] = round(gap_sampling, 1)
     return rows
 
 
@@ -124,11 +130,11 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(all_rows)
 
-    print(f"{'model':10s} {'condition':9s} {'split':22s} {'greedy%':>8s} {'samp.mean%':>11s} {'samp.SD':>8s} {'gap(greedy)':>12s} {'gap(samp.)':>11s}")
+    print(f"{'model':10s} {'condition':9s} {'split':22s} {'bp_greedy%':>10s} {'bp_samp.mean%':>13s} {'bp_samp.SD':>10s} {'gap(greedy)':>12s} {'gap(samp.)':>11s}")
     for r in all_rows:
-        print(f"{r['model']:10s} {r['condition']:9s} {r['split']:22s} {r['greedy_pct']:8.1f} "
-              f"{r['sampling_mean_pct']:11.1f} {r['sampling_sd_pct']:8.1f} "
-              f"{r['gap_pp_greedy']:12.1f} {r['gap_pp_sampling_mean']:11.1f}")
+        print(f"{r['model']:10s} {r['condition']:9s} {r['split']:22s} {r['baseline_pass_greedy_pct']:10.1f} "
+              f"{r['baseline_pass_sampling_mean_pct']:13.1f} {r['baseline_pass_sampling_sd_pct']:10.1f} "
+              f"{r['baseline_pass_gap_pp_greedy']:12.1f} {r['baseline_pass_gap_pp_sampling_mean']:11.1f}")
     print(f"\nWritten: {OUT.relative_to(ROOT)}")
 
 

@@ -27,7 +27,16 @@ The greedy `gap_pp` values in both places agree (e.g. Qwen 1.5B bp_gpt5:
 
 ## Headline verdict: bp_gpt5, Qwen 1.5B, n=150
 
-| split | greedy | sampling mean +- SD |
+**Metric: `baseline_pass` rate — not `exec_rate`.** Flagged 2026-07-26: the
+original column names (`greedy_pct` etc.) didn't say which metric explicitly.
+Renamed to `baseline_pass_greedy_pct` / `baseline_pass_sampling_mean_pct` /
+`baseline_pass_gap_pp_greedy` (and the `--gap-csv` companions to
+`seen_baseline_pass_pct` / `unseen_baseline_pass_pct` / `gap_pp_baseline_pass`)
+in `scripts/build_finetune_endpoint_table.py` / `scripts/plot_epoch_perf_comparison.py`
+— values unchanged, names only. The figures themselves already labelled their
+y-axis "Baseline pass rate (%)" correctly.
+
+| split | greedy baseline-pass % | sampling mean +- SD (baseline-pass %) |
 |---|---|---|
 | seen (inst1) | 54.0% | 53.3% +- 2.4 |
 | unseen (mean inst2/3) | 1.3% | 1.7% +- 0.6 |

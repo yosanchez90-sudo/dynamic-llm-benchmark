@@ -291,24 +291,31 @@ def gap_table(conditions: dict[str, dict]) -> list[dict]:
         rows.append({
             "condition": cond,
             "epoch": final_epoch,
-            "seen_pct": round(seen_pct, 1),
-            "unseen_pct": round(unseen_pct, 1),
-            "gap_pp": round(seen_pct - unseen_pct, 1),
+            # Column names spell out the metric explicitly -- this script only
+            # ever plots PASS_RATE_COLS (baseline_pass and its aliases, see
+            # module docstring), never exec_rate, but the bare "seen_pct" name
+            # read ambiguously. Flagged 2026-07-26.
+            "seen_baseline_pass_pct": round(seen_pct, 1),
+            "unseen_baseline_pass_pct": round(unseen_pct, 1),
+            "gap_pp_baseline_pass": round(seen_pct - unseen_pct, 1),
         })
     return rows
 
 
 def print_gap_table(rows: list[dict]) -> None:
-    print(f"{'condition':10s} {'epoch':>6s} {'seen%':>8s} {'unseen%':>9s} {'gap(pp)':>9s}")
+    print(f"{'condition':10s} {'epoch':>6s} {'seen bp%':>9s} {'unseen bp%':>11s} {'gap(pp)':>9s}")
     for r in rows:
-        print(f"{r['condition']:10s} {r['epoch']:6d} {r['seen_pct']:8.1f} "
-              f"{r['unseen_pct']:9.1f} {r['gap_pp']:9.1f}")
+        print(f"{r['condition']:10s} {r['epoch']:6d} {r['seen_baseline_pass_pct']:9.1f} "
+              f"{r['unseen_baseline_pass_pct']:11.1f} {r['gap_pp_baseline_pass']:9.1f}")
 
 
 def write_gap_csv(rows: list[dict], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["condition", "epoch", "seen_pct", "unseen_pct", "gap_pp"])
+        writer = csv.DictWriter(f, fieldnames=[
+            "condition", "epoch", "seen_baseline_pass_pct",
+            "unseen_baseline_pass_pct", "gap_pp_baseline_pass",
+        ])
         writer.writeheader()
         writer.writerows(rows)
     print(f"Saved: {path}")

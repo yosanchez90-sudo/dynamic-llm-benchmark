@@ -1,4 +1,4 @@
-condition,epoch,seen_pct,unseen_pct,gap_pp
+condition,epoch,seen_baseline_pass_pct,unseen_baseline_pass_pct,gap_pp_baseline_pass
 inst1,30,31.3,33.7,-2.3
 bp_own,30,60.0,55.3,4.7
 bp_gpt5,30,80.0,12.0,68.0
