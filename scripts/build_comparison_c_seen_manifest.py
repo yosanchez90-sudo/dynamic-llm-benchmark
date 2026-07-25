@@ -34,7 +34,7 @@ sys.path.insert(0, str(ROOT))
 
 MANIFEST_PATH = ROOT / "data" / "raw" / "ult_plt" / "subsample_manifest.json"
 ULT_RAW_PATH = ROOT / "data" / "raw" / "ult_plt" / "ULT.jsonl"
-TRAIN_PATH = ROOT / "data" / "finetune" / "train_ult_repaired.jsonl"
+TRAIN_PATH = ROOT / "data" / "finetune" / "train_ult_final.jsonl"
 PRE_BASELINE_PATH = (ROOT / "data" / "results" / "ult"
                      / "Qwen__Qwen2.5-Coder-1.5B-Instruct__ult__zero_shot__instcore_400__20260713T123923.jsonl")
 OUT_MANIFEST = ROOT / "data" / "raw" / "ult_plt" / "comparison_c_seen_manifest.json"

@@ -124,6 +124,20 @@ tests itself doesn't parse as Python; not attempted here):
 REPAIRED_DEGENERATE) → `data/finetune/train_ult_repaired.jsonl`. Full per-record
 detail: `analysis/ult_ground_truth_taxonomy.csv`.
 
+**Fine-tune-readiness filter (2026-07-26, preparing STOP GATE B):**
+`scripts/finalize_ult_training_set.py` tokenizes all 1,017 pairs with the actual
+target-model tokenizer — 3 ULT `code` blobs are enormous outliers (max ~116k
+tokens; one, ULT-11221 at 66,627 tokens, exceeds even Qwen2.5-Coder-1.5B's own
+32,768-token position-embedding limit). `max_length=3072` would silently truncate
+these mid-`code`, before the sequence ever reaches the assistant's test-file
+target — a wasted training step with zero actual learning signal, not a harmless
+truncation. Dropped (ULT-10024, ULT-11221, ULT-14284; none were in the core_400
+seen set, so the 112/400 figure above is unaffected) →
+`data/finetune/train_ult_final.jsonl` (1,014 records), the file
+`configs/finetune_qwen1_5b_ult_30ep.yaml` actually points at. Surviving
+distribution: mean 940 tokens, p99 1,987 — comfortably under 3,072 for the
+remainder.
+
 **core_400 coverage: 112/400 (28.0%)** of the ULT evaluation problems have a
 verified seen-in-training pair — well short of the ~90% target. Ceiling analysis:
 STRUCTURAL (34.5%) is a hard floor under the no-touching-`code` constraint above,
