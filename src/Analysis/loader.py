@@ -26,9 +26,21 @@ _RECORD_COLUMNS = [
     "exec_rate", "statement_coverage", "branch_coverage", "mutation_score",
     "mutants_total", "mutants_killed", "mutants_dropped_for_import_failure",
     "baseline_passed", "notes", "model_label", "adapter_path", "adapter_hash",
+    "timestamp",
 ]
 
 _BENCHMARKS = ("dynamic", "ult", "plt")
+
+# Natural key for one (model variant, problem) evaluation. Superseded reruns
+# (a stale partial-tier retry file left behind after a later complete rerun —
+# seen for claude-sonnet-4-6/claude-haiku-4-5 dynamic inst1-4, ~560 keys,
+# 2026-07-25 audit) share this key across two source files; load_records
+# keeps only the newest by timestamp so aggregates (StableMut@K, Kendall tau)
+# don't silently double-count a problem with two different scored outcomes.
+_DEDUP_KEY = [
+    "model_label", "benchmark", "instantiation_id", "template_id",
+    "instance_seed", "tier", "K", "prompting_condition",
+]
 
 
 def _model_label_from_filename(path: Path) -> str:
@@ -47,8 +59,11 @@ def _model_label_from_filename(path: Path) -> str:
 def load_records(results_dir: str | Path, benchmark: str | None = "dynamic") -> pd.DataFrame:
     """Load every *.jsonl file in `results_dir` into one flat DataFrame.
 
-    One row per (model variant, problem) evaluation. Pass benchmark=None to
-    load all benchmarks (dynamic/ult/plt) together instead of filtering.
+    One row per (model variant, problem) evaluation, deduplicated on
+    `_DEDUP_KEY` (keeping the newest by `timestamp`) — a superseded rerun
+    left in the same directory as its complete replacement must not be
+    double-counted in an aggregate mean. Pass benchmark=None to load all
+    benchmarks (dynamic/ult/plt) together instead of filtering.
     """
     results_dir = Path(results_dir)
     rows: list[dict] = []
@@ -66,4 +81,12 @@ def load_records(results_dir: str | Path, benchmark: str | None = "dynamic") -> 
             row["source_file"] = path.name
             rows.append(row)
 
-    return pd.DataFrame(rows, columns=[*_RECORD_COLUMNS, "source_file"])
+    df = pd.DataFrame(rows, columns=[*_RECORD_COLUMNS, "source_file"])
+    if df.empty:
+        return df
+
+    df["_ts_sort"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
+    df = df.sort_values("_ts_sort", na_position="first", kind="stable")
+    df = df.drop_duplicates(subset=_DEDUP_KEY, keep="last")
+    df = df.sort_values("_ts_sort", na_position="first", kind="stable").drop(columns="_ts_sort")
+    return df.reset_index(drop=True)
