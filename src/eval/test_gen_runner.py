@@ -42,6 +42,25 @@ from src.models.factory import build_model
 load_dotenv()
 
 
+def _tier_signature(config: dict[str, Any]) -> str:
+    """Short tag identifying which tiers a Dynamic config targets (e.g.
+    "L1L2", "L3L4", "L1L2L3L4") -- empty for ULT/PLT, which have no `tiers`
+    key and are always tier="L4" by construction (src/data/ult_plt.py).
+
+    Load-bearing for _find_resume_file / output-filename uniqueness: two
+    Dynamic configs for the SAME (model, instantiation) but DIFFERENT tier
+    sets (e.g. L1L2 vs L3L4, the standard tier-group split for this project)
+    used to be indistinguishable to the resume matcher, which keyed only on
+    (model, benchmark, instantiation) -- see the 2026-07-26 race audit
+    (CLAUDE.md) for the real duplicate/conflicting rows this caused when two
+    such configs' jobs had overlapping runtimes.
+    """
+    tiers = config.get("tiers")
+    if not tiers:
+        return ""
+    return "".join(tiers)
+
+
 def _find_resume_file(
     out_dir: Path,
     safe_model: str,
@@ -50,22 +69,29 @@ def _find_resume_file(
     instantiation_id: str,
     n_shards: int,
     shard_id: int,
+    tier_sig: str = "",
 ) -> tuple[Path | None, set[tuple[str, int]]]:
     """Return (existing_jsonl_path, already_done_pairs) if a partial run exists.
 
     "already done" means a (template_id, instance_seed) pair that already has
     a record in the file.  The caller filters these out of the problem list and
     appends to the same file so the completed run is a single contiguous JSONL.
+
+    `tier_sig` (see _tier_signature) narrows the glob to files from a config
+    targeting the SAME tier set -- required so two Dynamic configs for the
+    same (model, instantiation) but different tiers (e.g. L1L2 vs L3L4) never
+    match each other's resume file.
     """
+    tier_part = f"__tiers{tier_sig}" if tier_sig else ""
     if n_shards > 1:
         pattern = (
             f"{safe_model}__{benchmark}__{prompting_condition}"
-            f"__inst{instantiation_id}__shard{shard_id}of{n_shards}_*.jsonl"
+            f"__inst{instantiation_id}{tier_part}__shard{shard_id}of{n_shards}_*.jsonl"
         )
     else:
         pattern = (
             f"{safe_model}__{benchmark}__{prompting_condition}"
-            f"__inst{instantiation_id}_*.jsonl"
+            f"__inst{instantiation_id}{tier_part}_*.jsonl"
         )
 
     candidates = sorted(out_dir.glob(pattern))
@@ -148,11 +174,15 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Resume detection: if a partial run exists for this exact experiment,
-    # reuse its file and skip already-completed problems.
+    # reuse its file and skip already-completed problems. tier_sig prevents
+    # matching a DIFFERENT tier-group's file for the same (model, instantiation)
+    # -- see _tier_signature / the 2026-07-26 race audit.
+    tier_sig = _tier_signature(config)
+    tier_part = f"__tiers{tier_sig}" if tier_sig else ""
     resume_path, done_pairs = _find_resume_file(
         out_dir, safe_model,
         config["benchmark"], config["prompting_condition"],
-        config["instantiation_id"], n_shards, shard_id,
+        config["instantiation_id"], n_shards, shard_id, tier_sig,
     )
 
     if resume_path and done_pairs:
@@ -165,13 +195,13 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
         if n_shards > 1:
             out_path = out_dir / (
                 f"{safe_model}__{config['benchmark']}__"
-                f"{config['prompting_condition']}__inst{config['instantiation_id']}__"
+                f"{config['prompting_condition']}__inst{config['instantiation_id']}{tier_part}__"
                 f"shard{shard_id}of{n_shards}__{run_ts}.jsonl"
             )
         else:
             out_path = out_dir / (
                 f"{safe_model}__{config['benchmark']}__"
-                f"{config['prompting_condition']}__inst{config['instantiation_id']}__{run_ts}.jsonl"
+                f"{config['prompting_condition']}__inst{config['instantiation_id']}{tier_part}__{run_ts}.jsonl"
             )
 
     print(f"Output: {out_path}")

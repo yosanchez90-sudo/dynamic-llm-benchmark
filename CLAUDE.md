@@ -34,6 +34,23 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   the same tree can otherwise look indistinguishable from an external/
   unauthorized change (see the 2026-07-25/26 session-reconciliation incident:
   benign, but cost real time to verify).
+- `src/eval/test_gen_runner.py`'s resume-file matcher (`_find_resume_file`)
+  keys output filenames on tier set now (`_tier_signature`, e.g. `L1L2` vs
+  `L3L4`), not just model/benchmark/instantiation. Never submit two
+  Dynamic-benchmark configs for the same (model, instantiation) with
+  overlapping runtimes unless their `tiers` differ and this fix is in place —
+  confirmed via real job logs (2026-07-14/23/24, claude-haiku-4-5 inst4) that
+  the pre-fix matcher let an L1L2 retry job resume into an L3L4 job's output
+  file (and vice versa), producing duplicate — sometimes content-conflicting
+  — rows for the same (template_id, instance_seed). No rows were lost
+  (coverage_matrix.py's set-based check showed every in-scope cell complete)
+  and `src/Analysis/loader.py`'s timestamp-based dedup already resolves it
+  for analysis, but don't rely on that as the primary defense — the matcher
+  fix (`tests/test_gen_runner_resume.py`) is. If submitting several configs
+  for the same (model, instantiation) that legitimately can't be
+  tier-disambiguated (e.g. two configs with identical `tiers`), sequence them
+  with `sbatch --dependency=afterok:<jobid>` instead of submitting
+  concurrently.
 
 ## Layout
 - `src/` library code
