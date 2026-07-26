@@ -1,0 +1,39 @@
+# Comparison C, Gate C Stage 3b: POST-fine-tune eval of the canonical
+# Qwen-1.5B-on-ULT LoRA adapter on the Dynamic benchmark, L1L2, inst3.
+# Mirrors configs/qwen_coder_1_5b__dynamic_L1L2__inst3.yaml
+# (the PRE baseline config, verified against the actual PRE result rows) exactly
+# in every `generation:` field. Only `model.adapter_path` differs.
+# Full L1-L4 tier composition + reporting split (tier-matched L4 vs L1-L3 pooled)
+# per the 2026-07-26 ANALYSIS_PLAN.md amendment.
+
+name: qwen_coder_1_5b_ft_ult_30ep__dynamic_L1L2__zeroshot__inst3
+
+task: test_generation
+
+model:
+  provider: local
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: 2e1fd397ee46e1388853d2af2c993145b0f1098a
+  dtype: bfloat16
+  adapter_path: data/finetune/qwen1_5b_lora_ult_30ep/adapter_final
+
+benchmark: dynamic
+instantiation_id: "3"
+instantiation_seed: 3
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic
