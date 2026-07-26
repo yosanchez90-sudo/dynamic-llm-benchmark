@@ -45,10 +45,44 @@ alongside as the dissertation's declared headline metric, but computed only over
 the (necessarily small, PRE-side-limited) subset where baseline passes both
 pre and post, with the n made explicit rather than implied.
 
+## Dynamic arm tier composition (amendment, pre-registered 2026-07-26 before any
+## Dynamic POST row exists for the canonical adapter — not a post-hoc choice)
+
+The design above names "the Dynamic benchmark control" without pinning down tier
+scope. Evaluate POST Dynamic on **all four tiers (L1-L4)**, instantiations 1-3
+(matching the six supplementary runs, per Part 2 item 4's "same instantiations as
+the supplementary study for consistency" — same instantiations, same resolved
+generation config, read from the actual PRE rows rather than assumed). Report the
+Dynamic arm **two ways**, both reported, not either/or:
+
+(a) **Tier-matched L4** — the CC-fair comparison against ULT/PLT's CC>=8 band,
+    matching `src/Analysis/comparison.py`'s existing Comparison-A convention.
+    Explicitly **floor-limited**: Qwen-1.5B base PRE has `mutation_score` defined
+    for **0/225** L4 problems across inst1-3 (`baseline_pass_rate`=0.000,
+    `exec_rate`=0.564) — a complete floor, not a low-but-real baseline.
+(b) **L1-L3 pooled** — where the base model has real (if partial) headroom:
+    PRE `exec_rate`=0.852, `baseline_pass_rate`=0.067, `mutation_score` defined for
+    45/675 problems (vs 0/225 at L4). Per-tier PRE detail: L1 exec=0.916
+    baseline_pass=0.031 mut_defined=7/225; L2 exec=0.898 baseline_pass=0.164
+    mut_defined=37/225; L3 exec=0.742 baseline_pass=0.004 mut_defined=1/225 —
+    L3 alone is nearly as sparse as L4, which is why L1-L3 is pooled rather than
+    each tier reported as its own arm.
+
+**Reason for specifying this now, not after POST lands:** floor effects make an
+L4-only null uninterpretable — it cannot distinguish "fine-tuning on ULT genuinely
+doesn't transfer to Dynamic" (the contamination-resistance prediction) from "the
+metric structurally cannot move because PRE was already at the floor with nothing
+to measure a gain against." (a) stays the primary, CC-matched DiD cell (paired with
+seen-ULT/unseen-ULT/PLT, all CC>=8) but is flagged floor-limited wherever reported;
+(b) is the arm where a null result is actually informative, reported alongside as
+the interpretability check the design above was missing.
+
 ## Secondary estimand: four-level contamination gradient
 
 seen-ULT (n=112) → unseen-ULT (n=288) → PLT core_400 excl. ULT overlap (n=400) →
-Dynamic (fresh instantiation, no static leakage).
+Dynamic-L4 (fresh instantiation, no static leakage, CC-matched per the tier
+amendment above — flagged floor-limited there; L1-L3 pooled reported alongside as
+a separate, non-CC-matched robustness point rather than a fifth gradient step).
 
 **Memorization signature** = monotone decay of (POST − PRE) gain along this
 ordering: gain(seen-ULT) > gain(unseen-ULT) > gain(PLT) > gain(Dynamic) ≈ 0. This
