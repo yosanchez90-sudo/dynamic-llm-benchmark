@@ -322,3 +322,30 @@ Decided (with the user) to scope down instead:
 `core_400` Qwen runs (1.5B/7B/32B on both ULT and PLT) are in scope now; the
 `qwen_1000` extension is queued after P4 coverage-fill, Qwen-only, low
 priority.
+
+## Gate C Stage 3a POST eval — verbatim-reproduction rate (2026-07-26)
+
+For the 112 seen core_400 ULT problems (`data/raw/ult_plt/comparison_c_seen_manifest.json`),
+compared each POST completion's `extracted_test_file`
+(`data/results/ult/Qwen__Qwen2.5-Coder-1.5B-Instruct__ft_qwen1_5b_lora_ult_30ep__ult__zero_shot__instcore_400__20260726T142439.jsonl`)
+against its own training target in `data/finetune/train_ult_final.jsonl`
+(both `.strip()`-normalized first — trailing-newline differences only, not
+a fuzzy match): exact string match plus `difflib.SequenceMatcher` ratio for
+any non-exact pair.
+
+**Result: 112/112 (100.0%) exact match.** Every seen problem's POST
+completion is byte-identical to its training target after whitespace
+normalization — not just >=0.95 similar, literally exact. Spot-checked one
+pair manually (task_id 16748) to rule out a comparison-script artifact:
+independently-loaded strings (not the same object), real POST generation
+timestamp (2026-07-26T17:04:11Z, inside the Stage-3a job's run window), raw
+lengths differ by exactly one character (a single trailing newline present
+in the training target but not the extracted completion) — genuine
+generation-time reproduction, not a bug in the check.
+
+Consistent with 30 epochs of LoRA (r=64) training converging to
+`train_loss`~=0.01 on a 1,014-example set at low-temperature (0.2) sampling —
+this is the expected shape of a memorization result at this scale, not an
+anomaly, and is the strongest single piece of evidence in this experiment
+for "the model reproduces training-set content verbatim rather than merely
+scoring higher on adjacent metrics."
