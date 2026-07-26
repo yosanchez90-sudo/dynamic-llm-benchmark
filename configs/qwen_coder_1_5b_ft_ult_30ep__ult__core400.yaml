@@ -1,0 +1,46 @@
+# Comparison C, Gate C Stage 3a: POST-fine-tune eval of the canonical
+# Qwen-1.5B-on-ULT LoRA adapter (data/finetune/qwen1_5b_lora_ult_30ep/adapter_final,
+# 30/30 epochs, SLURM job 9488214) on ULT core_400 -- mirrors
+# configs/qwen_coder_1_5b__ult__core400.yaml (the PRE baseline config) exactly
+# in every `generation:` field, confirmed against the actual PRE result rows
+# (data/results/ult/Qwen__Qwen2.5-Coder-1.5B-Instruct__ult__zero_shot__instcore_400__20260713T123923.jsonl)
+# rather than assumed. Only `model.adapter_path` differs.
+#
+# Resolved-config note: the PRE file's own logged generation_config is missing
+# repetition_penalty/top_k (src/models/local.py only started logging those in
+# commit 6c50dc4, one day after PRE ran on 2026-07-13) -- but the checkpoint's
+# shipped generation_config.json (repetition_penalty=1.1, top_k=20) is
+# immutable and the code path resolving it is unchanged, so the actual PRE
+# behavior is reconstructed with high confidence. This POST run uses the
+# current (logging-fixed) code, so its own rows will show these values
+# explicitly where PRE's file cannot.
+
+name: qwen_coder_1_5b_ft_ult_30ep__ult__core400__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  revision: 2e1fd397ee46e1388853d2af2c993145b0f1098a
+  dtype: bfloat16
+  adapter_path: data/finetune/qwen1_5b_lora_ult_30ep/adapter_final
+
+benchmark: ult
+subsample_tag: core_400
+instantiation_id: "core_400"
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/ult
