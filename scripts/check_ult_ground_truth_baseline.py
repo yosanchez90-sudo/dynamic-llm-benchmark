@@ -23,7 +23,10 @@ import ast
 import csv
 import json
 import multiprocessing as mp
+import os
+import shutil
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -46,25 +49,37 @@ def _target_function_node(code: str, func_name: str):
 
 
 def _worker(code: str, tests: list[str], q: mp.Queue) -> None:
-    ns: dict = {}
+    # ULT `code` blobs are arbitrary scraped real-world functions -- some do
+    # relative-path file I/O as part of normal operation (confirmed: an
+    # earlier run of this script, executed with cwd left at the repo root,
+    # littered the repo with fort.*/moldyn.vel/control/exe-style side-effect
+    # files from whatever those functions happened to write). Isolate every
+    # exec() in its own throwaway directory so a scraped function's file I/O
+    # can never touch the working tree.
+    tmpdir = tempfile.mkdtemp(prefix="ult_baseline_")
     try:
-        exec(compile(code, "<under_test>", "exec"), ns)
-    except Exception as e:
-        q.put(("CODE_EXEC_ERROR", 0, len(tests), f"{type(e).__name__}: {e}"[:150]))
-        return
-    n_pass, n_fail, first_err = 0, 0, ""
-    for t in tests:
-        test_ns = dict(ns)
+        os.chdir(tmpdir)
+        ns: dict = {}
         try:
-            exec(compile(t, "<test>", "exec"), test_ns)
-            fn_name = next(n.name for n in ast.parse(t).body if isinstance(n, ast.FunctionDef))
-            test_ns[fn_name]()
-            n_pass += 1
+            exec(compile(code, "<under_test>", "exec"), ns)
         except Exception as e:
-            n_fail += 1
-            if not first_err:
-                first_err = f"{type(e).__name__}: {e}"[:150]
-    q.put(("ALL_PASS" if n_fail == 0 else "SOME_FAIL", n_pass, n_fail, first_err))
+            q.put(("CODE_EXEC_ERROR", 0, len(tests), f"{type(e).__name__}: {e}"[:150]))
+            return
+        n_pass, n_fail, first_err = 0, 0, ""
+        for t in tests:
+            test_ns = dict(ns)
+            try:
+                exec(compile(t, "<test>", "exec"), test_ns)
+                fn_name = next(n.name for n in ast.parse(t).body if isinstance(n, ast.FunctionDef))
+                test_ns[fn_name]()
+                n_pass += 1
+            except Exception as e:
+                n_fail += 1
+                if not first_err:
+                    first_err = f"{type(e).__name__}: {e}"[:150]
+        q.put(("ALL_PASS" if n_fail == 0 else "SOME_FAIL", n_pass, n_fail, first_err))
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 def run_with_timeout(code: str, tests: list[str], timeout: float = 3.0):

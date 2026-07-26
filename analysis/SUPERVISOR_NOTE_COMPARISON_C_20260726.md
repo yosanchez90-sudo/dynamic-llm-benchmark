@@ -23,3 +23,11 @@ taxonomy and the pre-registered analysis plan are in
 `data/raw/ult_plt/PROVENANCE.md` and `analysis/COMPARISON_C_ANALYSIS_PLAN.md` if
 you want the detail. Flagging this week in case you'd rather we handle it
 differently before the fine-tune run goes in.
+
+Unrelated small item while we're in touch: re-checked Gemini 3.1 Pro
+Preview/Flash-Lite model-ID consistency across the Dynamic and ULT/PLT
+result sets — no drift, both use identical strings throughout. Still no
+non-preview Pro-class Gemini endpoint available; also worth noting for the
+write-up that the original 2.5 Pro/Flash 404s hit months ahead of Google's
+own stated (October) retirement date, not something we could have avoided
+by waiting.

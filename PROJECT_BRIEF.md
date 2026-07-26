@@ -148,6 +148,14 @@ Default = raw score (pessimistic, comparable). Validation = 30 mutants/tier hand
 | Google | Gemini 3.1 Pro Preview | Gemini 3.1 Flash-Lite |
 | Open-source (Qwen2.5-Coder) | 32B · 7B · 1.5B (three-point sweep) | — |
 
+Google row is a forced substitution for the originally-specified Gemini 2.5
+Pro/Flash — see Sec 11 for the retirement/substitution history. Model-ID
+consistency check (2026-07-26): every Dynamic-benchmark and ULT/PLT
+core_400 result row's `model`/`model_revision` fields read exactly
+`gemini-3.1-pro-preview` / `gemini-3.1-flash-lite` with no drift between the
+two result sets (checked directly against `data/results/dynamic/`,
+`data/results/ult/`, `data/results/plt/`).
+
 ---
 
 ## 7. The three comparisons (contamination evidence)
@@ -257,6 +265,18 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
   Pro-class Gemini model exists at all currently — 3.1 Pro Preview carries genuine
   preview-track deprecation risk that the original 2.5 Pro did not; note this as a
   limitation in the write-up.
+  **The 404s hit before Google's own stated retirement date** (an October
+  timeline per Google's deprecation notice) — the forced substitution above
+  was not optional/early-adopted, the originally-specified models stopped
+  answering API calls months ahead of their own documented retirement
+  schedule; worth stating plainly as a limitation rather than implying this
+  project chose to move off 2.5 Pro/Flash early. **Model-ID consistency
+  re-verified 2026-07-26** (see Sec 6): Dynamic and ULT/PLT core_400 result
+  rows use identical `gemini-3.1-pro-preview`/`gemini-3.1-flash-lite`
+  strings, no drift; still no non-preview Pro-class endpoint available as of
+  this check, `src/pricing.py`'s note from 2026-07-14 stands unchanged (no
+  newer live `models.list()` check was run — would be a reviewed API call,
+  not done speculatively).
 - **Supervisor meeting outcomes (2026-07-25):**
   - **Corpus sign-off received.** P2 gate (60 templates pass validation, supervisor
     sign-off on corpus — §8) is now fully closed.

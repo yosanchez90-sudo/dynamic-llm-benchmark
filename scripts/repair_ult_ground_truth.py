@@ -69,7 +69,9 @@ import argparse
 import ast
 import csv
 import json
+import os
 import re
+import shutil
 import sys
 import tempfile
 import time
@@ -170,13 +172,26 @@ def repair_test(code: str, func_name: str, test_src: str):
         return None
     fn_def, assert_node = shape
     ns: dict = {}
+    # ULT `code` blobs are arbitrary scraped real-world functions -- some do
+    # relative-path file I/O as a side effect of normal operation (a sibling
+    # check script that exec'd ULT code with cwd left at the repo root
+    # littered it with fort.*/moldyn.vel-style debris from whatever those
+    # functions happened to write; see CLAUDE.md's isolation rule). Isolate
+    # this exec()/eval() in a throwaway directory and always restore cwd,
+    # since repair_test() is called many times in this one long-lived process.
+    orig_cwd = os.getcwd()
+    tmpdir = tempfile.mkdtemp(prefix="ult_repair_")
     try:
+        os.chdir(tmpdir)
         exec(compile(code, "<under_test>", "exec"), ns)
         lhs_expr = ast.Expression(body=assert_node.test.left)
         ast.fix_missing_locations(lhs_expr)
         actual = eval(compile(lhs_expr, "<lhs>", "eval"), ns)
     except Exception:
         return None
+    finally:
+        os.chdir(orig_cwd)
+        shutil.rmtree(tmpdir, ignore_errors=True)
     lhs_src = ast.unparse(assert_node.test.left)
     candidate = f"def {fn_def.name}():\n    assert {lhs_src} == {actual!r}\n"
     try:

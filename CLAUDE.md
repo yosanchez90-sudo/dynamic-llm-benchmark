@@ -20,6 +20,20 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   the blanket `/data/` gitignore (generated batches/checkpoints/results) does not
   exempt provenance docs. Applies to `data/raw/ult_plt/PROVENANCE.md` and to
   `data/raw/ult_plt/subsample_manifest.json` when it's created.
+- Never `exec()`/`eval()` vendored or scraped code (ULT/PLT `code` blobs, any
+  third-party sample) with the working directory left at the repo root — some
+  real-world functions do relative-path file I/O as a normal side effect.
+  Confirmed 2026-07-25: a ULT ground-truth-quality check that exec'd ~3,676
+  scraped functions with cwd at the repo root littered it with `fort.*`,
+  `moldyn.vel`, `control`, `exe`-style debris. Always `os.chdir()` into a
+  fresh `tempfile.mkdtemp()` (or run in a `subprocess` with `cwd=` set) before
+  executing untrusted code, and restore/clean up afterward.
+- One writing session per working tree. If you need a second concurrent
+  Claude Code session on this project, use `git worktree` for it rather than
+  pointing another session at this same checkout — two sessions committing to
+  the same tree can otherwise look indistinguishable from an external/
+  unauthorized change (see the 2026-07-25/26 session-reconciliation incident:
+  benign, but cost real time to verify).
 
 ## Layout
 - `src/` library code
