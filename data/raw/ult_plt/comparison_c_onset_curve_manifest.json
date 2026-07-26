@@ -1,0 +1,434 @@
+{
+  "generated_by": "scripts/build_onset_curve_manifest.py",
+  "seed": 20260726,
+  "purpose": "Gate C Stage 3c epoch-onset curve -- fixed subsample, same problem IDs at every epoch point (paired trajectories)",
+  "epochs": [
+    1,
+    3,
+    5,
+    10,
+    20
+  ],
+  "epoch_anchors_already_landed": {
+    "0": "PRE baseline",
+    "30": "Stage 3a/3b full n"
+  },
+  "ult_seen": {
+    "task_ids": [
+      "10364",
+      "10812",
+      "10856",
+      "11047",
+      "11209",
+      "11292",
+      "12023",
+      "12146",
+      "12414",
+      "13878",
+      "14551",
+      "14555",
+      "14689",
+      "14828",
+      "15035",
+      "15309",
+      "15436",
+      "16403",
+      "16420",
+      "16641",
+      "16956",
+      "17309",
+      "1734",
+      "1760",
+      "18070",
+      "2050",
+      "240",
+      "2557",
+      "3850",
+      "4642",
+      "4666",
+      "470",
+      "5571",
+      "5673",
+      "5833",
+      "5919",
+      "5996",
+      "6224",
+      "6306",
+      "7",
+      "7230",
+      "7378",
+      "7620",
+      "7716",
+      "8392",
+      "8539",
+      "879",
+      "8911",
+      "8978",
+      "980"
+    ],
+    "n": 50,
+    "pool_n": 112
+  },
+  "ult_unseen": {
+    "task_ids": [
+      "10103",
+      "10275",
+      "10383",
+      "11547",
+      "11972",
+      "13261",
+      "13272",
+      "13628",
+      "13678",
+      "1375",
+      "13891",
+      "14113",
+      "14195",
+      "14232",
+      "1466",
+      "15064",
+      "15787",
+      "15857",
+      "1594",
+      "16971",
+      "17343",
+      "18126",
+      "18144",
+      "1848",
+      "2432",
+      "2708",
+      "3647",
+      "39",
+      "3962",
+      "4027",
+      "4639",
+      "5314",
+      "5531",
+      "5934",
+      "6476",
+      "6791",
+      "7340",
+      "7398",
+      "7603",
+      "7710",
+      "7777",
+      "7845",
+      "7931",
+      "8157",
+      "8603",
+      "8701",
+      "8874",
+      "9122",
+      "9147",
+      "9227"
+    ],
+    "n": 50,
+    "pool_n": 288
+  },
+  "dynamic_l1l2_inst1": {
+    "problems": [
+      {
+        "template_id": "L1-arithmetic-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L1-arithmetic-002",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L1-arithmetic-002",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L1-arithmetic-002",
+        "instance_seed": 1105
+      },
+      {
+        "template_id": "L1-arithmetic-003",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L1-arithmetic-003",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L1-coerce-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L1-coerce-001",
+        "instance_seed": 1105
+      },
+      {
+        "template_id": "L1-coerce-002",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L1-coerce-002",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L1-format-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L1-format-001",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L1-format-001",
+        "instance_seed": 1105
+      },
+      {
+        "template_id": "L1-format-002",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L1-format-002",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L1-format-002",
+        "instance_seed": 1105
+      },
+      {
+        "template_id": "L1-list-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L1-list-001",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L1-list-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L1-numeric-002",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L1-numeric-002",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L1-numeric-002",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L1-numeric-003",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L1-numeric-003",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L1-string-001",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L1-string-001",
+        "instance_seed": 1105
+      },
+      {
+        "template_id": "L1-string-002",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L1-string-002",
+        "instance_seed": 1105
+      },
+      {
+        "template_id": "L1-string-003",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L1-string-003",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L1-string-003",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L1-tuple-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L1-tuple-001",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L1-tuple-001",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L1-tuple-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-bucket-001",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-bucket-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-clamp-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L2-clamp-001",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-clamp-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-clamp-002",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-clamp-002",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L2-classifier-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L2-classifier-001",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L2-classifier-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-classifier-001",
+        "instance_seed": 1105
+      },
+      {
+        "template_id": "L2-classifier-002",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-classifier-002",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L2-classifier-002",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-flag-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L2-flag-001",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L2-flag-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-flag-001",
+        "instance_seed": 1105
+      },
+      {
+        "template_id": "L2-lookup-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-numeric-001",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-numeric-001",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L2-range-001",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-range-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-range-002",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L2-select-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L2-select-001",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-select-001",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L2-select-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-sign-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L2-sign-001",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-sign-001",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L2-string-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L2-string-001",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L2-validator-001",
+        "instance_seed": 1101
+      },
+      {
+        "template_id": "L2-validator-001",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-validator-001",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-validator-002",
+        "instance_seed": 1102
+      },
+      {
+        "template_id": "L2-validator-002",
+        "instance_seed": 1103
+      },
+      {
+        "template_id": "L2-validator-002",
+        "instance_seed": 1104
+      },
+      {
+        "template_id": "L2-validator-002",
+        "instance_seed": 1105
+      }
+    ],
+    "n": 75,
+    "pool_n": 150
+  }
+}
