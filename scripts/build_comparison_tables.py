@@ -56,9 +56,20 @@ def _git_commit() -> str:
 
 
 def main() -> None:
+    # Restrict to the 9 canonical (base, non-adapter) models -- fine-tuned
+    # variants (the six supplementary-study adapters, and now the canonical
+    # Comparison C adapter) are a different model identity
+    # (compute_model_label) and must never silently enter a Comparison A/B
+    # mean. Caught 2026-07-27: the Comparison C adapter's ULT/PLT rows (its
+    # mutation_score is defined for plenty of rows, unlike its floor-limited
+    # Dynamic-L4 rows, which is why this leak only showed up in Comparison B)
+    # appeared as an extra row in comparison_b_paired.csv before this filter.
     dynamic = load_records("data/results/dynamic", benchmark="dynamic")
     ult = load_records("data/results/ult", benchmark="ult")
     plt = load_records("data/results/plt", benchmark="plt")
+    dynamic = dynamic[dynamic["model_label"].isin(CANONICAL_MODELS)]
+    ult = ult[ult["model_label"].isin(CANONICAL_MODELS)]
+    plt = plt[plt["model_label"].isin(CANONICAL_MODELS)]
 
     dynamic_l4 = dynamic[dynamic["tier"] == DYNAMIC_TIER]
 
@@ -103,6 +114,19 @@ Missing: {b_missing or "none"}
 
 Pairing unit and CC-band methodology: see src/Analysis/comparison.py's
 module docstring.
+
+## Dedup-fix status (src/Analysis/loader.py, fixed 2026-07-25)
+
+load_records() dedupes on (model_label, benchmark, instantiation_id,
+template_id, instance_seed, tier, K, prompting_condition), keeping the
+newest row by timestamp -- see that module's docstring for why. Comparison A
+filters to tier=L4 only, and the ~559 duplicate rows found in the
+2026-07-26 audit (scripts/audit_result_integrity.py) are entirely
+L1/L2/L3-tier stale-retry rows -- none are L4, so Comparison A is unaffected
+regardless of whether this table predates or postdates the loader fix.
+Comparison B reads data/results/ult|plt/ directly, which the same audit
+found have zero duplicate keys. Both tables here are correct independent of
+generation order relative to the loader fix.
 """
     (ANALYSIS_DIR / "COMPARISON_PROVENANCE.md").write_text(provenance)
 

@@ -37,6 +37,27 @@ _BENCHMARKS = ("dynamic", "ult", "plt")
 # 2026-07-25 audit) share this key across two source files; load_records
 # keeps only the newest by timestamp so aggregates (StableMut@K, Kendall tau)
 # don't silently double-count a problem with two different scored outcomes.
+#
+# DEDUP POLICY: keep-latest-by-timestamp, not "keep whichever scored higher"
+# or any content-based rule. Rationale (2026-07-26 audit,
+# scripts/audit_result_integrity.py): of the 559 duplicate keys found, 117
+# are "content-conflicting" -- the same (model, instantiation, template,
+# seed, tier) has two DIFFERENT recorded outcomes, all in API models
+# (claude-sonnet-4-6 / claude-haiku-4-5-20251001), traced to a resume-matcher
+# bug that let a later retry job regenerate a problem that had already been
+# scored (see src/eval/test_gen_runner.py's _tier_signature fix). For an API
+# model, generation is not reproducibible from a "seed" parameter the way
+# local HF sampling is (see src/models/local.py's torch.manual_seed vs
+# whatever an API provider does internally) -- so when two rows conflict,
+# NEITHER is more "correct" than the other; both are equally legitimate
+# draws from the same model's output distribution for that prompt. Given
+# that, "keep latest" isn't a correctness claim, it's a deterministic,
+# reproducible tie-break that matches this project's general convention
+# elsewhere (a later measurement supersedes an earlier one -- e.g. the
+# quarantine-then-correct pattern in analysis/README_QUARANTINE.md) and
+# requires no per-row judgment call. For the other 442 (identical-content)
+# duplicates -- a stale partial file sitting next to its complete
+# replacement -- the choice doesn't matter at all, since both rows agree.
 _DEDUP_KEY = [
     "model_label", "benchmark", "instantiation_id", "template_id",
     "instance_seed", "tier", "K", "prompting_condition",
