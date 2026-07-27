@@ -336,6 +336,24 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
     supervisor/funding-gated, unchanged; (c) the Gemini 3.1 Pro Preview Dynamic
     crawl — blocked on a 250-requests/day quota, ~545/1200 problems in (see this
     section's Gemini entry above); (d) the dissertation write-up itself.
+- **RQ5/H6 cross-benchmark validity (2026-07-27, supervisor's "bottom-up"
+  construct-validity ask):** pre-registered `analysis/RQ5_ANALYSIS_PLAN.md`
+  before computing anything. Zero-compute result: Dynamic(pooled)↔ULT rank
+  agreement is close to zero at n=7 (Kendall τ=0.143), despite a
+  strong-looking Pearson r=0.904 driven entirely by one outlier model
+  (Qwen 1.5B) — read as "distinct capabilities," not "redundant," per the
+  pre-registered frame, and reported as found even though it's the weaker
+  of the two possible readings. Leaderboard harvest found published,
+  snapshot-verified BigCodeBench numbers (both Complete and Hard splits)
+  for all 3 Qwen sizes and **none** of the six API models — Gemini 3.1 Pro
+  Preview/Flash-Lite included, correctly not proxied by a different Gemini
+  version's score. This made the planned Qwen self-run unnecessary, but
+  leaves the Dynamic/ULT↔BigCodeBench correlation at n=3, all one model
+  family (a "perfect" τ=1.0 that is really a scale-monotonicity result, not
+  independent validity evidence — permutation p=0.331 confirms it isn't
+  significant at this n). Full write-up incl. Discussion-chapter stub:
+  `analysis/RQ5_INTERPRETATION.md`. One-command regeneration for all of the
+  above plus Comparison A/B/C and stability: `scripts/build_thesis_assets.py`.
 
 ---
 
