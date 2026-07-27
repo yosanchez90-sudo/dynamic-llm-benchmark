@@ -164,10 +164,14 @@ def main() -> None:
     print("\n=== Mut@K (secondary, n explicit) ===")
     print(mut_df.to_string(index=False))
 
-    provenance = f"""# Comparison C — canonical 2x3 DiD results
+    provenance = f"""# Comparison C — canonical 2x3 DiD results (raw tables)
 
 Generated: {datetime.now(timezone.utc).isoformat()}
 Script: scripts/analyze_comparison_c.py
+
+**Interpretation lives in `analysis/COMPARISON_C_INTERPRETATION.md`**
+(hand-written, not touched by this script) — this file is the regenerable
+raw-tables companion; re-run this script freely after new data lands.
 
 Per analysis/COMPARISON_C_ANALYSIS_PLAN.md (pre-registered 2026-07-26,
 amended same day for Dynamic-arm tier composition, both before this script's
