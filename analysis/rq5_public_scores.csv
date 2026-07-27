@@ -1,0 +1,4 @@
+model_label,public_score,public_score_hard,public_benchmark,public_split,public_eval_date,public_source
+Qwen__Qwen2.5-Coder-1.5B-Instruct,27.0,5.4,BigCodeBench,Complete-split/Instruct-prompt (+ Hard-split/Instruct),2024-11-12,bigcode/bigcodebench-results + bigcode/bigcodebench-hard-results
+Qwen__Qwen2.5-Coder-7B-Instruct,40.4,20.3,BigCodeBench,Complete-split/Instruct-prompt (+ Hard-split/Instruct),2024-11-12,bigcode/bigcodebench-results + bigcode/bigcodebench-hard-results
+Qwen__Qwen2.5-Coder-32B-Instruct,49.0,27.7,BigCodeBench,Complete-split/Instruct-prompt (+ Hard-split/Instruct),2024-09-19,bigcode/bigcodebench-results + bigcode/bigcodebench-hard-results
