@@ -61,6 +61,38 @@ small to treat this as confirmed here — recorded as a lead for RQ1
 cross-referencing and for interpretation once more models land, not as a
 finding this analysis establishes on its own.
 
+## Write-up stub — Discussion chapter (expand from here, not a final draft)
+
+This project's construct validity for the Dynamic benchmark rests on two
+complementary arguments. The **top-down** argument (§2 corpus design, §5
+tier/mutation-operator specification) is definitional: the benchmark is
+built directly from an explicit, pre-specified model of what test-generation
+capability consists of (complexity-tiered problem structure, a fixed
+mutation-operator catalogue, docstring-synonym variation) — validity is
+designed in, not discovered after the fact. The **bottom-up** argument (this
+RQ5/H6 analysis) is empirical: does the benchmark's ranking of models agree
+with independent measures of related capability? The answer here is mixed
+and instructive rather than simply confirmatory. Cross-provider rank
+agreement with ULT (n=7, spanning distinct architectures and providers) is
+close to zero (Kendall τ=0.143), driven by a single outlier model rather
+than a shared ordering among the rest — a result that, read against the
+interpretation frame pre-registered before it was computed, sits closer to
+"distinct capabilities" than "redundant with ULT," and raises a real
+question about what pooled Dynamic Mut@K is measuring once tier-level
+ceiling effects are accounted for (§ the per-tier breakdown above). The one
+clean, strong correlation available (Dynamic/ULT vs BigCodeBench, n=3) is
+confined to a single model family's size sweep and is better read as
+evidence that scale predicts everything within a family than as independent
+proxy validation across the field. Taken together, the two halves of
+construct validity point in a genuinely open direction rather than a
+foregone conclusion: the top-down design is principled, but the bottom-up
+evidence available so far does not strongly corroborate it across providers,
+and a larger, cross-provider public-benchmark comparison — contingent on
+models this recent (GPT-5, Claude Sonnet 4.6/Haiku 4.5, Gemini 3.1) ever
+appearing on a BigCodeBench-style leaderboard, which may simply never happen
+for snapshots this new — would be needed to resolve which reading is
+closer to correct.
+
 ## Parts 2-3 result: Dynamic/ULT vs BigCodeBench, N=3, all-Qwen
 
 The leaderboard harvest (`analysis/RQ5_LEADERBOARD_HARVEST.md`) found
