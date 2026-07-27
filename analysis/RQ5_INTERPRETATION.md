@@ -40,26 +40,73 @@ range). This is exactly the power limitation the plan pre-registered, not a
 post-hoc excuse: report the number honestly, do not claim validity is
 established, and do not claim it is refuted either.
 
-## Exploratory: per-tier breakdown (not primary, small n, flagged for cross-reference)
+## Diagnosis (post-hoc, `analysis/RQ5_DIAGNOSTICS.md` has the full tables)
 
-Pooling across all four Dynamic tiers likely dilutes the signal: L1/L2 are
-near-ceiling for every model (little room to rank models against each
-other), while L3/L4 spread models out much more. Per-tier Pearson r against
-ULT: L1 = -0.331, L2 = 0.885, L3 = 0.810, **L4 = -0.873 (n=5 only — Qwen
-1.5B and gemini-3.1-pro-preview have no defined L4 Mut@K)**.
+Four candidate explanations for τ=0.143, checked in turn. **The pooled
+result above remains the pre-registered primary and is not superseded by
+anything below** — this is a diagnosis of why it came out low, not a
+higher, more flattering number to report instead.
 
-The L4 result is worth a specific flag even though n=5 is too small to
-trust as a standalone finding: Qwen 32B/7B score *much higher* on ULT
-(0.90/0.89) than their own Dynamic-L4 performance would predict (0.55/0.54,
-already documented as a stability outlier in `analysis/STABILITY.md`),
-while the API models (Gemini Flash-Lite, Claude Haiku, Claude Sonnet) show
-the opposite pattern — higher Dynamic-L4 than ULT. This is the kind of
-asymmetry a contamination story would produce (open-weight Qwen models
-plausibly saw ULT-adjacent web content during pretraining that a
-leakage-free Dynamic instantiation can't replicate) but n=5 is far too
-small to treat this as confirmed here — recorded as a lead for RQ1
-cross-referencing and for interpretation once more models land, not as a
-finding this analysis establishes on its own.
+**(a) Difficulty composition.** Pooling L1-L4 compares a mixed-difficulty
+benchmark against ULT's CC>=8-only band. Tier-matching (Dynamic-L4 only,
+Comparison A's own convention) does not simply weaken the correlation — it
+**flips its sign** (Pearson r=-0.873, Kendall τ=-0.200, n=5). At n=5 with a
+CI spanning almost the full [-1,1] range this is not a confident finding on
+its own, but it rules out the easy story ("pooling just adds noise that
+tier-matching would fix") — the CC-matched comparison looks, if anything,
+slightly worse than the pooled one, not better. The discrimination audit
+explains part of why pooling is misleading regardless of sign: L1 has a
+0.017 range across all 9 models (everyone at ceiling) while L4 has a 0.366
+range and ULT a 0.494 range — pooling a near-zero-variance tier in with the
+genuinely discriminating ones dilutes whatever signal the hard tiers carry,
+in either direction.
+
+**(b) Conditioning/survivorship — the largest single factor found.** Mut@K
+is only defined where `baseline_passed=True`, so each model's mean is taken
+over a different-sized, self-selected subset (pooled baseline_pass_rate
+ranges from 0.02 for Qwen 1.5B to 0.90 for GPT-5 — a 45x spread in how much
+of the benchmark even contributes to the average). Re-scoring with a
+coverage-adjusted metric (Mut@K × baseline_pass_rate, which folds the
+selection back in rather than conditioning it away) **recovers Kendall
+τ=0.905, Spearman ρ=0.964 (permutation p=0.0034)** — a near-total reversal
+from the raw pooled result. This is the strongest single piece of evidence
+in this diagnosis: most of the apparent Dynamic/ULT disagreement is not
+that the two benchmarks disagree about model *capability*, it's that Mut@K
+as conventionally computed (conditional on baseline-pass) throws away the
+part of the signal — how *often* a model clears the baseline gate at all —
+that carries most of the cross-benchmark agreement. Mut@K and
+coverage-adjusted-Mut@K are different estimands measuring different
+things (respectively: "how good are the tests that already passed" vs "how
+good is the model overall, including whether it clears the gate"); this
+result says the latter is where the cross-benchmark agreement lives, not
+that the former was computed wrong.
+
+**(c) Reliability ceiling — a minor factor.** Disattenuating the observed
+τ=0.143 by Dynamic's own RQ4.1 self-consistency (mean pairwise Kendall tau
+0.675 across instantiations) gives τ_disattenuated≈0.174 — barely moved.
+Dynamic's own noisiness is not why the cross-benchmark number is low.
+
+**(d) Genuine construct difference — what's left over.** After (a) and (c)
+are largely ruled out as the main drivers and (b) is shown to recover most
+of the missing agreement, the residual "genuine distinct-capability" story
+is smaller than the raw pooled result on its own would suggest. This
+reframes the headline: **the pre-registered primary metric (pooled Mut@K)
+genuinely does show weak rank agreement with ULT, and that finding stands,
+unflattered** — but the diagnosis indicates this is substantially a property
+of *how Mut@K conditions on baseline-pass*, not strong evidence that
+Dynamic and ULT are measuring unrelated things. Both statements are true at
+once and both belong in the write-up: the metric-as-specified underperforms
+at cross-benchmark ranking, and the underlying capabilities it's built from
+are not as disconnected as that number alone implies.
+
+Also carried over from the per-tier check: Qwen 32B/7B score much higher on
+ULT (0.90/0.89) than their Dynamic-L4 performance predicts (0.55/0.54,
+already a documented stability outlier), while the API models show the
+opposite asymmetry. n=5 is too small to treat this as confirmed, but it's
+the kind of pattern a contamination story would produce (open-weight models
+plausibly saw ULT-adjacent web content a leakage-free Dynamic instantiation
+can't replicate) — recorded as a lead for RQ1 cross-referencing, not a
+finding established here.
 
 ## Write-up stub — Discussion chapter (expand from here, not a final draft)
 
@@ -74,24 +121,32 @@ RQ5/H6 analysis) is empirical: does the benchmark's ranking of models agree
 with independent measures of related capability? The answer here is mixed
 and instructive rather than simply confirmatory. Cross-provider rank
 agreement with ULT (n=7, spanning distinct architectures and providers) is
-close to zero (Kendall τ=0.143), driven by a single outlier model rather
-than a shared ordering among the rest — a result that, read against the
-interpretation frame pre-registered before it was computed, sits closer to
-"distinct capabilities" than "redundant with ULT," and raises a real
-question about what pooled Dynamic Mut@K is measuring once tier-level
-ceiling effects are accounted for (§ the per-tier breakdown above). The one
+close to zero on the pre-registered primary metric (Kendall τ=0.143), and
+that finding is reported as-is, not smoothed over. A post-hoc diagnosis,
+however, complicates a simple "distinct capabilities" reading: most of the
+gap is attributable to how Mut@K conditions on baseline-pass rather than to
+Dynamic and ULT disagreeing about model capability outright — a
+coverage-adjusted re-scoring that folds the baseline-pass rate back in
+recovers τ=0.905, and disattenuating for Dynamic's own measurement
+reliability moves the observed number by only 0.03. So the honest
+statement is two-sided: the metric as pre-registered and specified does
+rank models inconsistently across benchmarks, which is a real limitation to
+disclose, but the underlying capabilities are less disconnected than that
+number alone implies. The one
 clean, strong correlation available (Dynamic/ULT vs BigCodeBench, n=3) is
 confined to a single model family's size sweep and is better read as
 evidence that scale predicts everything within a family than as independent
 proxy validation across the field. Taken together, the two halves of
 construct validity point in a genuinely open direction rather than a
-foregone conclusion: the top-down design is principled, but the bottom-up
-evidence available so far does not strongly corroborate it across providers,
-and a larger, cross-provider public-benchmark comparison — contingent on
-models this recent (GPT-5, Claude Sonnet 4.6/Haiku 4.5, Gemini 3.1) ever
-appearing on a BigCodeBench-style leaderboard, which may simply never happen
-for snapshots this new — would be needed to resolve which reading is
-closer to correct.
+foregone conclusion: the top-down design is principled, and the bottom-up
+diagnosis suggests the underlying capabilities are more related than the
+headline cross-provider number implies once measurement conditioning is
+accounted for — but that accounting is itself a post-hoc correction, not a
+pre-registered result, and a genuinely cross-provider public-benchmark
+comparison (contingent on models this recent — GPT-5, Claude Sonnet
+4.6/Haiku 4.5, Gemini 3.1 — ever appearing on a BigCodeBench-style
+leaderboard, which may simply never happen for snapshots this new) remains
+the evidence that would actually settle which reading is closer to correct.
 
 ## Parts 2-3 result: Dynamic/ULT vs BigCodeBench, N=3, all-Qwen
 
