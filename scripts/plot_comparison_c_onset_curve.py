@@ -22,6 +22,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from src.Analysis.provenance import stamp_block  # noqa: E402
+
 ONSET_CSV = ROOT / "analysis" / "comparison_c_onset_curve.csv"
 MANIFEST = ROOT / "data" / "raw" / "ult_plt" / "comparison_c_onset_curve_manifest.json"
 POST_ULT_FILE = ROOT / "data/results/ult/Qwen__Qwen2.5-Coder-1.5B-Instruct__ft_qwen1_5b_lora_ult_30ep__ult__zero_shot__instcore_400__20260726T142439.jsonl"
@@ -143,7 +145,25 @@ def main() -> None:
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT_PATH, dpi=150, bbox_inches="tight")
     fig.savefig(OUT_PATH.with_suffix(".png"), dpi=150, bbox_inches="tight")
-    print(f"Saved: {OUT_PATH} and .png")
+
+    provenance = f"""# Comparison C onset-curve figure — provenance
+
+{stamp_block("scripts/plot_comparison_c_onset_curve.py")}
+Sources: {ONSET_CSV.relative_to(ROOT)} (epochs {{1,3,5,10,20}} subsample),
+{MANIFEST.relative_to(ROOT)} (fixed subsample IDs for the epoch-0/epoch-30
+anchors), {POST_ULT_FILE.relative_to(ROOT)} and
+{[str(p.relative_to(ROOT)) for p in POST_DYN_L1L2_FILES]} (epoch-30 anchor,
+full-n Stage 3a/3b landed results, not re-run).
+
+Output: {OUT_PATH.relative_to(ROOT)} (+ .png).
+"""
+    # NOT alongside the figure: analysis/figures/ is entirely gitignored
+    # (.gitignore:49), so a sidecar written there would never be committed --
+    # defeating the point of stamping it. Root of analysis/, like every other
+    # *_PROVENANCE.md, is only ignored for .csv/.xlsx (.gitignore:47-48).
+    PROVENANCE_OUT = ROOT / "analysis" / (OUT_PATH.stem + "_PROVENANCE.md")
+    PROVENANCE_OUT.write_text(provenance)
+    print(f"Saved: {OUT_PATH} and .png, {PROVENANCE_OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

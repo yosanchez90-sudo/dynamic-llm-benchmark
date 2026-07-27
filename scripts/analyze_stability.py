@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src.Analysis.loader import load_records  # noqa: E402
+from src.Analysis.provenance import stamp_block  # noqa: E402
 from src.Analysis.stability import (  # noqa: E402
     mean_pairwise_tau, pairwise_kendall_tau, stable_mut_at_k,
 )
@@ -69,7 +70,29 @@ def main() -> None:
     stable.to_csv(f"{args.out}_stablemut.csv", index=False)
     by_tier.to_csv(f"{args.out}_stablemut_by_tier.csv", index=False)
     pairwise.to_csv(f"{args.out}_kendall.csv", index=False)
-    print(f"\nWritten: {args.out}_stablemut.csv, {args.out}_stablemut_by_tier.csv, {args.out}_kendall.csv")
+
+    provenance = f"""# StableMut@K + pairwise Kendall tau (RQ4.1) — raw tables
+
+{stamp_block("scripts/analyze_stability.py")}
+Args: --results-dir {args.results_dir}  --out {args.out}  --min-instantiations {args.min_instantiations}
+
+## StableMut@K (mean Mut@K across instantiations, SD)
+
+{stable_reportable.to_string(index=False)}
+
+## StableMut@K by tier
+
+{by_tier_reportable.to_string(index=False)}
+
+## Pairwise Kendall tau between instantiation rankings (model-level Mut@K)
+
+{pairwise.to_string(index=False)}
+
+Mean pairwise tau: {f"{mean_tau:.3f}" if mean_tau is not None else "n/a"}
+"""
+    Path(f"{args.out}_PROVENANCE.md").write_text(provenance)
+    print(f"\nWritten: {args.out}_stablemut.csv, {args.out}_stablemut_by_tier.csv, "
+          f"{args.out}_kendall.csv, {args.out}_PROVENANCE.md")
 
 
 if __name__ == "__main__":

@@ -23,7 +23,6 @@ Usage: python scripts/analyze_rq5.py
 from __future__ import annotations
 
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -35,6 +34,7 @@ import pandas as pd
 from coverage_matrix import MODEL_SPECS
 from src.Analysis.correlation import compute_correlations
 from src.Analysis.loader import load_records
+from src.Analysis.provenance import stamp_block
 
 CANONICAL_MODELS = [m.model_label for m in MODEL_SPECS]
 PUBLIC_SCORES_PATH = ROOT / "analysis" / "rq5_public_scores.csv"
@@ -128,9 +128,7 @@ def main() -> None:
 
     provenance = f"""# RQ5 / H6 — cross-benchmark validity (raw tables)
 
-Generated: {datetime.now(timezone.utc).isoformat()}
-Script: scripts/analyze_rq5.py
-
+{stamp_block("scripts/analyze_rq5.py")}
 Per analysis/RQ5_ANALYSIS_PLAN.md (pre-registered 2026-07-27, before this
 script's first run). Interpretation, once the public-benchmark pairs land,
 belongs in a separate RQ5_INTERPRETATION.md (same split as Comparison C,

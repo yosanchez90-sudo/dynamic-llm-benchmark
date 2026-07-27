@@ -15,6 +15,8 @@ sys.path.insert(0, str(ROOT))
 
 import pandas as pd
 
+from src.Analysis.provenance import stamp_block
+
 RANKING_CSV = ROOT / "analysis" / "rq5_model_ranking.csv"
 CORR_CSV = ROOT / "analysis" / "rq5_correlations.csv"
 OUT_PATH = ROOT / "analysis" / "figures" / "rq5_correlation.pdf"
@@ -80,7 +82,22 @@ def main() -> None:
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT_PATH, dpi=150, bbox_inches="tight")
     fig.savefig(OUT_PATH.with_suffix(".png"), dpi=150, bbox_inches="tight")
-    print(f"Saved: {OUT_PATH} and .png")
+
+    provenance = f"""# RQ5 correlation scatter figure(s) — provenance
+
+{stamp_block("scripts/plot_rq5_correlation.py")}
+Sources: {RANKING_CSV.relative_to(ROOT)}, {CORR_CSV.relative_to(ROOT)}.
+Panels plotted this run: {[p[4] for p in pairs]}.
+
+Output: {OUT_PATH.relative_to(ROOT)} (+ .png).
+"""
+    # NOT alongside the figure: analysis/figures/ is entirely gitignored
+    # (.gitignore:49), so a sidecar written there would never be committed --
+    # defeating the point of stamping it. Root of analysis/, like every other
+    # *_PROVENANCE.md, is only ignored for .csv/.xlsx (.gitignore:47-48).
+    PROVENANCE_OUT = ROOT / "analysis" / (OUT_PATH.stem + "_PROVENANCE.md")
+    PROVENANCE_OUT.write_text(provenance)
+    print(f"Saved: {OUT_PATH} and .png, {PROVENANCE_OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -36,6 +35,7 @@ import numpy as np
 import pandas as pd
 
 from src.Analysis.loader import load_records
+from src.Analysis.provenance import stamp_block
 from src.Contamination.did import compute_did, did_table
 
 BASE_LABEL = "Qwen__Qwen2.5-Coder-1.5B-Instruct"
@@ -166,9 +166,7 @@ def main() -> None:
 
     provenance = f"""# Comparison C — canonical 2x3 DiD results (raw tables)
 
-Generated: {datetime.now(timezone.utc).isoformat()}
-Script: scripts/analyze_comparison_c.py
-
+{stamp_block("scripts/analyze_comparison_c.py")}
 **Interpretation lives in `analysis/COMPARISON_C_INTERPRETATION.md`**
 (hand-written, not touched by this script) — this file is the regenerable
 raw-tables companion; re-run this script freely after new data lands.

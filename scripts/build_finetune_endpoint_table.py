@@ -25,11 +25,17 @@ from __future__ import annotations
 import csv
 import glob
 import statistics
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from src.Analysis.provenance import stamp_block  # noqa: E402
+
 SRC_GLOB = "data/results/finetune_rebuild/epoch_perf_*.csv"
 OUT = ROOT / "analysis/finetune_endpoint_table.csv"
+PROVENANCE_OUT = ROOT / "analysis/finetune_endpoint_table_PROVENANCE.md"
 FINAL_EPOCH = 30
 SAMPLING_DRAWS = ["sampling_seed42", "sampling_seed43", "sampling_seed44"]
 
@@ -135,7 +141,30 @@ def main() -> None:
         print(f"{r['model']:10s} {r['condition']:9s} {r['split']:22s} {r['baseline_pass_greedy_pct']:10.1f} "
               f"{r['baseline_pass_sampling_mean_pct']:13.1f} {r['baseline_pass_sampling_sd_pct']:10.1f} "
               f"{r['baseline_pass_gap_pp_greedy']:12.1f} {r['baseline_pass_gap_pp_sampling_mean']:11.1f}")
-    print(f"\nWritten: {OUT.relative_to(ROOT)}")
+
+    header = "  ".join(f"{h:>12s}" if h not in ("model", "condition", "split") else f"{h:22s}" for h in fieldnames)
+    table_lines = [header]
+    for r in all_rows:
+        table_lines.append("  ".join(
+            f"{r[h]:22}" if h in ("model", "condition", "split") else f"{r[h]:>12}"
+            for h in fieldnames
+        ))
+    provenance = f"""# Fine-tune endpoint table (epoch 30, n=150) — raw table
+
+{stamp_block("scripts/build_finetune_endpoint_table.py")}
+This is the regenerable raw-table companion to the hand-written
+`analysis/FINETUNE_ENDPOINT_PROVENANCE.md` (methodology/interpretation,
+not touched by this script) -- re-run this script freely after new
+data lands in `data/results/finetune_rebuild/`.
+
+Source glob: {SRC_GLOB}
+
+## Endpoint table
+
+{chr(10).join(table_lines)}
+"""
+    PROVENANCE_OUT.write_text(provenance)
+    print(f"\nWritten: {OUT.relative_to(ROOT)}, {PROVENANCE_OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
