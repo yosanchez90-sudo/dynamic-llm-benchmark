@@ -304,6 +304,38 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
     headline; validated score is the sample-corrected companion figure). Recorded
     here to resolve a checklist-mapping gap an earlier diversity/equivalent-mutant
     audit flagged (validation work existed but wasn't tied to a named gate).
+- **Comparison C — COMPLETE, both studies (2026-07-27):**
+  - **Supplementary memorisation-stability study** (six Dynamic-trained LoRA runs,
+    Qwen-1.5B/7B x inst1/bp_own/bp_gpt5): epoch curves + endpoint table done, see
+    `analysis/FINETUNE_ENDPOINT_PROVENANCE.md`. Largest seen/unseen gap: `bp_gpt5`
+    Qwen-1.5B, 52.7pp greedy.
+  - **Canonical Comparison C** (new Qwen-1.5B-on-ULT LoRA, §7/§3.1 H2): fine-tune
+    (SLURM job 9488214, 30 epochs) → POST eval on ULT/PLT/Dynamic core_400 (Stage
+    3a/3b) → aggregate 2x3 DiD + seen/unseen-stratified gradient + 5-epoch onset
+    curve (Stage 3c), all with bootstrap CIs. Headline: seen-ULT +99.1pp (100%
+    baseline-pass, 100% verbatim-match, n=112); PLT +13.8pp DiD (CI [7.7,20.1])
+    after subtracting a real +8.7pp generic-fine-tuning-improvement control;
+    unseen-ULT a borderline +6.9pp (CI [1.3,13.0]) — most of its raw gain is that
+    same generic effect, not ULT-specific transfer, and even that residual is
+    measured on a population a third of which (98/288) has code that cannot
+    execute at all regardless of test quality. Dynamic-L4 is exactly 0.0pp both
+    pre/post — floor-limited (this 1.5B model never clears the CC>=8 baseline
+    gate), not a real null; the added Dynamic-L1-L3 arm is the informative
+    control. One deviation from the pre-registered monotone-decay prediction
+    (PLT's gain exceeds unseen-ULT's), explained by a selection-effect audit:
+    unseen-ULT is 100% composed of ULT problems the repair pipeline could not
+    verify (STRUCTURAL/SHAPE_NOT_REPAIRABLE/unparseable-test-syntax), while PLT
+    core_400 was never screened by any test-quality criterion. Full writeup:
+    `analysis/COMPARISON_C_INTERPRETATION.md` (hand-written) +
+    `analysis/COMPARISON_C_PROVENANCE.md` (regenerable raw tables) +
+    `analysis/COMPARISON_C_ANALYSIS_PLAN.md` (pre-registration + amendment).
+  - **Remaining open items going into Phase 6:** (a) equivalent-mutant validation
+    — 120 hand-inspected mutants, user's own work in progress, feeds the
+    validated Mut@K variant in Comparison A (P4-gate item above); (b) the GPT-5/
+    GPT-5-mini lane (Dynamic backfill + ULT/PLT core_400 batch, ~$37.68) —
+    supervisor/funding-gated, unchanged; (c) the Gemini 3.1 Pro Preview Dynamic
+    crawl — blocked on a 250-requests/day quota, ~545/1200 problems in (see this
+    section's Gemini entry above); (d) the dissertation write-up itself.
 
 ---
 
