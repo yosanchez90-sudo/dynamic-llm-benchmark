@@ -99,10 +99,25 @@ def main() -> None:
         ax1.plot(epochs_full, vals_full, label=style["label"],
                  color=style["color"], linestyle=style["linestyle"], marker=style["marker"])
 
+    # Two-timescale annotation (see analysis/COMPARISON_C_INTERPRETATION.md's
+    # "Onset curve -- two timescales, not one"): a fast, one-time
+    # generic-improvement jump shared by all three arms at epoch 0->1, then a
+    # slower, seen-ULT-only memorization climb from epoch 5 onward. Marking
+    # both directly on the figure so a reader doesn't mistake this for one
+    # smooth trend.
+    ax1.axvline(1, color="gray", linestyle="-", linewidth=0.8, alpha=0.6, zorder=0)
+    ax1.annotate("generic gain\n(all arms, epoch 0→1)", xy=(1, 27), xytext=(3.2, 55),
+                 fontsize=8.5, color="dimgray", ha="left",
+                 arrowprops=dict(arrowstyle="->", color="dimgray", alpha=0.7))
+    ax1.axvspan(5, 20, color="#d62728", alpha=0.06, zorder=0)
+    ax1.annotate("memorization\n(seen-ULT only, epochs 5‒20)", xy=(12, 72), xytext=(12, 88),
+                 fontsize=8.5, color="#d62728", ha="center",
+                 arrowprops=dict(arrowstyle="->", color="#d62728", alpha=0.7))
+
     ax1.set_xlabel("Training epoch", fontsize=11)
     ax1.set_ylabel("Baseline pass rate (%)", fontsize=11)
     ax1.set_title("Comparison C onset curve — baseline pass rate", fontsize=12)
-    ax1.legend(fontsize=9)
+    ax1.legend(fontsize=9, loc="center right")
     ax1.set_ylim(0, 105)
     ax1.grid(True, linestyle="--", alpha=0.4)
 
@@ -119,10 +134,15 @@ def main() -> None:
     ax2.set_ylim(0, 105)
     ax2.grid(True, linestyle="--", alpha=0.4)
 
+    fig.suptitle(
+        "Two timescales: a shared, one-time generic-improvement jump (epoch 0→1, all arms) "
+        "vs. a slower, seen-ULT-only memorization climb (epochs 5→20)",
+        fontsize=9.5, color="#333333", y=1.02,
+    )
     fig.tight_layout()
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT_PATH, dpi=150)
-    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=150)
+    fig.savefig(OUT_PATH, dpi=150, bbox_inches="tight")
+    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=150, bbox_inches="tight")
     print(f"Saved: {OUT_PATH} and .png")
 
 
