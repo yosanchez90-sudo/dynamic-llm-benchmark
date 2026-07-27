@@ -1,6 +1,6 @@
 # RQ5 / H6 — cross-benchmark validity (raw tables)
 
-Generated: 2026-07-27T21:43:36.602485+00:00
+Generated: 2026-07-27T21:47:41.665782+00:00
 Script: scripts/analyze_rq5.py
 
 Per analysis/RQ5_ANALYSIS_PLAN.md (pre-registered 2026-07-27, before this

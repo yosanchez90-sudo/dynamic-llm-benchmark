@@ -1,6 +1,6 @@
 # Comparison C — canonical 2x3 DiD results (raw tables)
 
-Generated: 2026-07-27T16:34:00.230141+00:00
+Generated: 2026-07-27T21:46:57.864949+00:00
 Script: scripts/analyze_comparison_c.py
 
 **Interpretation lives in `analysis/COMPARISON_C_INTERPRETATION.md`**

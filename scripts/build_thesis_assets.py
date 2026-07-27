@@ -1,0 +1,90 @@
+"""Single-command registry for regenerating this project's thesis-facing
+analysis tables and figures. Each entry is a no-argument script that reads
+whatever result files currently exist on disk and (re)writes its own
+analysis/*.csv, analysis/*.md, and/or analysis/figures/* outputs -- all of
+which are regenerable (see each script's own docstring for its specific
+"safe to re-run any time" note) and gitignored except the provenance/
+interpretation .md files.
+
+Deliberately excludes scripts that take required CLI arguments and are
+invoked once per condition rather than once per thesis asset (e.g.
+scripts/plot_epoch_perf.py, one call per fine-tune condition;
+scripts/build_ult_training_pairs.py / build_onset_curve_manifest.py /
+build_comparison_c_seen_manifest.py, one-off data-preparation steps that
+freeze a manifest rather than regenerate a thesis table/figure) -- those
+stay manual, invoked directly per their own usage docstring.
+
+Usage:
+    python scripts/build_thesis_assets.py            # run every registered step
+    python scripts/build_thesis_assets.py --only rq5 comparison_c   # run a subset
+    python scripts/build_thesis_assets.py --list      # show registered steps
+"""
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+PYTHON = sys.executable
+
+# (key, script path, description) -- run in this order; later steps don't
+# depend on earlier ones completing successfully, each runs regardless.
+STEPS: list[tuple[str, str, str]] = [
+    ("comparison_ab", "scripts/build_comparison_tables.py",
+     "Comparison A (Dynamic-L4 vs ULT) + Comparison B (ULT vs PLT)"),
+    ("stability", "scripts/analyze_stability.py",
+     "StableMut@K + pairwise Kendall tau (RQ4.1)"),
+    ("finetune_endpoint", "scripts/build_finetune_endpoint_table.py",
+     "Supplementary study endpoint table (greedy + R=3 sampling)"),
+    ("comparison_c", "scripts/analyze_comparison_c.py",
+     "Comparison C canonical 2x3 DiD + gradient + Mut@K tables"),
+    ("comparison_c_figure", "scripts/plot_comparison_c_onset_curve.py",
+     "Comparison C onset-curve figure (baseline-pass + verbatim-match)"),
+    ("rq5", "scripts/analyze_rq5.py",
+     "RQ5/H6 model-ranking table + cross-benchmark correlations"),
+    ("rq5_figure", "scripts/plot_rq5_correlation.py",
+     "RQ5 correlation scatter figure(s)"),
+]
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__,
+                                      formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--only", nargs="+", metavar="KEY",
+                         help="Run only these step keys (see --list).")
+    parser.add_argument("--list", action="store_true", help="List registered steps and exit.")
+    args = parser.parse_args()
+
+    if args.list:
+        for key, script, desc in STEPS:
+            print(f"  {key:20s} {script:45s} {desc}")
+        return
+
+    selected = STEPS
+    if args.only:
+        wanted = set(args.only)
+        unknown = wanted - {k for k, _, _ in STEPS}
+        if unknown:
+            raise SystemExit(f"Unknown step key(s): {sorted(unknown)} -- see --list")
+        selected = [s for s in STEPS if s[0] in wanted]
+
+    results = []
+    for key, script, desc in selected:
+        print(f"\n{'='*70}\n{key}: {desc}\n{'='*70}")
+        proc = subprocess.run([PYTHON, script], cwd=ROOT)
+        results.append((key, proc.returncode))
+        status = "OK" if proc.returncode == 0 else f"FAILED (exit {proc.returncode})"
+        print(f"--- {key}: {status} ---")
+
+    print(f"\n{'='*70}\nSUMMARY\n{'='*70}")
+    for key, rc in results:
+        print(f"  {key:20s} {'OK' if rc == 0 else f'FAILED (exit {rc})'}")
+
+    if any(rc != 0 for _, rc in results):
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
