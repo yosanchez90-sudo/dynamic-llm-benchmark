@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from src.Analysis.comparison import (
+    coverage_stats_table,
     dynamic_l4_for_model,
     load_cc_bands,
     matched_cc_table,
@@ -50,6 +51,27 @@ def test_paired_model_table_ignores_nan_mutation_scores():
     ult = _rows("m1", "L4", [0.5])
     paired = paired_model_table(dynamic, ult, label_a="dynamic", label_b="ult")
     assert paired.iloc[0]["dynamic"] == pytest.approx(0.5)  # mean of [0.4, 0.6], NaN excluded
+
+
+def test_coverage_stats_table_reports_n_total_n_defined_and_bp_rate():
+    dynamic = pd.concat([
+        _rows("m1", "L4", [0.4, 0.6, float("nan")]),  # 2/3 defined
+        _rows("m2", "L4", [0.2]),                       # 1/1 defined
+    ])
+    stats = coverage_stats_table(dynamic).set_index("model_label")
+    assert stats.loc["m1", "n_total"] == 3
+    assert stats.loc["m1", "n_defined"] == 2
+    assert stats.loc["m1", "baseline_pass_rate"] == pytest.approx(2 / 3)
+    assert stats.loc["m2", "n_total"] == 1
+    assert stats.loc["m2", "n_defined"] == 1
+    assert stats.loc["m2", "baseline_pass_rate"] == pytest.approx(1.0)
+
+
+def test_coverage_stats_table_zero_defined_gives_zero_rate_not_nan():
+    dynamic = _rows("m1", "L4", [float("nan"), float("nan")])
+    stats = coverage_stats_table(dynamic).set_index("model_label")
+    assert stats.loc["m1", "n_defined"] == 0
+    assert stats.loc["m1", "baseline_pass_rate"] == pytest.approx(0.0)
 
 
 def test_paired_wilcoxon_fewer_than_two_pairs_returns_none_stats():

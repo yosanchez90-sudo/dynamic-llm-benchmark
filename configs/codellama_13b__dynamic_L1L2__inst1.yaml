@@ -1,0 +1,37 @@
+# RQ5 cross-family extension (approved 2026-07-28, analysis/RQ5_CROSS_FAMILY_PROPOSAL.md):
+# full-scale Dynamic L1L2, CodeLlama-13B-Instruct, zero-shot, inst1.
+# Pilot passed 2026-07-28 (job 9499408): chat template applied+logged correctly,
+# extraction verified faithful, exec_rate consistent with other models.
+# Chat-template drift caveat (postdates 2023-08-25 eval): see
+# analysis/RQ5_INTERPRETATION.md's "Cross-family extension" limitations section.
+
+name: codellama_13b__dynamic_L1L2__zeroshot__inst1
+
+task: test_generation
+
+model:
+  provider: local
+  id: codellama/CodeLlama-13b-Instruct-hf
+  revision: 745795438019e47e4dad1347a0093e11deee4c68   # pinned SHA, verified 2026-07-27/28 (current HEAD, no weight-file commit since 2023-08-25 eval date; chat_template added 2024-03-04)
+  dtype: bfloat16
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic

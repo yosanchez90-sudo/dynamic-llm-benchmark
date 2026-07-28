@@ -32,9 +32,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import pandas as pd
+
 from coverage_matrix import CANONICAL_MODELS  # noqa: E402
 from src.Analysis.comparison import (  # noqa: E402
     DYNAMIC_TIER,
+    coverage_stats_table,
     load_cc_bands,
     matched_cc_table,
     paired_model_table,
@@ -76,6 +79,27 @@ def main() -> None:
     a_paired = paired_model_table(dynamic_l4, ult, label_a="dynamic_l4", label_b="ult")
     a_wilcoxon = paired_wilcoxon(a_paired, label_a="dynamic_l4", label_b="ult")
 
+    # --- Comparison A coverage/conditioning audit + adjusted robustness row -
+    # Comparison A pairs Mut@K, which is only defined where baseline_passed=True
+    # (same conditioning RQ5 diagnosed, analysis/RQ5_DIAGNOSTICS.md sec 3) --
+    # each model's paired mean is a different-sized, different subset of
+    # problems. Reported explicitly + re-run on the coverage-adjusted score
+    # (Mut@K x baseline_pass_rate) as a robustness check, not a replacement.
+    a_coverage_dyn = coverage_stats_table(dynamic_l4).add_suffix("_dynamic_l4").rename(
+        columns={"model_label_dynamic_l4": "model_label"})
+    a_coverage_ult = coverage_stats_table(ult).add_suffix("_ult").rename(
+        columns={"model_label_ult": "model_label"})
+    a_coverage = a_coverage_dyn.merge(a_coverage_ult, on="model_label", how="outer")
+
+    a_paired_adj = a_paired.merge(
+        a_coverage_dyn[["model_label", "baseline_pass_rate_dynamic_l4"]], on="model_label"
+    ).merge(
+        a_coverage_ult[["model_label", "baseline_pass_rate_ult"]], on="model_label"
+    )
+    a_paired_adj["dynamic_l4_adj"] = a_paired_adj["dynamic_l4"] * a_paired_adj["baseline_pass_rate_dynamic_l4"]
+    a_paired_adj["ult_adj"] = a_paired_adj["ult"] * a_paired_adj["baseline_pass_rate_ult"]
+    a_wilcoxon_adj = paired_wilcoxon(a_paired_adj, label_a="dynamic_l4_adj", label_b="ult_adj")
+
     # --- Comparison B: ULT vs PLT -------------------------------------------
     b_paired = paired_model_table(ult, plt, label_a="ult", label_b="plt")
     b_wilcoxon = paired_wilcoxon(b_paired, label_a="ult", label_b="plt")
@@ -87,10 +111,13 @@ def main() -> None:
     a_paired.to_csv(ANALYSIS_DIR / "comparison_a_paired.csv", index=False)
     b_paired.to_csv(ANALYSIS_DIR / "comparison_b_paired.csv", index=False)
     b_matched_cc.to_csv(ANALYSIS_DIR / "comparison_b_matched_cc.csv", index=False)
+    a_coverage.to_csv(ANALYSIS_DIR / "comparison_a_coverage.csv", index=False)
+    a_paired_adj.to_csv(ANALYSIS_DIR / "comparison_a_coverage_adjusted.csv", index=False)
 
-    import pandas as pd
     pd.DataFrame([vars(a_wilcoxon)]).to_csv(ANALYSIS_DIR / "comparison_a_wilcoxon.csv", index=False)
     pd.DataFrame([vars(b_wilcoxon)]).to_csv(ANALYSIS_DIR / "comparison_b_wilcoxon.csv", index=False)
+    pd.DataFrame([vars(a_wilcoxon_adj)]).to_csv(
+        ANALYSIS_DIR / "comparison_a_coverage_adjusted_wilcoxon.csv", index=False)
 
     a_missing = sorted(set(CANONICAL_MODELS) - set(a_paired["model_label"]))
     b_missing = sorted(set(CANONICAL_MODELS) - set(b_paired["model_label"]))
@@ -113,6 +140,34 @@ Missing: {b_missing or "none"}
 
 Pairing unit and CC-band methodology: see src/Analysis/comparison.py's
 module docstring.
+
+## Comparison A conditioning/survivorship audit (added 2026-07-28)
+
+Comparison A pairs Mut@K, which is only defined where baseline_passed=True
+(the same conditioning RQ5 diagnosed as the dominant factor behind its low
+pooled Dynamic<->ULT rank agreement, `analysis/RQ5_DIAGNOSTICS.md` sec 3) --
+each model's paired mean is computed over a DIFFERENT-sized, different
+subset of problems, not a shared denominator. Full per-model n_total/
+n_defined/baseline_pass_rate for both sides: `analysis/comparison_a_coverage.csv`.
+
+{a_coverage.to_string(index=False)}
+
+**Coverage-adjusted robustness row** (Mut@K x baseline_pass_rate per side,
+folds the conditioning back in -- NOT the same estimand as Mut@K itself,
+`analysis/comparison_a_coverage_adjusted.csv` /
+`analysis/comparison_a_coverage_adjusted_wilcoxon.csv`):
+
+| | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
+|---|---|---|---|---|---|
+| raw Mut@K (primary) | {a_wilcoxon.n_pairs} | {a_wilcoxon.mean_a:.4f} | {a_wilcoxon.mean_b:.4f} | {a_wilcoxon.effect_r:.3f} | {a_wilcoxon.p_value:.4f} |
+| coverage-adjusted (robustness) | {a_wilcoxon_adj.n_pairs} | {a_wilcoxon_adj.mean_a:.4f} | {a_wilcoxon_adj.mean_b:.4f} | {a_wilcoxon_adj.effect_r:.3f} | {a_wilcoxon_adj.p_value:.4f} |
+
+**Does the conclusion change?** {
+    "Effect direction FLIPS between raw and coverage-adjusted (sign of effect_r differs) -- treat Comparison A's direction as conditioning-sensitive, not robust."
+    if (a_wilcoxon.effect_r is not None and a_wilcoxon_adj.effect_r is not None
+        and a_wilcoxon.effect_r * a_wilcoxon_adj.effect_r < 0)
+    else f"Effect direction is the SAME sign raw vs coverage-adjusted; magnitude/significance may still differ (see table above), but the qualitative read (which side is higher, and that n={a_wilcoxon.n_pairs} is too small at either p-value to call this a real effect) does not flip."
+}
 
 ## Dedup-fix status (src/Analysis/loader.py, fixed 2026-07-25)
 

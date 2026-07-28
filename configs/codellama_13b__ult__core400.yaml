@@ -1,0 +1,35 @@
+# RQ5 cross-family extension (approved 2026-07-28, analysis/RQ5_CROSS_FAMILY_PROPOSAL.md):
+# ULT core_400, CodeLlama-13B-Instruct, zero-shot. Runs AFTER the Dynamic
+# full-scale job for this model (SLURM --dependency=afterok), per the
+# approved run order (Dynamic first).
+# Chat-template drift caveat (postdates 2023-08-25 eval): see
+# analysis/RQ5_INTERPRETATION.md's "Cross-family extension" limitations section.
+
+name: codellama_13b__ult__core400__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: codellama/CodeLlama-13b-Instruct-hf
+  revision: 745795438019e47e4dad1347a0093e11deee4c68
+  dtype: bfloat16
+
+benchmark: ult
+subsample_tag: core_400
+instantiation_id: "core_400"
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/ult

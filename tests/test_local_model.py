@@ -107,3 +107,25 @@ def test_chat_template_source_none_defined_when_tokenizer_has_no_template():
 
     assert out.generation_config["chat_template_source"] == "none_defined"
     assert out.generation_config["chat_template_hash"] is None
+
+
+def test_prompt_delivery_mode_system_role_when_present():
+    model = _make_model()
+    cfg = GenerationConfig(max_new_tokens=2048, do_sample=True, temperature=0.2, top_p=1.0)
+
+    out = model.generate(
+        [{"role": "system", "content": "instructions"}, {"role": "user", "content": "hi"}], cfg
+    )
+
+    assert out.generation_config["prompt_delivery_mode"] == "system_role"
+
+
+def test_prompt_delivery_mode_folded_when_no_system_message():
+    """StarCoder2-15B accommodation (2026-07-28): inferred from the actual
+    messages received, not from config -- reflects what was really sent."""
+    model = _make_model()
+    cfg = GenerationConfig(max_new_tokens=2048, do_sample=True, temperature=0.2, top_p=1.0)
+
+    out = model.generate([{"role": "user", "content": "instructions\n\nhi"}], cfg)
+
+    assert out.generation_config["prompt_delivery_mode"] == "system_folded_into_user"

@@ -1,0 +1,33 @@
+# RQ5 cross-family extension (approved 2026-07-28, analysis/RQ5_CROSS_FAMILY_PROPOSAL.md):
+# ULT core_400, DeepSeek-Coder-6.7B-Instruct, zero-shot. Runs AFTER the
+# Dynamic full-scale job for this model (SLURM --dependency=afterok), per
+# the approved run order (Dynamic first).
+
+name: deepseek_coder_6_7b__ult__core400__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: deepseek-ai/deepseek-coder-6.7b-instruct
+  revision: e5d64addd26a6a1db0f9b863abf6ee3141936807
+  dtype: bfloat16
+
+benchmark: ult
+subsample_tag: core_400
+instantiation_id: "core_400"
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/ult

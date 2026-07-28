@@ -24,6 +24,7 @@ def test_dynamic_benchmark_calls_test_gen_load(monkeypatch):
         "instantiation_id": "1",
         "instantiation_seed": 1,
         "prompting_condition": "zero_shot",
+        "model": {},
     }
     result = test_gen_runner._load_problems(config)
     assert result == ["problem"]
@@ -40,10 +41,12 @@ def test_ult_benchmark_calls_ult_plt_load_not_test_gen(monkeypatch):
         test_gen_runner.ult_plt, "load",
         lambda benchmark, **kw: calls.append((benchmark, kw)) or ["ult_problem"],
     )
-    config = {"benchmark": "ult", "prompting_condition": "zero_shot", "max_n": 5, "sample_seed": 7}
+    config = {"benchmark": "ult", "prompting_condition": "zero_shot", "max_n": 5, "sample_seed": 7,
+               "model": {}}
     result = test_gen_runner._load_problems(config)
     assert result == ["ult_problem"]
-    assert calls[0] == ("ult", {"prompting_condition": "zero_shot", "max_n": 5, "sample_seed": 7})
+    assert calls[0] == ("ult", {"prompting_condition": "zero_shot", "max_n": 5, "sample_seed": 7,
+                                 "supports_system_role": True})
 
 
 def test_plt_with_subsample_tag_calls_load_manifest_subset(monkeypatch):
@@ -56,7 +59,29 @@ def test_plt_with_subsample_tag_calls_load_manifest_subset(monkeypatch):
         test_gen_runner.ult_plt, "load",
         lambda *a, **kw: (_ for _ in ()).throw(AssertionError("should use manifest subset, not a fresh draw")),
     )
-    config = {"benchmark": "plt", "prompting_condition": "zero_shot", "subsample_tag": "core_400"}
+    config = {"benchmark": "plt", "prompting_condition": "zero_shot", "subsample_tag": "core_400",
+               "model": {}}
     result = test_gen_runner._load_problems(config)
     assert result == ["core_problem"]
-    assert calls[0] == ("plt", "core_400", {"prompting_condition": "zero_shot"})
+    assert calls[0] == ("plt", "core_400", {"prompting_condition": "zero_shot",
+                                             "supports_system_role": True})
+
+
+def test_supports_system_role_false_threaded_to_dynamic_loader(monkeypatch):
+    """StarCoder2-15B accommodation (2026-07-28): model.supports_system_role
+    controls prompt delivery, read generically from the model config block,
+    not special-cased by model identity anywhere in _load_problems."""
+    calls = []
+    monkeypatch.setattr(
+        test_gen_runner.test_gen, "load",
+        lambda **kw: calls.append(kw) or ["problem"],
+    )
+    config = {
+        "benchmark": "dynamic",
+        "instantiation_id": "1",
+        "instantiation_seed": 1,
+        "prompting_condition": "zero_shot",
+        "model": {"supports_system_role": False},
+    }
+    test_gen_runner._load_problems(config)
+    assert calls[0]["supports_system_role"] is False

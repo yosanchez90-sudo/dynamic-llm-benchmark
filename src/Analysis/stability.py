@@ -33,11 +33,25 @@ def mut_at_k(df: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame:
     return agg
 
 
+def _apply_coverage_adjustment(per_inst: pd.DataFrame) -> pd.DataFrame:
+    """mut_at_k -> mut_at_k x (n_scored/n_total) in place on a copy --
+    n_scored/n_total equals baseline_pass_rate exactly, since mutation_score
+    is only ever defined where baseline_passed=True (RQ5's conditioning/
+    survivorship finding, analysis/RQ5_DIAGNOSTICS.md sec 3). Folds the
+    conditioning back into the per-instantiation score before it's used for
+    stability/reliability, instead of only ever measuring stability of the
+    subset that happened to pass."""
+    per_inst = per_inst.copy()
+    per_inst["mut_at_k"] = per_inst["mut_at_k"] * (per_inst["n_scored"] / per_inst["n_total"])
+    return per_inst
+
+
 def stable_mut_at_k(
     df: pd.DataFrame,
     model_col: str = "model_label",
     instantiation_col: str = "instantiation_id",
     extra_group_cols: tuple[str, ...] = (),
+    coverage_adjust: bool = False,
 ) -> pd.DataFrame:
     """StableMut@K: mean Mut@K per model across instantiations, with SD.
 
@@ -46,9 +60,15 @@ def stable_mut_at_k(
     that has zero scorable problems for a model is excluded from that
     model's mean/SD rather than counted as 0 — `n_instantiations` reports
     how many instantiations actually contributed.
+
+    coverage_adjust=True computes StableMut@K on the coverage-adjusted score
+    (Mut@K x baseline_pass_rate per instantiation) instead of raw Mut@K --
+    see _apply_coverage_adjustment.
     """
     group_cols = [model_col, *extra_group_cols, instantiation_col]
     per_inst = mut_at_k(df, group_cols)
+    if coverage_adjust:
+        per_inst = _apply_coverage_adjustment(per_inst)
     scorable = per_inst[per_inst["n_scored"] > 0]
 
     agg_cols = [model_col, *extra_group_cols]
@@ -65,6 +85,7 @@ def pairwise_kendall_tau(
     df: pd.DataFrame,
     model_col: str = "model_label",
     instantiation_col: str = "instantiation_id",
+    coverage_adjust: bool = False,
 ) -> pd.DataFrame:
     """Pairwise Kendall tau between per-instantiation model rankings.
 
@@ -73,8 +94,14 @@ def pairwise_kendall_tau(
     A model must have a scorable Mut@K in both instantiations of a pair
     to be included in that pair's ranking; `n_models` reports how many
     qualified (tau is NaN if fewer than 2).
+
+    coverage_adjust=True ranks models by the coverage-adjusted score
+    (Mut@K x baseline_pass_rate per instantiation) instead of raw Mut@K --
+    see _apply_coverage_adjustment.
     """
     per_inst = mut_at_k(df, [model_col, instantiation_col])
+    if coverage_adjust:
+        per_inst = _apply_coverage_adjustment(per_inst)
     per_inst = per_inst[per_inst["n_scored"] > 0]
 
     instantiations = sorted(per_inst[instantiation_col].unique())

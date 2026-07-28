@@ -1,0 +1,35 @@
+# RQ5 cross-family extension (approved 2026-07-28, analysis/RQ5_CROSS_FAMILY_PROPOSAL.md):
+# ULT core_400, Mistral-7B-Instruct-v0.3, zero-shot. Runs AFTER the Dynamic
+# full-scale job for this model (SLURM --dependency=afterok), per the
+# approved run order (Dynamic first).
+# Chat-template drift caveat (postdates 2024-05-22 eval): see
+# analysis/RQ5_INTERPRETATION.md's "Cross-family extension" limitations section.
+
+name: mistral_7b__ult__core400__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: mistralai/Mistral-7B-Instruct-v0.3
+  revision: c170c708c41dac9275d15a8fff4eca08d52bab71
+  dtype: bfloat16
+
+benchmark: ult
+subsample_tag: core_400
+instantiation_id: "core_400"
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/ult

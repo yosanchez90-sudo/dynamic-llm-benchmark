@@ -121,18 +121,28 @@ def _load_problems(config: dict[str, Any]) -> list:
     (production: the same fixed problem set every model shares, see
     data/raw/ult_plt/subsample_manifest.json) or an ad hoc max_n/sample_seed
     draw (dry runs / exploration), never both.
+
+    config["model"]["supports_system_role"] (default True) controls whether
+    the system instruction is sent as its own role="system" message or
+    folded into the first user turn -- for models whose chat_template
+    rejects role="system" outright (found 2026-07-28,
+    StarCoder2-15B-Instruct-v0.1). Read from the model block, not
+    special-cased by model identity anywhere in this function.
     """
+    supports_system_role = config["model"].get("supports_system_role", True)
     if config["benchmark"] in ("ult", "plt"):
         if "subsample_tag" in config:
             return ult_plt.load_manifest_subset(
                 config["benchmark"], config["subsample_tag"],
                 prompting_condition=config["prompting_condition"],
+                supports_system_role=supports_system_role,
             )
         return ult_plt.load(
             config["benchmark"],
             prompting_condition=config["prompting_condition"],
             max_n=config.get("max_n"),
             sample_seed=config.get("sample_seed", 0),
+            supports_system_role=supports_system_role,
         )
     only_instances = config.get("only_instances")
     return test_gen.load(
@@ -142,6 +152,7 @@ def _load_problems(config: dict[str, Any]) -> list:
         tiers=tuple(config.get("tiers", ("L1", "L2"))),
         prompting_condition=config["prompting_condition"],
         only_instances=frozenset((t, s) for t, s in only_instances) if only_instances else None,
+        supports_system_role=supports_system_role,
     )
 
 

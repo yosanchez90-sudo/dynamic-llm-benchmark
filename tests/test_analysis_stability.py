@@ -92,3 +92,39 @@ def test_pairwise_kendall_tau_skips_pairs_with_too_few_models():
     out = pairwise_kendall_tau(df)
     assert out.iloc[0]["n_models"] == 1
     assert pd.isna(out.iloc[0]["tau"])
+
+
+def test_stable_mut_at_k_coverage_adjust_scales_by_scored_fraction():
+    """coverage_adjust=True: mut_at_k x (n_scored/n_total), not raw mut_at_k --
+    2 of 4 rows gated out (None) each instantiation -> adjusted = 0.8*0.5=0.4."""
+    df = pd.DataFrame([
+        _row("m1", "1", 0.8), _row("m1", "1", None), _row("m1", "1", None), _row("m1", "1", 0.8),
+        _row("m1", "2", 0.8), _row("m1", "2", None), _row("m1", "2", None), _row("m1", "2", 0.8),
+    ])
+    raw = stable_mut_at_k(df)
+    adjusted = stable_mut_at_k(df, coverage_adjust=True)
+    assert raw.iloc[0]["stable_mut_at_k"] == pytest.approx(0.8)
+    assert adjusted.iloc[0]["stable_mut_at_k"] == pytest.approx(0.4)
+
+
+def test_pairwise_kendall_tau_coverage_adjust_can_change_ranking():
+    """Raw Mut@K ties b/c ahead of a; coverage-adjusting by a much lower
+    baseline_pass_rate for b flips the ranking -- proves coverage_adjust
+    actually changes which score drives the rank correlation, not just a
+    uniform rescale."""
+    df = pd.DataFrame([
+        _row("a", "1", 0.9), _row("a", "1", 0.9),
+        _row("b", "1", 0.95), _row("b", "1", None), _row("b", "1", None), _row("b", "1", None),
+        _row("a", "2", 0.8), _row("a", "2", 0.8),
+        _row("b", "2", 0.9), _row("b", "2", None), _row("b", "2", None), _row("b", "2", None),
+    ])
+    raw = pairwise_kendall_tau(df)
+    adjusted = pairwise_kendall_tau(df, coverage_adjust=True)
+    assert raw.iloc[0]["tau"] == pytest.approx(1.0)   # b > a in both instantiations, raw
+    assert adjusted.iloc[0]["n_models"] == 2
+    # adjusted: a=0.9*1.0=0.9 vs b=0.95*0.25=0.2375 (inst1); a=0.8 vs b=0.225 (inst2) -> a > b now
+    assert adjusted.iloc[0]["tau"] == pytest.approx(1.0)  # still perfectly consistent, just a new ranking direction
+    adj_scores = mut_at_k(df, ["model_label", "instantiation_id"])
+    adj_scores = adj_scores.assign(cov=adj_scores["mut_at_k"] * adj_scores["n_scored"] / adj_scores["n_total"])
+    inst1 = adj_scores[adj_scores["instantiation_id"] == "1"].set_index("model_label")["cov"]
+    assert inst1["a"] > inst1["b"]  # ranking flipped vs raw (b > a)

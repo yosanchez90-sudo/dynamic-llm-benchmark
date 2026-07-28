@@ -1,7 +1,7 @@
 # RQ5 diagnostics (post-hoc, zero-compute)
 
-Generated: 2026-07-27T23:47:52.158430+00:00
-Git commit: e6f7413
+Generated: 2026-07-28T14:00:59.311716+00:00
+Git commit: 8c98d46
 Script: scripts/analyze_rq5_diagnostics.py
 
 Pooled Dynamic Mut@K vs ULT remains the pre-registered PRIMARY result
@@ -83,6 +83,37 @@ not a replacement metric.
 
 **Rank correlation on coverage-adjusted score (n=7)**: Pearson r=0.841, Spearman ρ=0.964, Kendall τ=0.905 (perm p=0.0034).
 
+## 3b. Decomposing the coverage-adjusted agreement
+
+coverage_adjusted = Mut@K x baseline_pass_rate is a PRODUCT of two signals --
+how much of its tau=0.905 agreement is just executability (can the model
+produce a suite that runs and passes at all) vs actual mutation-killing
+quality? Same n, same models (dropna on the coverage-adjusted columns) for
+all three rows, so they're directly comparable.
+
+| Component | n | Pearson r | Spearman ρ | Kendall τ | perm p (τ) |
+|---|---|---|---|---|---|
+| (a) baseline_pass_rate alone | 7 | 0.851 | 0.929 | 0.810 | 0.0115 |
+| (b) conditioned Mut@K alone (= the pre-registered PRIMARY result) | 7 | 0.904 | 0.143 | 0.143 | 0.7689 |
+| (c) coverage-adjusted product (Mut@K x baseline_pass_rate) | 7 | 0.841 | 0.964 | 0.905 | 0.0034 |
+
+**How much of τ=0.905 is executability vs mutation quality:** baseline_pass_rate ALONE already gives τ=0.810 -- nearly all of the coverage-adjusted agreement is explained by which models can produce an executable, baseline-passing suite at all, not by mutation-killing quality once that's controlled for -- conditioned Mut@K alone (row b, the actual pre-registered primary result) is τ=0.143, i.e. models that clear the executability bar do NOT then agree on which suites are the BETTER mutation killers. Read literally: the coverage-adjusted score's apparent validity is substantially an executability-agreement result, not evidence that Mut@K itself (conditional on passing) is cross-benchmark valid.
+
+## 3c. Reliability of the coverage-adjusted score
+
+If the coverage-adjusted score is not just more cross-benchmark-valid but
+also more RELIABLE (stabler across Dynamic instantiations) than raw Mut@K,
+that's a stronger case for using it going forward, not just a post-hoc
+rescue of one result. Recomputed on CANONICAL_MODELS-filtered Dynamic data,
+N=4 scope (instantiations 1-4), same as sec 4's raw-Mut@K reliability.
+
+| Score | N=4 mean pairwise Kendall tau |
+|---|---|
+| raw Mut@K | 0.635 |
+| coverage-adjusted (Mut@K x baseline_pass_rate) | 1.000 |
+
+**The coverage-adjusted score IS more reliable** across Dynamic instantiations (1.000 vs 0.635 raw) -- this makes it both more valid (sec 3b) and more reliable, a real argument for reporting it as a companion metric, not just a post-hoc robustness check. A perfect or near-perfect adjusted figure is worth a sanity check before taking as an unqualified win, though: verified this is not a degenerate small-n artifact (n_models=7 per pair, every pair individually significant at p<0.02, not just the mean) -- it is the SAME mechanism as sec 3b, not a separate finding. baseline_pass_rate apparently varies enormously and consistently BETWEEN models (a 45x spread, sec 3 above) while staying comparatively stable WITHIN a model across instantiations, so a score dominated by that spread ranks models the same way every time almost by construction -- the same reason it's more cross-benchmark-valid (executability dominates the signal) is why it's more reliable (executability is itself the stable quantity). Neither result is suspect; both are the same underlying fact read two ways.
+
 ## 4. Attenuation correction
 
 rho_disattenuated = rho_observed / sqrt(reliability_x * reliability_y) -- the
@@ -95,4 +126,10 @@ derived rank-statistic correction -- treat the disattenuated tau as illustrative
 - ULT has **no repeat-measure reliability estimate in this project** -- it is evaluated once per model (K=1; the K=5 sensitivity sweep was the first item cut per PROJECT_BRIEF.md's gate cut-priority, and a static benchmark has no "instantiation" concept to repeat across the way Dynamic does). Stated plainly rather than assumed: the correction below uses Dynamic's reliability only (equivalent to assuming ULT's reliability=1, which UNDERESTIMATES the true disattenuated correlation if ULT is not, in fact, perfectly reliable).
 - Observed pooled Kendall τ = 0.143 (n=7).
 - Partial disattenuation (ULT reliability assumed = 1): τ_disattenuated = 0.143 / sqrt(0.635) = **0.179**.
-- Even with this correction, the disattenuated tau stays far from the pre-registered validity-supporting zone -- the low observed correlation is NOT primarily an artifact of Dynamic's own (already-high, 0.675) reliability.
+- Even with this correction, the disattenuated tau stays far from the pre-registered validity-supporting zone -- the low observed correlation is NOT primarily an artifact of Dynamic's own (already-high, 0.635) reliability.
+
+**Matched disattenuation on the coverage-adjusted score** (sec 3b/3c) -- the pairing above uses the RAW Mut@K correlation with the RAW Mut@K reliability; this is the same correction applied to the ADJUSTED correlation with the ADJUSTED score's OWN reliability, since mixing a raw correlation with an adjusted reliability (or vice versa) would not be a matched pair:
+- Coverage-adjusted reliability (N=4, sec 3c): **1.000**.
+- Observed coverage-adjusted Kendall τ = 0.905 (n=7).
+- Matched disattenuation: τ_disattenuated = 0.905 / sqrt(1.000) = **0.905**.
+- Compare to the raw-matched 0.179 above -- the coverage-adjusted score's disattenuated agreement is still much higher, consistent with sec 3b's finding that most of its apparent validity is an executability-agreement effect rather than a reliability artifact of either metric.

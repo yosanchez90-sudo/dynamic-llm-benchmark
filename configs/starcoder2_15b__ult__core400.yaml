@@ -1,0 +1,38 @@
+# RQ5 cross-family extension (approved 2026-07-28, analysis/RQ5_CROSS_FAMILY_PROPOSAL.md):
+# ULT core_400, StarCoder2-15B-Instruct-v0.1, zero-shot. Runs AFTER the
+# Dynamic full-scale job for this model (SLURM --dependency=afterok), per
+# the approved run order (Dynamic first).
+#
+# ACCOMMODATED (supervisor directive): supports_system_role: false -- see
+# configs/starcoder2_15b__dynamic_L1L2__inst1.yaml's header comment and
+# analysis/RQ5_INTERPRETATION.md's limitations section for the full writeup.
+
+name: starcoder2_15b__ult__core400__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: bigcode/starcoder2-15b-instruct-v0.1
+  revision: ffb8dd9776ba9a66d655ecd962e882f3013e9f7c
+  dtype: bfloat16
+  supports_system_role: false
+
+benchmark: ult
+subsample_tag: core_400
+instantiation_id: "core_400"
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/ult

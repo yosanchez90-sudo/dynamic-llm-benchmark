@@ -66,6 +66,33 @@ def _mean_by_model(df: pd.DataFrame, metric: str, model_col: str = "model_label"
     return scored.groupby(model_col)[metric].mean()
 
 
+def coverage_stats_table(
+    df: pd.DataFrame,
+    metric: str = "mutation_score",
+    model_col: str = "model_label",
+) -> pd.DataFrame:
+    """Per-model n_total, n_defined, baseline_pass_rate for one benchmark
+    side of a comparison. `metric` (Mut@K) is only ever defined where
+    baseline_passed=True, so n_defined/n_total == baseline_pass_rate exactly
+    -- computed that way (rather than requiring a separate baseline_passed
+    column) since it's the same invariant src/Analysis/stability.py's
+    coverage adjustment relies on.
+
+    Comparison A pairs this same conditioned metric across benchmarks (see
+    module docstring), so it inherits RQ5's conditioning/survivorship
+    finding (analysis/RQ5_DIAGNOSTICS.md sec 3): each model's paired mean is
+    computed over a different-sized, different subset of problems. This
+    table makes that visible; see build_comparison_tables.py for the
+    coverage-adjusted robustness variant built from it.
+    """
+    total = df.groupby(model_col).size().rename("n_total")
+    defined = df.dropna(subset=[metric]).groupby(model_col).size().rename("n_defined")
+    out = pd.concat([total, defined], axis=1)
+    out["n_defined"] = out["n_defined"].fillna(0).astype(int)
+    out["baseline_pass_rate"] = out["n_defined"] / out["n_total"]
+    return out.reset_index().rename(columns={model_col: "model_label"})
+
+
 def paired_model_table(
     df_a: pd.DataFrame,
     df_b: pd.DataFrame,

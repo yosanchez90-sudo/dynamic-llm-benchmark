@@ -101,6 +101,13 @@ class LocalModel(Model):
         chat_template_hash = (
             hashlib.sha256(chat_template.encode()).hexdigest()[:16] if chat_template else None
         )
+        # Inferred from the actual messages received, not from config intent
+        # (src/data/test_gen.py::_build_messages's supports_system_role flag)
+        # -- reflects what was really sent even if something upstream changes.
+        prompt_delivery_mode = (
+            "system_role" if any(m["role"] == "system" for m in messages)
+            else "system_folded_into_user"
+        )
         prompt = self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -163,6 +170,7 @@ class LocalModel(Model):
                 "top_k_source": "checkpoint_generation_config" if cfg.do_sample else None,
                 "chat_template_source": "tokenizer_config" if chat_template else "none_defined",
                 "chat_template_hash": chat_template_hash,
+                "prompt_delivery_mode": prompt_delivery_mode,
             },
             timestamp=datetime.now(timezone.utc).isoformat(),
             runtime_info={

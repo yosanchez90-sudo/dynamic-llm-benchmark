@@ -109,6 +109,7 @@ def load(
     sample_seed: int = 0,
     exclude_ult_overlap: bool = True,
     task_ids: set[str] | None = None,
+    supports_system_role: bool = True,
 ) -> list[TestGenProblem]:
     """Load ULT or PLT as a flat list of TestGenProblem, ready for the same
     model harness / scorer as the Dynamic benchmark.
@@ -177,7 +178,7 @@ def load(
             docstring=r["prompt"],
             mutants=generate_mutants(source, scope_fn_name=r["func_name"]),
             oracle=None,
-            messages=_build_messages(source, prompting_condition),
+            messages=_build_messages(source, prompting_condition, supports_system_role),
         ))
     return problems
 
@@ -190,6 +191,7 @@ def load_manifest_subset(
     tag: str,
     prompting_condition: str = "zero_shot",
     manifest_path: Path | None = None,
+    supports_system_role: bool = True,
 ) -> list[TestGenProblem]:
     """Load exactly the pinned task_ids for `tag` (e.g. "core_400", "qwen_1000")
     from data/raw/ult_plt/subsample_manifest.json — the canonical, fixed
@@ -202,4 +204,5 @@ def load_manifest_subset(
     manifest = json.loads(path.read_text())
     block = manifest[tag][benchmark.lower()]
     ids = {p["task_id"] for p in block["problems"]}
-    return load(benchmark, prompting_condition=prompting_condition, task_ids=ids)
+    return load(benchmark, prompting_condition=prompting_condition, task_ids=ids,
+                supports_system_role=supports_system_role)

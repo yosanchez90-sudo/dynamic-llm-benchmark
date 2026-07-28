@@ -61,25 +61,42 @@ range and ULT a 0.494 range — pooling a near-zero-variance tier in with the
 genuinely discriminating ones dilutes whatever signal the hard tiers carry,
 in either direction.
 
-**(b) Conditioning/survivorship — the largest single factor found.** Mut@K
-is only defined where `baseline_passed=True`, so each model's mean is taken
-over a different-sized, self-selected subset (pooled baseline_pass_rate
-ranges from 0.02 for Qwen 1.5B to 0.90 for GPT-5 — a 45x spread in how much
-of the benchmark even contributes to the average). Re-scoring with a
+**(b) Conditioning/survivorship — the largest single factor found, but now
+decomposed further (2026-07-28).** Mut@K is only defined where
+`baseline_passed=True`, so each model's mean is taken over a
+different-sized, self-selected subset (pooled baseline_pass_rate ranges
+from 0.02 for Qwen 1.5B to 0.90 for GPT-5 — a 45x spread in how much of the
+benchmark even contributes to the average). Re-scoring with a
 coverage-adjusted metric (Mut@K × baseline_pass_rate, which folds the
 selection back in rather than conditioning it away) **recovers Kendall
 τ=0.905, Spearman ρ=0.964 (permutation p=0.0034)** — a near-total reversal
 from the raw pooled result. This is the strongest single piece of evidence
-in this diagnosis: most of the apparent Dynamic/ULT disagreement is not
-that the two benchmarks disagree about model *capability*, it's that Mut@K
-as conventionally computed (conditional on baseline-pass) throws away the
-part of the signal — how *often* a model clears the baseline gate at all —
-that carries most of the cross-benchmark agreement. Mut@K and
-coverage-adjusted-Mut@K are different estimands measuring different
-things (respectively: "how good are the tests that already passed" vs "how
-good is the model overall, including whether it clears the gate"); this
-result says the latter is where the cross-benchmark agreement lives, not
-that the former was computed wrong.
+in this diagnosis, but decomposing the product (`analysis/RQ5_DIAGNOSTICS.md`
+sec 3b) sharpens what it actually shows: **baseline_pass_rate ALONE already
+gives τ=0.810** — nearly all of the recovered agreement is models agreeing
+on who can produce an executable, baseline-passing suite at all, not on
+mutation-killing quality. Conditioned Mut@K alone (the pre-registered
+primary metric, restricted to the same n=7/same models for a fair
+comparison) is τ=0.143 — identical to the full-pool result, meaning models
+that clear the executability bar do **not** then agree on which suites are
+the *better* mutation killers. So: most of the apparent Dynamic/ULT
+disagreement is not that the two benchmarks disagree about model
+*capability* broadly — it's specifically that they disagree about
+*executability* very little and about *mutation-quality-conditional-on-passing*
+almost completely. Mut@K and coverage-adjusted-Mut@K are different
+estimands measuring different things (respectively: "how good are the
+tests that already passed" vs "how good is the model overall, including
+whether it clears the gate"); this result says the cross-benchmark
+agreement lives almost entirely in the "clears the gate" component, not the
+"how good once it does" component — a more precise and less flattering
+statement than "most of the disagreement is conditioning" on its own. The
+coverage-adjusted score is also markedly MORE reliable across Dynamic
+instantiations than raw Mut@K (N=4 mean pairwise Kendall τ=1.000 vs 0.635,
+`analysis/RQ5_DIAGNOSTICS.md` sec 3c) — verified not a small-n artifact, and
+the same underlying fact as the validity finding: baseline_pass_rate is
+apparently both the thing that varies enormously and consistently BETWEEN
+models and the thing that stays comparatively stable WITHIN a model across
+instantiations.
 
 **(c) Reliability ceiling — a minor factor.** Disattenuating the observed
 τ=0.143 by Dynamic's own RQ4.1 self-consistency (mean pairwise Kendall tau
@@ -123,16 +140,28 @@ and instructive rather than simply confirmatory. Cross-provider rank
 agreement with ULT (n=7, spanning distinct architectures and providers) is
 close to zero on the pre-registered primary metric (Kendall τ=0.143), and
 that finding is reported as-is, not smoothed over. A post-hoc diagnosis,
-however, complicates a simple "distinct capabilities" reading: most of the
-gap is attributable to how Mut@K conditions on baseline-pass rather than to
-Dynamic and ULT disagreeing about model capability outright — a
-coverage-adjusted re-scoring that folds the baseline-pass rate back in
-recovers τ=0.905, and disattenuating for Dynamic's own measurement
-reliability moves the observed number by only 0.03. So the honest
-statement is two-sided: the metric as pre-registered and specified does
-rank models inconsistently across benchmarks, which is a real limitation to
-disclose, but the underlying capabilities are less disconnected than that
-number alone implies. The one
+however, complicates a simple "distinct capabilities" reading — with a
+sharper edge than it first appeared: most of the gap is attributable to how
+Mut@K conditions on baseline-pass rather than to Dynamic and ULT
+disagreeing about model capability outright, and a coverage-adjusted
+re-scoring that folds the baseline-pass rate back in recovers τ=0.905. But
+decomposing that recovered agreement shows it is almost entirely an
+*executability* story, not a mutation-quality one: baseline_pass_rate alone
+already correlates at τ=0.810 across benchmarks, while Mut@K conditional on
+passing (the actual pre-registered metric) stays at τ=0.143 even within
+that same matched comparison. Disattenuating for Dynamic's own measurement
+reliability moves the raw number by only 0.04 (0.143→0.179), while the
+coverage-adjusted score's own (much higher, and independently verified,
+N=4 τ=1.000) reliability leaves ITS disattenuated figure essentially
+unchanged (0.905→0.905) — reliability is not the limiting factor for either
+reading. So the honest statement is two-sided but more specific than before:
+the metric as pre-registered and specified does rank models inconsistently
+across benchmarks on mutation-quality-conditional-on-passing, which is a
+real limitation to disclose, but models agree well on the more basic
+question of who can produce an executable, baseline-passing suite at all —
+"the underlying capabilities are less disconnected" is true of
+executability specifically, not of test-suite quality once that bar is
+cleared. The one
 clean, strong correlation available (Dynamic/ULT vs BigCodeBench, n=3) is
 confined to a single model family's size sweep and is better read as
 evidence that scale predicts everything within a family than as independent
@@ -178,6 +207,57 @@ isn't rare enough to be significant). **Do not report the n=3 numbers as
 with, but not independent evidence for, cross-benchmark validity," and
 lead with the cross-provider n=7 Dynamic↔ULT result as the analysis that
 actually stress-tests the claim.
+
+## Cross-family extension (approved 2026-07-28) — limitations
+
+Full-scale Dynamic (L1-L4, inst1) + ULT core_400 runs for 4 non-Qwen
+candidates (DeepSeek-Coder-6.7B-Instruct, CodeLlama-13B-Instruct,
+StarCoder2-15B-Instruct-v0.1, Mistral-7B-Instruct-v0.3) are the mechanism
+for breaking the Parts 2-3 all-Qwen size-sweep confound above. Two
+limitations to disclose alongside whatever correlation these runs produce,
+not discovered after the fact:
+
+**Chat-template drift relative to each model's published BigCodeBench
+number.** Snapshot verification (`analysis/RQ5_CROSS_FAMILY_PROPOSAL.md`)
+confirmed no weight-file-changing commit since each model's eval date for
+all 4 candidates — but weights are not the whole story for a chat model;
+the *template* that turns messages into a prompt string matters too, and
+two of the four postdate their own eval:
+- **CodeLlama-13B-Instruct**: `tokenizer_config.json`'s `chat_template` was
+  added 2024-03-04 — its BigCodeBench eval date is 2023-08-25. At eval
+  time this model most likely had NO chat template at all; BigCodeBench's
+  own harness would have applied its own Llama-style formatting. This
+  project's harness applies the template that exists TODAY.
+- **Mistral-7B-Instruct-v0.3**: tokenizer/chat-template adjustments landed
+  Aug 2024 — its eval date is 2024-05-22.
+- DeepSeek-Coder-6.7B-Instruct and StarCoder2-15B-Instruct-v0.1's templates
+  predate or coincide with their eval dates — no equivalent concern.
+
+Practically: our own Dynamic/ULT numbers for these two models are internally
+valid (every model in this project is prompted via the same
+`apply_chat_template()` call, consistently) but are **not guaranteed to
+reproduce the exact prompt formatting that produced their published
+BigCodeBench Pass@1** — a cross-family correlation against those published
+numbers should note this rather than treat all 4 candidates' published
+figures as equally trustworthy anchors. This is a prompt-FORMATTING
+provenance gap, not a weight-snapshot one; the two are logged and verified
+independently (`chat_template_hash`/`chat_template_source` in
+`src/models/local.py` output vs. the HF commit-history check).
+
+**StarCoder2-15B-Instruct-v0.1's prompt delivery differs from the other
+three.** Its `chat_template` unconditionally rejects a `role="system"`
+message (verified by reading the template source directly, not inferred).
+Accommodated via `supports_system_role: false`
+(`configs/dry_run_ult_starcoder2_15b.yaml` and its full-scale configs): the
+system instruction is folded into the first user turn instead of sent
+separately (`src/data/test_gen.py::_build_messages`), logged per-row as
+`prompt_delivery_mode` (`"system_role"` for the other 3 candidates and every
+canonical model, `"system_folded_into_user"` for StarCoder2). The
+instruction TEXT is identical either way — only its delivery differs — but
+this means StarCoder2's results are not from a byte-identical prompt
+structure to the other candidates, a genuine (small, disclosed) methodological
+asymmetry within the cross-family cohort itself, separate from the
+published-benchmark comparison above.
 
 ## What this means going forward
 

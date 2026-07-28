@@ -58,10 +58,26 @@ def _load_template(path: Path) -> Template:
     raise ValueError(f"No Template instance found in {path}")
 
 
-def _build_messages(source: str, prompting_condition: str) -> list[dict[str, str]]:
-    """Construct chat messages for one problem (spec §2.5.6)."""
+def _build_messages(
+    source: str,
+    prompting_condition: str,
+    supports_system_role: bool = True,
+) -> list[dict[str, str]]:
+    """Construct chat messages for one problem (spec §2.5.6).
+
+    supports_system_role=False (config: `supports_system_role: false`) folds
+    SYSTEM_INSTRUCTION into the first turn instead of sending a separate
+    role="system" message -- for models whose chat_template rejects a system
+    role outright (found 2026-07-28: StarCoder2-15B-Instruct-v0.1's template
+    unconditionally raise_exception()s on role="system"). This is a
+    prompt-DELIVERY change only; the instruction text itself is identical
+    either way. Generic on purpose -- no model identity check anywhere here,
+    the config is what's model-specific, not this function.
+    """
     user = f"Function under test:\n\n```python\n{source}\n```\n\nWrite the pytest test file."
-    messages = [{"role": "system", "content": SYSTEM_INSTRUCTION}]
+    messages = []
+    if supports_system_role:
+        messages.append({"role": "system", "content": SYSTEM_INSTRUCTION})
     if prompting_condition == "one_shot":
         if DEMONSTRATION is None:
             raise RuntimeError(
@@ -71,6 +87,8 @@ def _build_messages(source: str, prompting_condition: str) -> list[dict[str, str
         messages.append({"role": "user", "content": DEMONSTRATION["function"]})
         messages.append({"role": "assistant", "content": DEMONSTRATION["test_file"]})
     messages.append({"role": "user", "content": user})
+    if not supports_system_role:
+        messages[0]["content"] = f"{SYSTEM_INSTRUCTION}\n\n{messages[0]['content']}"
     return messages
 
 
@@ -89,6 +107,7 @@ def load(
     tiers: tuple[str, ...] = ("L1", "L2"),
     prompting_condition: str = "zero_shot",
     only_instances: frozenset[tuple[str, int]] | None = None,
+    supports_system_role: bool = True,
 ) -> list[TestGenProblem]:
     """Generate one benchmark instantiation as a flat list of TestGenProblem.
 
@@ -128,6 +147,6 @@ def load(
                     docstring=inst["docstring"],
                     mutants=generate_mutants(source),
                     oracle=getattr(tmpl, "oracle", None),
-                    messages=_build_messages(source, prompting_condition),
+                    messages=_build_messages(source, prompting_condition, supports_system_role),
                 ))
     return problems

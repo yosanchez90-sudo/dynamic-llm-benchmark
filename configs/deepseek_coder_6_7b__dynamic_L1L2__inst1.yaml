@@ -1,0 +1,35 @@
+# RQ5 cross-family extension (approved 2026-07-28, analysis/RQ5_CROSS_FAMILY_PROPOSAL.md):
+# full-scale Dynamic L1L2, DeepSeek-Coder-6.7B-Instruct, zero-shot, inst1.
+# Pilot passed 2026-07-28 (job 9499408): chat template applied+logged correctly,
+# extraction verified faithful, exec_rate consistent with other models.
+
+name: deepseek_coder_6_7b__dynamic_L1L2__zeroshot__inst1
+
+task: test_generation
+
+model:
+  provider: local
+  id: deepseek-ai/deepseek-coder-6.7b-instruct
+  revision: e5d64addd26a6a1db0f9b863abf6ee3141936807   # pinned SHA, verified 2026-07-27/28 (current HEAD, no weight-file commit since 2023-10-28 BigCodeBench eval date)
+  dtype: bfloat16
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L1", "L2"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic
