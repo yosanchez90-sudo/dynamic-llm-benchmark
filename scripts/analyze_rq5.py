@@ -31,12 +31,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import pandas as pd
 
-from coverage_matrix import MODEL_SPECS
+from coverage_matrix import CANONICAL_MODELS
 from src.Analysis.correlation import compute_correlations
 from src.Analysis.loader import load_records
 from src.Analysis.provenance import stamp_block
 
-CANONICAL_MODELS = [m.model_label for m in MODEL_SPECS]
 PUBLIC_SCORES_PATH = ROOT / "analysis" / "rq5_public_scores.csv"
 
 

@@ -1,0 +1,42 @@
+# RQ5 cross-family extension, PILOT GATE (analysis/RQ5_CROSS_FAMILY_PROPOSAL.md,
+# approved 2026-07-28 with changes): 5 ULT problems, StarCoder2-15B-Instruct-v0.1,
+# zero-shot. First-ever run of this model family on this harness -- confirms
+# chat-template application, prompt build, and extraction produce sane output
+# before any full-scale (Dynamic L1-L4 + ULT core_400) submission.
+#
+# Note: this template raise_exception()s on any system message
+# (tokenizer_config.json's chat_template explicitly forbids role="system") --
+# confirm src/data prompt-building code for this project doesn't send one, or
+# the pilot will fail loudly at apply_chat_template rather than silently.
+# NOT the pinned canonical subsample -- max_n/sample_seed here is an ad hoc
+# draw, unrelated to data/raw/ult_plt/subsample_manifest.json.
+
+name: dry_run__starcoder2_15b__ult__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: bigcode/starcoder2-15b-instruct-v0.1
+  revision: ffb8dd9776ba9a66d655ecd962e882f3013e9f7c   # pinned SHA, verified 2026-07-27/28 (current HEAD, no weight-file commit since 2024-04-30 eval date -- see analysis/RQ5_CROSS_FAMILY_PROPOSAL.md)
+  dtype: bfloat16
+
+benchmark: ult
+instantiation_id: "dryrun"
+max_n: 5
+sample_seed: 1
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/smoke

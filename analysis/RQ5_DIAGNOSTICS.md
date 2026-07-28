@@ -1,7 +1,7 @@
 # RQ5 diagnostics (post-hoc, zero-compute)
 
-Generated: 2026-07-27T22:58:15.359605+00:00
-Git commit: 651a242
+Generated: 2026-07-27T23:47:52.158430+00:00
+Git commit: e6f7413
 Script: scripts/analyze_rq5_diagnostics.py
 
 Pooled Dynamic Mut@K vs ULT remains the pre-registered PRIMARY result
@@ -91,8 +91,8 @@ classical correction for attenuation due to unreliable measurement (Spearman,
 to Kendall tau here is an APPROXIMATION carried over by analogy, not a rigorously
 derived rank-statistic correction -- treat the disattenuated tau as illustrative.
 
-- Dynamic's own reliability (RQ4.1, `analysis/STABILITY.md`, N=4 mean pairwise Kendall tau across instantiations): **0.675**.
+- Dynamic's own reliability (RQ4.1, N=4 mean pairwise Kendall tau across instantiations, computed live from CANONICAL_MODELS-filtered data on disk as of this run -- see the Generated/Git commit stamp above; this is NOT a frozen constant and will move as more instantiation data lands, same as `analysis/STABILITY.md` itself): **0.635**.
 - ULT has **no repeat-measure reliability estimate in this project** -- it is evaluated once per model (K=1; the K=5 sensitivity sweep was the first item cut per PROJECT_BRIEF.md's gate cut-priority, and a static benchmark has no "instantiation" concept to repeat across the way Dynamic does). Stated plainly rather than assumed: the correction below uses Dynamic's reliability only (equivalent to assuming ULT's reliability=1, which UNDERESTIMATES the true disattenuated correlation if ULT is not, in fact, perfectly reliable).
 - Observed pooled Kendall τ = 0.143 (n=7).
-- Partial disattenuation (ULT reliability assumed = 1): τ_disattenuated = 0.143 / sqrt(0.675) = **0.174**.
+- Partial disattenuation (ULT reliability assumed = 1): τ_disattenuated = 0.143 / sqrt(0.635) = **0.179**.
 - Even with this correction, the disattenuated tau stays far from the pre-registered validity-supporting zone -- the low observed correlation is NOT primarily an artifact of Dynamic's own (already-high, 0.675) reliability.

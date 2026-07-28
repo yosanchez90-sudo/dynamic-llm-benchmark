@@ -1,0 +1,46 @@
+# RQ5 cross-family extension, PILOT GATE (analysis/RQ5_CROSS_FAMILY_PROPOSAL.md,
+# approved 2026-07-28 with changes): 5 ULT problems, CodeLlama-13b-Instruct-hf,
+# zero-shot. First-ever run of this model family on this harness -- confirms
+# chat-template application, prompt build, and extraction produce sane output
+# before any full-scale (Dynamic L1-L4 + ULT core_400) submission.
+#
+# Chat-template provenance flag (see analysis/RQ5_CROSS_FAMILY_PROPOSAL.md):
+# this repo's tokenizer_config.json chat_template was added 2024-03-04, AFTER
+# its BigCodeBench eval date (2023-08-25) -- the template applied here is NOT
+# necessarily what produced the published 31.7 Pass@1 number. Weights
+# themselves are unchanged since the 2023-08-25 eval (verified via commit
+# history). Pilot output's chat_template_source/chat_template_hash
+# (src/models/local.py) should be checked and this caveat carried into any
+# write-up that cites the published number alongside our own.
+# NOT the pinned canonical subsample -- max_n/sample_seed here is an ad hoc
+# draw, unrelated to data/raw/ult_plt/subsample_manifest.json.
+
+name: dry_run__codellama_13b__ult__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: codellama/CodeLlama-13b-Instruct-hf
+  revision: 745795438019e47e4dad1347a0093e11deee4c68   # pinned SHA, verified 2026-07-27/28 (current HEAD, no weight-file commit since 2023-08-25 eval date; chat_template added 2024-03-04 -- see caveat above)
+  dtype: bfloat16
+
+benchmark: ult
+instantiation_id: "dryrun"
+max_n: 5
+sample_seed: 1
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/smoke

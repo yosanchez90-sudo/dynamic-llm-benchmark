@@ -18,8 +18,11 @@ Four diagnostics, in order:
      drop the conditioning -- see caveat below), and re-runs the rank
      correlation on that adjusted score.
   4. Attenuation: disattenuates the observed cross-benchmark tau using
-     RQ4.1's within-Dynamic reliability ceiling (STABILITY.md's N=4 mean
-     pairwise Kendall tau = 0.675) via the classical
+     RQ4.1's within-Dynamic reliability ceiling (N=4 mean pairwise Kendall
+     tau, computed live from CANONICAL_MODELS-filtered data -- see
+     src.Analysis.stability.mean_pairwise_tau_scoped -- not a hard-coded
+     constant, since analysis/STABILITY.md's own point estimate moves as
+     data lands) via the classical
      rho_disattenuated = rho_observed / sqrt(reliability_x * reliability_y)
      formula. States the formula's assumptions explicitly (derived for
      Pearson r under classical test theory; applying it to Kendall tau is
@@ -45,12 +48,28 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import numpy as np
 import pandas as pd
 
-from coverage_matrix import MODEL_SPECS
+from coverage_matrix import CANONICAL_MODELS
 from src.Analysis.correlation import compute_correlations
 from src.Analysis.loader import load_records
+from src.Analysis.stability import mean_pairwise_tau_scoped, pairwise_kendall_tau
 
-CANONICAL_MODELS = [m.model_label for m in MODEL_SPECS]
-DYNAMIC_RELIABILITY_TAU = 0.675  # analysis/STABILITY.md, N=4 headline, post-dedup-fix
+# N=4 scope (PROJECT_BRIEF.md Sec 11): reliability is computed from pairs
+# among instantiations 1-4 only, excluding instantiation 5 (the deferred K=5
+# sensitivity sweep, only ever partially run for a few models). Shared with
+# analyze_stability.py's own reporting via mean_pairwise_tau_scoped().
+N4_INSTANTIATIONS = {"1", "2", "3", "4"}
+
+
+def _dynamic_reliability_n4(dynamic_canonical: pd.DataFrame) -> float | None:
+    """Dynamic's own N=4 mean pairwise Kendall tau across instantiations,
+    computed live from data on disk rather than a hard-coded constant --
+    confirmed 2026-07-28 that a hard-coded 0.675 goes stale silently as new
+    data lands (analysis/STABILITY.md's own point estimate moved once two
+    LoRA-adapter labels that analyze_stability.py failed to filter were
+    fixed; recomputing live, from CANONICAL_MODELS-filtered data, is the
+    only way this can't drift out from under the number that cites it)."""
+    pairwise = pairwise_kendall_tau(dynamic_canonical)
+    return mean_pairwise_tau_scoped(pairwise, N4_INSTANTIATIONS)
 
 
 def _git_commit() -> str:
@@ -217,10 +236,17 @@ def main() -> None:
             ""]
     pooled_pair = df.dropna(subset=["dyn_pooled_mutk", "ult_mutk"])
     res_pooled = compute_correlations(pooled_pair["dyn_pooled_mutk"].to_numpy(), pooled_pair["ult_mutk"].to_numpy())
-    reliability_dynamic = DYNAMIC_RELIABILITY_TAU
+    reliability_dynamic = _dynamic_reliability_n4(dynamic)
+    if reliability_dynamic is None:
+        raise RuntimeError("N=4 pairwise Kendall tau came back empty -- Dynamic data on disk "
+                            "doesn't cover enough of instantiations 1-4 to compute a reliability "
+                            "figure; investigate before trusting any disattenuated estimate.")
     disattenuated_partial = res_pooled.kendall_tau / (reliability_dynamic ** 0.5)
-    out.append(f"- Dynamic's own reliability (RQ4.1, `analysis/STABILITY.md`, N=4 mean pairwise "
-               f"Kendall tau across instantiations): **{reliability_dynamic:.3f}**.")
+    out.append(f"- Dynamic's own reliability (RQ4.1, N=4 mean pairwise Kendall tau across "
+               f"instantiations, computed live from CANONICAL_MODELS-filtered data on disk as "
+               f"of this run -- see the Generated/Git commit stamp above; this is NOT a frozen "
+               f"constant and will move as more instantiation data lands, same as "
+               f"`analysis/STABILITY.md` itself): **{reliability_dynamic:.3f}**.")
     out.append("- ULT has **no repeat-measure reliability estimate in this project** -- it is "
                "evaluated once per model (K=1; the K=5 sensitivity sweep was the first item cut "
                "per PROJECT_BRIEF.md's gate cut-priority, and a static benchmark has no "
@@ -232,9 +258,10 @@ def main() -> None:
     out.append(f"- Partial disattenuation (ULT reliability assumed = 1): "
                f"τ_disattenuated = {res_pooled.kendall_tau:.3f} / sqrt({reliability_dynamic:.3f}) "
                f"= **{disattenuated_partial:.3f}**.")
-    out.append("- Even with this correction, the disattenuated tau stays far from the "
-               "pre-registered validity-supporting zone -- the low observed correlation is "
-               "NOT primarily an artifact of Dynamic's own (already-high, 0.675) reliability.")
+    out.append(f"- Even with this correction, the disattenuated tau stays far from the "
+               f"pre-registered validity-supporting zone -- the low observed correlation is "
+               f"NOT primarily an artifact of Dynamic's own (already-high, {reliability_dynamic:.3f}) "
+               f"reliability.")
     out.append("")
 
     doc = "\n".join(out)

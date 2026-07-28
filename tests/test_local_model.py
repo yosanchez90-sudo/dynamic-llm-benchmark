@@ -37,6 +37,7 @@ def _make_model(repetition_penalty=1.1, top_k=20) -> LocalModel:
         to=MagicMock(return_value={"input_ids": input_ids})
     )
     fake_tokenizer.decode.return_value = "response text"
+    fake_tokenizer.chat_template = "{% for m in messages %}{{ m['content'] }}{% endfor %}"
     model.tokenizer = fake_tokenizer
 
     return model
@@ -80,3 +81,29 @@ def test_greedy_decoding_omits_sampling_only_params():
     assert "top_k" not in call_kwargs
     assert out.generation_config["repetition_penalty"] is None
     assert out.generation_config["repetition_penalty_source"] is None
+
+
+def test_chat_template_source_and_hash_logged():
+    """RQ5 cross-family extension (2026-07-28): a new model family means an
+    untested chat template, so which template got applied (and that it came
+    from tokenizer_config, not some silent fallback) must be part of the
+    logged run identity, the same way repetition_penalty/top_k are."""
+    model = _make_model()
+    cfg = GenerationConfig(max_new_tokens=2048, do_sample=True, temperature=0.2, top_p=1.0)
+
+    out = model.generate([{"role": "user", "content": "hi"}], cfg)
+
+    assert out.generation_config["chat_template_source"] == "tokenizer_config"
+    assert isinstance(out.generation_config["chat_template_hash"], str)
+    assert len(out.generation_config["chat_template_hash"]) == 16
+
+
+def test_chat_template_source_none_defined_when_tokenizer_has_no_template():
+    model = _make_model()
+    model.tokenizer.chat_template = None
+    cfg = GenerationConfig(max_new_tokens=2048, do_sample=True, temperature=0.2, top_p=1.0)
+
+    out = model.generate([{"role": "user", "content": "hi"}], cfg)
+
+    assert out.generation_config["chat_template_source"] == "none_defined"
+    assert out.generation_config["chat_template_hash"] is None

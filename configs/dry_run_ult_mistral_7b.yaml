@@ -1,0 +1,47 @@
+# RQ5 cross-family extension, PILOT GATE (analysis/RQ5_CROSS_FAMILY_PROPOSAL.md,
+# approved 2026-07-28 with changes): 5 ULT problems, Mistral-7B-Instruct-v0.3,
+# zero-shot. First-ever run of this model family on this harness -- confirms
+# chat-template application, prompt build, and extraction produce sane output
+# before any full-scale (Dynamic L1-L4 + ULT core_400) submission.
+#
+# Chat-template provenance flag (see analysis/RQ5_CROSS_FAMILY_PROPOSAL.md):
+# this repo's tokenizer_config.json chat_template was modified Aug 2024
+# (tokenizer/chat-template adjustments), AFTER its BigCodeBench eval date
+# (2024-05-22) -- the template applied here may not exactly match what
+# produced the published 27.3 Pass@1 number. Weights themselves are
+# unchanged since the 2024-05-22 eval (verified via commit history). Pilot
+# output's chat_template_source/chat_template_hash (src/models/local.py)
+# should be checked and this caveat carried into any write-up that cites the
+# published number alongside our own.
+# NOT the pinned canonical subsample -- max_n/sample_seed here is an ad hoc
+# draw, unrelated to data/raw/ult_plt/subsample_manifest.json.
+
+name: dry_run__mistral_7b__ult__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: mistralai/Mistral-7B-Instruct-v0.3
+  revision: c170c708c41dac9275d15a8fff4eca08d52bab71   # pinned SHA, verified 2026-07-27/28 (current HEAD, no weight-file commit since 2024-05-22 eval date; tokenizer/chat_template changed Aug 2024 -- see caveat above)
+  dtype: bfloat16
+
+benchmark: ult
+instantiation_id: "dryrun"
+max_n: 5
+sample_seed: 1
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/smoke

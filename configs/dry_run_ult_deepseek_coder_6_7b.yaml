@@ -1,0 +1,37 @@
+# RQ5 cross-family extension, PILOT GATE (analysis/RQ5_CROSS_FAMILY_PROPOSAL.md,
+# approved 2026-07-28 with changes): 5 ULT problems, DeepSeek-Coder-6.7B-Instruct,
+# zero-shot. First-ever run of this model family on this harness -- confirms
+# chat-template application, prompt build, and extraction produce sane output
+# before any full-scale (Dynamic L1-L4 + ULT core_400) submission.
+# NOT the pinned canonical subsample -- max_n/sample_seed here is an ad hoc
+# draw, unrelated to data/raw/ult_plt/subsample_manifest.json.
+
+name: dry_run__deepseek_coder_6_7b__ult__zeroshot
+
+task: test_generation
+
+model:
+  provider: local
+  id: deepseek-ai/deepseek-coder-6.7b-instruct
+  revision: e5d64addd26a6a1db0f9b863abf6ee3141936807   # pinned SHA, verified 2026-07-27/28 (current HEAD, no weight-file commit since 2023-10-28 BigCodeBench eval date -- see analysis/RQ5_CROSS_FAMILY_PROPOSAL.md)
+  dtype: bfloat16
+
+benchmark: ult
+instantiation_id: "dryrun"           # ULT/PLT have no real instantiations; fixed tag for filenames
+max_n: 5
+sample_seed: 1
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/smoke

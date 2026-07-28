@@ -13,12 +13,22 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "scripts"))
 
+from coverage_matrix import CANONICAL_MODELS  # noqa: E402
 from src.Analysis.loader import load_records  # noqa: E402
 from src.Analysis.provenance import stamp_block  # noqa: E402
 from src.Analysis.stability import (  # noqa: E402
-    mean_pairwise_tau, pairwise_kendall_tau, stable_mut_at_k,
+    mean_pairwise_tau, mean_pairwise_tau_scoped, pairwise_kendall_tau, stable_mut_at_k,
 )
+
+# N=4 scope (PROJECT_BRIEF.md Sec 11): the project's headline reliability
+# figure is pairs among instantiations 1-4 only, excluding instantiation 5
+# (deferred K=5 sensitivity sweep, only ever partially run). Shared with
+# analyze_rq5_diagnostics.py's attenuation correction via
+# mean_pairwise_tau_scoped() -- do not hard-code this figure elsewhere.
+N4_INSTANTIATIONS = {"1", "2", "3", "4"}
+STABILITY_MD = ROOT / "analysis" / "STABILITY.md"
 
 
 def main() -> None:
@@ -35,6 +45,22 @@ def main() -> None:
     if df.empty:
         print(f"No records found in {args.results_dir}")
         sys.exit(1)
+
+    # Restrict to the 9 canonical models -- fine-tuned adapter variants
+    # (Comparison C / supplementary-study artifacts) and any future
+    # cross-family RQ5 model are a different model identity and must never
+    # silently enter the reliability figure. Confirmed 2026-07-28: without
+    # this filter, the two LoRA adapter labels (Qwen 1.5B/7B fine-tunes) fed
+    # the instantiation-1-3 pairwise Kendall tau once their POST Dynamic eval
+    # landed, moving the N=4 mean from 0.675 to 0.701 with no scope decision
+    # behind it -- same bug class as comparison_b_paired.csv's spurious 8th
+    # model (scripts/build_comparison_tables.py).
+    excluded = sorted(set(df["model_label"].unique()) - set(CANONICAL_MODELS))
+    df = df[df["model_label"].isin(CANONICAL_MODELS)]
+    if excluded:
+        print(f"Excluded {len(excluded)} non-canonical model_label(s) "
+              f"(fine-tuned adapter / cross-family, not one of the 9 canonical "
+              f"models): {excluded}\n")
 
     print(f"Loaded {len(df)} records from {df['source_file'].nunique()} files "
           f"({df['model_label'].nunique()} model variant(s), "
@@ -63,18 +89,31 @@ def main() -> None:
     pairwise = pairwise_kendall_tau(df)
     print("=== Pairwise Kendall tau between instantiation rankings (model-level Mut@K) ===")
     print(pairwise.to_string(index=False))
-    mean_tau = mean_pairwise_tau(pairwise)
-    print(f"\nMean pairwise tau: {mean_tau:.3f}" if mean_tau is not None else "\nMean pairwise tau: n/a")
+    mean_tau_n4 = mean_pairwise_tau_scoped(pairwise, N4_INSTANTIATIONS)
+    mean_tau_all = mean_pairwise_tau(pairwise)
+    n4_label = f"N=4 (pairs among instantiations {sorted(N4_INSTANTIATIONS)}, headline scope)"
+    print(f"\n{n4_label} mean pairwise tau: "
+          f"{f'{mean_tau_n4:.3f}' if mean_tau_n4 is not None else 'n/a'}")
+    print(f"All-pairs mean pairwise tau (incl. instantiation 5): "
+          f"{f'{mean_tau_all:.3f}' if mean_tau_all is not None else 'n/a'}")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     stable.to_csv(f"{args.out}_stablemut.csv", index=False)
     by_tier.to_csv(f"{args.out}_stablemut_by_tier.csv", index=False)
     pairwise.to_csv(f"{args.out}_kendall.csv", index=False)
 
-    provenance = f"""# StableMut@K + pairwise Kendall tau (RQ4.1) — raw tables
+    provenance = f"""# Stability (RQ4.1) — raw tables
 
 {stamp_block("scripts/analyze_stability.py")}
+**Interpretation lives in `analysis/STABILITY_INTERPRETATION.md`**
+(hand-written, not touched by this script) — this file is the regenerable
+raw-tables companion; re-run this script freely after new data lands. Any
+number quoted from this file elsewhere (e.g. RQ5's disattenuation
+correction) is only current as of the commit above, not frozen.
+
 Args: --results-dir {args.results_dir}  --out {args.out}  --min-instantiations {args.min_instantiations}
+Canonical models only ({len(CANONICAL_MODELS)}); excluded non-canonical
+model_label(s): {excluded if excluded else "(none present)"}
 
 ## StableMut@K (mean Mut@K across instantiations, SD)
 
@@ -88,11 +127,12 @@ Args: --results-dir {args.results_dir}  --out {args.out}  --min-instantiations {
 
 {pairwise.to_string(index=False)}
 
-Mean pairwise tau: {f"{mean_tau:.3f}" if mean_tau is not None else "n/a"}
+{n4_label} mean pairwise tau: {f"{mean_tau_n4:.3f}" if mean_tau_n4 is not None else "n/a"}
+All-pairs mean pairwise tau (incl. instantiation 5): {f"{mean_tau_all:.3f}" if mean_tau_all is not None else "n/a"}
 """
-    Path(f"{args.out}_PROVENANCE.md").write_text(provenance)
+    STABILITY_MD.write_text(provenance)
     print(f"\nWritten: {args.out}_stablemut.csv, {args.out}_stablemut_by_tier.csv, "
-          f"{args.out}_kendall.csv, {args.out}_PROVENANCE.md")
+          f"{args.out}_kendall.csv, {STABILITY_MD.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

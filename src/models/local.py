@@ -90,6 +90,17 @@ class LocalModel(Model):
         messages: list[dict[str, str]],
         cfg: GenerationConfig,
     ) -> ModelOutput:
+        # No fallback path exists here by design: apply_chat_template() raises
+        # if the tokenizer has no chat_template rather than silently applying
+        # some other format, so "chat_template_source" below is always
+        # "tokenizer_config" for any row that made it past this call. Logged
+        # explicitly (not just implied by the absence of a crash) after the
+        # RQ5 cross-family extension raised chat-template provenance as an
+        # open question for models this project hadn't run before (2026-07-28).
+        chat_template = getattr(self.tokenizer, "chat_template", None)
+        chat_template_hash = (
+            hashlib.sha256(chat_template.encode()).hexdigest()[:16] if chat_template else None
+        )
         prompt = self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -150,6 +161,8 @@ class LocalModel(Model):
                 "repetition_penalty_source": "checkpoint_generation_config" if cfg.do_sample else None,
                 "top_k": gen_kwargs.get("top_k"),
                 "top_k_source": "checkpoint_generation_config" if cfg.do_sample else None,
+                "chat_template_source": "tokenizer_config" if chat_template else "none_defined",
+                "chat_template_hash": chat_template_hash,
             },
             timestamp=datetime.now(timezone.utc).isoformat(),
             runtime_info={

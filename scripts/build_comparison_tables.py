@@ -32,7 +32,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from coverage_matrix import MODEL_SPECS  # noqa: E402
+from coverage_matrix import CANONICAL_MODELS  # noqa: E402
 from src.Analysis.comparison import (  # noqa: E402
     DYNAMIC_TIER,
     load_cc_bands,
@@ -43,7 +43,6 @@ from src.Analysis.comparison import (  # noqa: E402
 from src.Analysis.loader import load_records  # noqa: E402
 
 ANALYSIS_DIR = ROOT / "analysis"
-CANONICAL_MODELS = [m.model_label for m in MODEL_SPECS]
 
 
 def _git_commit() -> str:

@@ -104,3 +104,25 @@ def mean_pairwise_tau(pairwise: pd.DataFrame) -> float | None:
     pairs that couldn't be computed (fewer than 2 qualifying models)."""
     valid = pairwise["tau"].dropna()
     return float(valid.mean()) if len(valid) else None
+
+
+def mean_pairwise_tau_scoped(
+    pairwise: pd.DataFrame,
+    instantiations: set[str] | None = None,
+) -> float | None:
+    """mean_pairwise_tau(), restricted to pairs where BOTH instantiations are
+    in `instantiations` (None = no restriction, identical to
+    mean_pairwise_tau). Exists so callers share one implementation of a named
+    scope instead of re-deriving the pair-filter inline -- e.g. this
+    project's N=4 target scope (PROJECT_BRIEF.md Sec 11, instantiations
+    {"1","2","3","4"}, excluding the deferred/partial instantiation 5) is
+    used both by analyze_stability.py's own reporting and by
+    analyze_rq5_diagnostics.py's attenuation correction; a hard-coded
+    constant for the latter went stale the moment new data changed the
+    former (confirmed 2026-07-28)."""
+    if instantiations is not None:
+        pairwise = pairwise[
+            pairwise["instantiation_a"].isin(instantiations)
+            & pairwise["instantiation_b"].isin(instantiations)
+        ]
+    return mean_pairwise_tau(pairwise)
