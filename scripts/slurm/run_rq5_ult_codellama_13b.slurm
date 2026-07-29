@@ -2,7 +2,7 @@
 #SBATCH --job-name=rq5-ult-codellama
 #SBATCH --partition=k2-gpu-a100mig
 #SBATCH --gres=gpu:3g.40gb:1
-#SBATCH --time=04:00:00
+#SBATCH --time=05:00:00
 #SBATCH --mem=48G
 #SBATCH --cpus-per-task=4
 #SBATCH --output=logs/%x-%j.out

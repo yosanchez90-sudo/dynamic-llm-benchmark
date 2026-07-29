@@ -12,7 +12,22 @@ item 7 explicitly requires approval before any submission.**
 
 ## Candidate table
 
-| Model | Family | Size | Complete-split Pass@1 | Hard-split Pass@1 | Eval date | Current HF commit (captured 2026-07-27) |
+**Correction (2026-07-28)**: the Complete-split figures below are the
+`complete` (code-completion-prompt) column from
+`bigcode/bigcodebench-results`. The value actually loaded into
+`analysis/rq5_public_scores.csv` and used for every correlation in this
+project — matching the convention already established for the 3 Qwen rows
+(27.0/40.4/49.0, themselves the `instruct` column, not `complete`) — is the
+**`instruct` (chat/Instruct-prompt) column**, the fairer comparison against
+this project's own chat-templated harness. Corrected Complete-split/Instruct
+and Hard-split/Instruct figures (`bigcode/bigcodebench-hard-results`,
+`instruct` column, fetched live 2026-07-28): DeepSeek-Coder-6.7B-Instruct
+35.5/10.1, CodeLlama-13b-Instruct-hf 28.5/9.5, StarCoder2-15B-Instruct-v0.1
+37.6/12.2, Mistral-7B-Instruct-v0.3 19.5/4.7. The `complete`-column figures
+below are left as originally written for the historical record of what
+this proposal was approved against, not touched up to match.
+
+| Model | Family | Size | Complete-split Pass@1 (`complete` column, see correction above) | Hard-split Pass@1 | Eval date | Current HF commit (captured 2026-07-27) |
 |---|---|---|---|---|---|---|
 | DeepSeek-Coder-6.7B-Instruct | DeepSeek | 6.7B | 43.8 | — (not checked, likely present) | 2023-10-28 | `e5d64ad...` |
 | CodeLlama-13b-Instruct-hf | Meta/Llama | 13B | 31.7 | — (not checked) | 2023-08-25 | `7457954...` |
@@ -31,7 +46,7 @@ Hard-split scores weren't re-checked individually in this pass (time
 budget) — Part 2 item 6 named Complete-split as adequate for candidate
 selection; Hard-split would be pulled from `bigcode/bigcodebench-hard-results`
 the same way as the Qwen numbers, before finalizing the harvest table if
-these candidates are approved.
+these candidates are approved. (Done as part of the correction above.)
 
 **Snapshot verification status**: current `main`-branch commit hash
 captured directly via HTTP HEAD request just now (shown above) for each

@@ -259,6 +259,49 @@ structure to the other candidates, a genuine (small, disclosed) methodological
 asymmetry within the cross-family cohort itself, separate from the
 published-benchmark comparison above.
 
+**Mistral-7B-Instruct-v0.3 floor verification (2026-07-28).** Its full-scale
+Dynamic run landed a baseline_pass_rate of just 1.7% (5/300) — by far the
+lowest of the four cross-family candidates and comparable to Qwen 1.5B's
+established floor behavior. Before treating this as a real capability
+finding rather than a harness artifact (chat-template drift was already
+flagged as a live concern for this model), inspected 5 raw completions
+end-to-end, one per tier plus a duplicate at L4, all with `exec_rate=1.0`
+(collectible) and `baseline_passed=False`, plus 2 of the 10 `exec_rate=0.0`
+rows:
+- **`extracted_test_file` matches the raw `response` verbatim in all 7
+  cases** (modulo the markdown code-fence stripping) — extraction did its
+  job; nothing here is a parsing artifact.
+- **L1-coerce-002, L2-validator-001, L3-search-001, L4-aggregate-001,
+  L4-pipeline-001** (all `exec=1.0`, `baseline_passed=False`): syntactically
+  clean, well-formed test files that assert **specific, concrete, wrong**
+  numeric values for what the function actually returns (e.g.
+  `test_encode_input_normal_case` asserts `encode_input(5, 2) == [5, 15]`
+  against the real implementation's actual output) — the model can write a
+  valid, importable test but reasons incorrectly about the function's real
+  behavior. Notably this shows up even at **L1**, this project's easiest
+  tier, where every other model tested so far (canonical and cross-family)
+  sits at or near ceiling — this is a genuine, tier-independent capability
+  gap for this model, not a hard-tier-only effect.
+- **L1-format-001** (`exec=0.0`, "collection error"): the model's own
+  generation degenerates into an endless repeated-digit string
+  (`...9999999999...`, response length 2265 chars, cut off mid-digit-string
+  by `max_new_tokens`) — the same repetition-collapse failure mode already
+  documented for Qwen 1.5B's L4 seeds 1101/1102
+  (`analysis/STABILITY_INTERPRETATION.md`), just triggered here at L1 rather
+  than only at the hardest tier.
+- **L1-arithmetic-001** (`exec=0.0`, "collection error"): a complete,
+  ordinary-looking test file with no chat-template pollution or stray
+  tokens — the collection failure itself traces to the model's own
+  content (mismatched function signature/name assumption for this
+  instance), not to prompt construction.
+
+None of the 7 inspected rows show any sign of the chat-template-drift caveat
+above actually corrupting output (no stray special tokens, no malformed
+structure, no truncated/duplicated framing) — the low pass rate is a
+genuine capability-limitation finding for this model on this benchmark, by
+the same evidence standard already applied to Qwen 1.5B, not a
+template-drift or extraction artifact.
+
 ## What this means going forward
 
 The public-benchmark harvest/self-run (Parts 2-3) is not gated on this
