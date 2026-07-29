@@ -75,7 +75,7 @@ same conditioning — raw says ULT scores slightly higher, adjusted says our
 benchmark scores higher (n=5 either way, neither statistically
 significant, but the sign isn't robust). Flagged, not hidden.
 
-## 3. Is this a Qwen-family artifact? Cross-family extension (in progress)
+## 3. Is this a Qwen-family artifact? Cross-family extension — DONE, and it's the cleanest result of the whole analysis
 
 The one place we did see a strong, clean correlation was against
 BigCodeBench (a public leaderboard) — but that comparison was **n=3, all
@@ -84,27 +84,32 @@ rank match across a 1.5B→7B→32B sweep within one family is close to the
 least surprising result available (bigger checkpoints are better at
 everything), so it's not independent evidence of validity.
 
-To break that confound, we're running **4 additional open-source models
-from 4 different families** (DeepSeek-Coder-6.7B, CodeLlama-13B,
-StarCoder2-15B, Mistral-7B-v0.3) on both benchmarks, expanding:
-- Dynamic↔ULT from **n=7 → n=11**
-- Dynamic/ULT↔BigCodeBench from **n=3 (all-Qwen) → n=7 (4 families)**
+To break that confound, we ran **4 additional open-source models from 4
+different families** (DeepSeek-Coder-6.7B, CodeLlama-13B, StarCoder2-15B,
+Mistral-7B-v0.3) on both benchmarks. **All 4 now complete** (300/300 Dynamic
++ 400/400 ULT each), expanding Dynamic↔ULT from n=7→n=11 and
+Dynamic/ULT↔BigCodeBench from n=3 (all-Qwen)→n=7 (4 families).
 
-**Status as of this morning, 3 of 4 landed** (StarCoder2 still running —
-one config bug and one cluster-queue relocation cost us time, expect it
-done today):
+**This is the result that actually answers the question**, and it's a
+clean story:
 
-| | n | Kendall τ |
-|---|---|---|
-| Dynamic↔ULT, coverage-adjusted, canonical-only (Qwen+API) | 7 | 0.905 |
-| Dynamic↔ULT, coverage-adjusted, +3 of 4 new families | 10 | **0.867** |
+| Comparison | Metric | n: 3-Qwen → 4-family | Kendall τ |
+|---|---|---|---|
+| Dynamic↔ULT | raw Mut@K | 7 → 11 | 0.143 → 0.345 (still not significant, p=0.16) |
+| Dynamic↔ULT | coverage-adjusted | 7 → 11 | 0.905 → **0.855** (p=0.0001 — holds) |
+| Dynamic↔BigCodeBench | raw Mut@K | 3 → 7 | 1.000 → **0.429** (p=0.24 — collapses) |
+| Dynamic↔BigCodeBench | coverage-adjusted | 3 → 7 | 1.000 → **0.905** (p=0.0034 — holds) |
+| ULT↔BigCodeBench | coverage-adjusted | 3 → 7 | 1.000 → **0.714** (p=0.032 — holds, weaker) |
 
-**Preliminary answer: the executability-agreement finding survives adding
-genuinely different model families** — it drops a little (0.905→0.867) but
-does not collapse. This is provisional (StarCoder2 not in yet, so it's
-n=10 of the eventual n=11), and I'd treat it as directional until the last
-model lands and I re-run the final numbers — which I expect to have later
-today.
+**The "perfect" n=3 BigCodeBench correlation was exactly the within-family
+size-scaling artifact we suspected** — the raw metric's correlation with an
+external public benchmark falls apart the moment genuine architectural
+diversity is added (1.000→0.429, no longer distinguishable from chance).
+The coverage-adjusted score's correlation with that same external
+benchmark **survives essentially intact** (1.000→0.905) — and this is now
+independent, external, cross-family evidence for the executability-
+agreement finding in §2, not just an internal comparison between our own
+two benchmarks.
 
 We also independently verified (2026-07-28) that Mistral's very low pass
 rate on our benchmark (1.7%) is a genuine capability finding, not an
@@ -117,16 +122,20 @@ ceiling).
 ## Bottom line to say out loud
 
 1. **As pre-registered, our benchmark's mutation-quality ranking does not
-   agree with a static benchmark's.** Real, disclosed, not explained away.
-2. **The reason is specific, not vague**: both benchmarks agree well on
-   which models can produce a working test suite at all; neither one's
-   fine-grained "how good is the test once it works" signal transfers to
-   the other. That's a scoping finding about Mut@K's conditioning, not a
-   verdict on the benchmark's overall design.
-3. **This isn't just a Qwen-family artifact** — the 4-family extension so
-   far preserves the executability-driven agreement once size-scaling is
-   no longer doing all the work. Final, complete number (n=11) expected
-   today.
+   agree with a static benchmark's, or with a public leaderboard.** Real,
+   disclosed, not explained away.
+2. **The reason is specific, not vague**: all three benchmarks agree well
+   on which models can produce a working test suite at all; none of their
+   fine-grained "how good is the test once it works" signals transfer to
+   each other. A scoping finding about Mut@K's conditioning, not a verdict
+   on the benchmark's overall design.
+3. **This is not a Qwen-family artifact — confirmed, not just suspected.**
+   The n=3 "perfect" public-benchmark correlation collapses once 4 real
+   families are added (exactly as predicted); the coverage-adjusted score's
+   correlation survives the same test, both internally (our two benchmarks)
+   and externally (against BigCodeBench). That's the strongest, most
+   defensible piece of evidence in this whole analysis, and it's now final,
+   not preliminary.
 
 ## Appendix: where the detail lives
 

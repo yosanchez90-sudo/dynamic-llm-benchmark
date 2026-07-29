@@ -208,6 +208,65 @@ with, but not independent evidence for, cross-benchmark validity," and
 lead with the cross-provider n=7 Dynamic↔ULT result as the analysis that
 actually stress-tests the claim.
 
+## Cross-family extension — final results (2026-07-29)
+
+All 4 candidates landed complete (300/300 Dynamic, 400/400 ULT each):
+DeepSeek-Coder-6.7B-Instruct, CodeLlama-13B-Instruct,
+StarCoder2-15B-Instruct-v0.1, Mistral-7B-Instruct-v0.3. Full script:
+`scripts/analyze_rq5_cross_family.py`; raw tables:
+`analysis/RQ5_CROSS_FAMILY_PROVENANCE.md`.
+
+**Dynamic↔ULT** (breaks nothing new about the family confound — both sides
+are our own benchmarks — but adds statistical power, n=7→n=11):
+
+| | n | Kendall τ |
+|---|---|---|
+| raw Mut@K, canonical-only | 7 | 0.143 |
+| raw Mut@K, +cross-family | 11 | 0.345 (CI [-0.18, 0.76], p=0.16 — still not significant) |
+| coverage-adjusted, canonical-only | 7 | 0.905 |
+| coverage-adjusted, +cross-family | 11 | **0.855** (CI [0.61, 1.00], p=0.0001) |
+
+The coverage-adjusted finding **holds up well** with genuine family
+diversity added — a small, expected drop (0.905→0.855), still strongly
+significant. The raw metric's rank agreement actually improves somewhat
+(0.143→0.345) but stays statistically indistinguishable from no
+relationship.
+
+**Dynamic/ULT↔BigCodeBench — this is the result that actually breaks the
+size-sweep confound**, n=3 (all-Qwen)→n=7 (4 families):
+
+| Pair | Metric | n | Kendall τ |
+|---|---|---|---|
+| Dynamic↔public | raw Mut@K | 3→7 | 1.000 → **0.429** (CI [-0.34, 1.00], p=0.24 — collapses) |
+| ULT↔public | raw Mut@K | 3→7 | 1.000 → **0.238** (p=0.57 — collapses) |
+| Dynamic↔public | coverage-adjusted | 3→7 | 1.000 → **0.905** (CI [0.56, 1.00], p=0.0034 — holds) |
+| ULT↔public | coverage-adjusted | 3→7 | 1.000 → **0.714** (CI [0.06, 1.00], p=0.032 — holds, weaker) |
+
+**This is exactly the confirmation the "read this as size-scaling, not
+cross-benchmark validity" caution above was waiting on.** The raw
+pre-registered metric's perfect n=3 correlation was indeed a within-family
+size-scaling artifact — it falls apart the moment real architectural
+diversity enters the comparison (τ 1.000→0.429/0.238, both statistically
+indistinguishable from chance). The coverage-adjusted score's correlation
+survives this test essentially intact (τ 1.000→0.905 for Dynamic, a real,
+significant, n=7, 4-family result) — independent, external evidence for
+the same "executability agreement is real and robust" finding as the
+Dynamic↔ULT internal comparison above, now validated against a public
+benchmark this project had no hand in constructing.
+
+**Bottom-line construct-validity statement, updated**: the benchmark's
+pre-registered primary metric (Mut@K conditional on baseline-pass) does not
+show robust cross-benchmark rank agreement, internally (Dynamic↔ULT) or
+externally (↔BigCodeBench), once tested past a single model family. The
+coverage-adjusted variant (which folds baseline-pass rate back into the
+score) does — robustly, internally AND externally, across 4 distinct model
+families. This is not a case of "the benchmark doesn't validate" — it's
+that construct validity holds for the *executability* component of what
+this benchmark measures, and the diagnosis (above) already explains
+precisely why: baseline-pass rate is the dominant, stable, cross-benchmark-
+agreed-upon signal, and fine-grained mutation-quality differences
+(conditional on passing) are not.
+
 ## Cross-family extension (approved 2026-07-28) — limitations
 
 Full-scale Dynamic (L1-L4, inst1) + ULT core_400 runs for 4 non-Qwen
@@ -304,8 +363,13 @@ template-drift or extraction artifact.
 
 ## What this means going forward
 
-The public-benchmark harvest/self-run (Parts 2-3) is not gated on this
-result, but it does raise the stakes for getting a genuinely larger N: with
-only 7 points, one outlier model can flip the whole read of "does this
-benchmark validate against X" depending on which correlation statistic is
-quoted. The same bootstrap/permutation reporting standard applies there.
+Superseded by the cross-family extension above (completed 2026-07-29,
+n=11 Dynamic↔ULT / n=7 Dynamic-ULT↔BigCodeBench) — the "genuinely larger N"
+this section originally called for has now landed, and it changed the
+read: the raw pre-registered metric's apparent cross-benchmark agreement
+(both internal and external) does not survive it, while the coverage-
+adjusted score's does. One caution carried over unchanged: with n=7-11,
+individual points still matter — a future 5th or 6th cross-family model
+landing differently could move these numbers meaningfully, so treat this
+as strong current evidence, not a permanently closed question. The same
+bootstrap/permutation reporting standard applies to any future extension.
