@@ -1,0 +1,44 @@
+# RQ5 cross-family extension (approved 2026-07-28, analysis/RQ5_CROSS_FAMILY_PROPOSAL.md):
+# full-scale Dynamic L3L4, StarCoder2-15B-Instruct-v0.1, zero-shot, inst1.
+#
+# ACCOMMODATED (supervisor directive): this template raise_exception()s on
+# any role="system" message -- supports_system_role: false folds the system
+# instruction into the first user turn instead (generic mechanism,
+# src/eval/test_gen_runner.py::_load_problems reads this from the model
+# config block, no per-model branch in the harness body). Logged per-row as
+# prompt_delivery_mode="system_folded_into_user". See
+# analysis/RQ5_INTERPRETATION.md's "Cross-family extension" limitations
+# section for the full writeup. Pilot passed 2026-07-28 (job 9507643) with
+# this accommodation before this full-scale config was submitted.
+
+name: starcoder2_15b__dynamic_L3L4__zeroshot__inst1
+
+task: test_generation
+
+model:
+  provider: local
+  id: bigcode/starcoder2-15b-instruct-v0.1
+  revision: ffb8dd9776ba9a66d655ecd962e882f3013e9f7c   # pinned SHA, verified 2026-07-27/28 (current HEAD, no weight-file commit since 2024-04-30 eval date)
+  dtype: bfloat16
+  supports_system_role: false   # see accommodation note above
+
+benchmark: dynamic
+instantiation_id: "1"
+instantiation_seed: 1
+instance_seeds: [101, 102, 103, 104, 105]
+tiers: ["L3", "L4"]
+
+prompting_condition: zero_shot
+
+generation:
+  max_new_tokens: 2048
+  do_sample: true
+  temperature: 0.2
+  top_p: 1.0
+  seed: 42
+
+K: 1
+mutation_workers: 4
+mutant_timeout_seconds: 30
+
+output_dir: data/results/dynamic
