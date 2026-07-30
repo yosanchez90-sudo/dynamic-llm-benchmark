@@ -1,14 +1,25 @@
-# RQ5 cross-family extension — candidate proposal (STOP GATE, not yet approved)
+# RQ5 cross-family extension — candidate proposal
 
-Per `analysis/RQ5_ANALYSIS_PLAN.md` Part 2 follow-up. The supervisor's actual
-ask: the n=3 BigCodeBench correlation is all-Qwen (a within-family size
-sweep, `analysis/RQ5_INTERPRETATION.md`'s "read this as size-scaling, not
-cross-benchmark validity"). Breaking that confound needs models from
-OTHER families with (a) a published, snapshot-verifiable BigCodeBench
-number and (b) weights that fit this project's GPU partitions.
+**STATUS: approved 2026-07-28, completed 2026-07-29.** All 4 candidates
+below ran to completion (300/300 Dynamic + 400/400 ULT each). Final
+results, superseding the projections in this document: `analysis/
+RQ5_INTERPRETATION.md`'s "Cross-family extension — final results" section
+and the condensed `analysis/RQ5_SUPERVISOR_SUMMARY_20260729.md`. This
+document is preserved as-is below for the historical record of what was
+proposed and why (cost estimates, candidate selection rationale, snapshot
+verification) — not updated to match final numbers.
 
-**Nothing in this document has been run. This is the proposal step; Part 2
-item 7 explicitly requires approval before any submission.**
+Per `analysis/RQ5_ANALYSIS_PLAN.md` Part 2 follow-up (see that plan's
+2026-07-28/29 addendum: this extension was a post-hoc addition, not part of
+the original pre-registration). The supervisor's actual ask: the n=3
+BigCodeBench correlation is all-Qwen (a within-family size sweep,
+`analysis/RQ5_INTERPRETATION.md`'s "read this as size-scaling, not
+cross-benchmark validity"). Breaking that confound needs models from OTHER
+families with (a) a published, snapshot-verifiable BigCodeBench number and
+(b) weights that fit this project's GPU partitions.
+
+*(Original text below, written before approval — "nothing has been run"
+etc. refers to the state at proposal time, not now.)*
 
 ## Candidate table
 

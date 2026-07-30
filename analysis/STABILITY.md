@@ -1,7 +1,7 @@
 # Stability (RQ4.1) — raw tables
 
-Generated: 2026-07-27T23:47:42.572847+00:00
-Git commit: e6f7413
+Generated: 2026-07-30T15:53:33.099232+00:00
+Git commit: f263050
 Script: scripts/analyze_stability.py
 
 **Interpretation lives in `analysis/STABILITY_INTERPRETATION.md`**
@@ -12,7 +12,7 @@ correction) is only current as of the commit above, not frozen.
 
 Args: --results-dir data/results/dynamic  --out analysis/stability  --min-instantiations 2
 Canonical models only (9); excluded non-canonical
-model_label(s): ['Qwen__Qwen2.5-Coder-1.5B-Instruct__ft_qwen1_5b_lora_ult_30ep', 'Qwen__Qwen2.5-Coder-7B-Instruct__ft_qwen7b_lora_inst1']
+model_label(s): ['Qwen__Qwen2.5-Coder-1.5B-Instruct__ft_qwen1_5b_lora_ult_30ep', 'Qwen__Qwen2.5-Coder-7B-Instruct__ft_qwen7b_lora_inst1', 'bigcode__starcoder2-15b-instruct-v0.1', 'codellama__CodeLlama-13b-Instruct-hf', 'deepseek-ai__deepseek-coder-6.7b-instruct', 'mistralai__Mistral-7B-Instruct-v0.3']
 
 ## StableMut@K (mean Mut@K across instantiations, SD)
 

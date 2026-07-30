@@ -1,7 +1,7 @@
 # RQ5 correlation scatter figure(s) — provenance
 
-Generated: 2026-07-27T23:20:05.640220+00:00
-Git commit: 2b3ff2c
+Generated: 2026-07-30T15:54:57.333990+00:00
+Git commit: f263050
 Script: scripts/plot_rq5_correlation.py
 
 Sources: analysis/rq5_model_ranking.csv, analysis/rq5_correlations.csv.

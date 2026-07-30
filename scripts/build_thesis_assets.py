@@ -46,6 +46,12 @@ STEPS: list[tuple[str, str, str]] = [
      "RQ5/H6 model-ranking table + cross-benchmark correlations"),
     ("rq5_figure", "scripts/plot_rq5_correlation.py",
      "RQ5 correlation scatter figure(s)"),
+    ("rq5_diagnostics", "scripts/analyze_rq5_diagnostics.py",
+     "RQ5 post-hoc diagnostics (tier-matching, discrimination, conditioning, attenuation)"),
+    ("rq5_cross_family", "scripts/analyze_rq5_cross_family.py",
+     "RQ5 cross-family extension: canonical-only vs +4-family correlations"),
+    ("rq5_cross_family_figure", "scripts/plot_rq5_cross_family_correlation.py",
+     "RQ5 cross-family correlation scatter figure(s)"),
 ]
 
 

@@ -343,17 +343,39 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
   strong-looking Pearson r=0.904 driven entirely by one outlier model
   (Qwen 1.5B) — read as "distinct capabilities," not "redundant," per the
   pre-registered frame, and reported as found even though it's the weaker
-  of the two possible readings. Leaderboard harvest found published,
-  snapshot-verified BigCodeBench numbers (both Complete and Hard splits)
-  for all 3 Qwen sizes and **none** of the six API models — Gemini 3.1 Pro
-  Preview/Flash-Lite included, correctly not proxied by a different Gemini
-  version's score. This made the planned Qwen self-run unnecessary, but
-  leaves the Dynamic/ULT↔BigCodeBench correlation at n=3, all one model
-  family (a "perfect" τ=1.0 that is really a scale-monotonicity result, not
-  independent validity evidence — permutation p=0.331 confirms it isn't
-  significant at this n). Full write-up incl. Discussion-chapter stub:
-  `analysis/RQ5_INTERPRETATION.md`. One-command regeneration for all of the
-  above plus Comparison A/B/C and stability: `scripts/build_thesis_assets.py`.
+  of the two possible readings. Diagnosed further (`analysis/
+  RQ5_DIAGNOSTICS.md`, 2026-07-27/28): decomposing the near-total recovery
+  from a coverage-adjusted re-scoring (τ=0.905) shows the agreement is
+  almost entirely about *executability* (baseline-pass rate alone: τ=0.810)
+  and not about mutation-kill quality conditional on passing (τ=0.143,
+  identical to the raw primary) — a precise scoping finding, not a reversal
+  of the headline result.
+  Leaderboard harvest found published, snapshot-verified BigCodeBench
+  numbers (both Complete and Hard splits) for all 3 Qwen sizes and **none**
+  of the six API models — Gemini 3.1 Pro Preview/Flash-Lite included,
+  correctly not proxied by a different Gemini version's score. This made
+  the planned Qwen self-run unnecessary, but left the Dynamic/ULT↔
+  BigCodeBench correlation at n=3, all one model family (a "perfect" τ=1.0
+  that is really a scale-monotonicity result, not independent validity
+  evidence — permutation p=0.331 confirms it isn't significant at this n).
+  **Cross-family extension approved 2026-07-28, completed 2026-07-29**
+  (post-hoc addition, not in the original pre-registration — see
+  `analysis/RQ5_ANALYSIS_PLAN.md`'s addendum): 4 non-Qwen models
+  (DeepSeek-Coder-6.7B, CodeLlama-13B, StarCoder2-15B, Mistral-7B-v0.3),
+  full Dynamic+ULT runs. Result: the n=3 "perfect" BigCodeBench correlation
+  **collapses** once real family diversity is added (τ 1.000→0.429, raw
+  Mut@K, no longer significant) — confirming it was the size-scaling
+  artifact suspected above — while the coverage-adjusted score's
+  correlation **survives** the same test (τ 1.000→0.905, n=7, p=0.0034),
+  now independent external cross-family evidence for the executability
+  finding, not just an internal one. StarCoder2 required a harness
+  accommodation (`supports_system_role: false` — its chat_template rejects
+  `role="system"` outright) logged per-row as `prompt_delivery_mode`.
+  Full write-up incl. Discussion-chapter stub and the cross-family final
+  results: `analysis/RQ5_INTERPRETATION.md`; condensed supervisor-meeting
+  version: `analysis/RQ5_SUPERVISOR_SUMMARY_20260729.md`. One-command
+  regeneration for all of the above plus Comparison A/B/C and stability:
+  `scripts/build_thesis_assets.py`.
 
 ---
 
