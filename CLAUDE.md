@@ -51,6 +51,27 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   tier-disambiguated (e.g. two configs with identical `tiers`), sequence them
   with `sbatch --dependency=afterok:<jobid>` instead of submitting
   concurrently.
+- **Library fallbacks must raise, not approximate.** Never write
+  `try: import real_lib; HAVE_X = True; except ImportError: HAVE_X = False`
+  and then silently substitute a cruder approximation when `HAVE_X` is
+  False. Use `template_corpus/templates/_smoke/validation_helpers.py`'s
+  `require_library()` (or the equivalent for non-smoke-test code) so a
+  missing dependency fails loudly at import time instead of quietly
+  changing which metric a script actually computes. Confirmed 2026-07-14:
+  `diversity_v2.py`'s `bleu4()` fell back to a 4-gram Jaccard approximation
+  whenever `sacrebleu` wasn't installed (it was never a declared
+  dependency until commit `d16f122`) — every within-tier diversity run
+  before that date used the fallback, not real BLEU-4, with only a
+  `print()` line (not an exception, not a persisted field in the output
+  JSON) distinguishing which metric had actually run. Also: any validation/
+  audit/sweep script's main loop must fail loudly if it checked zero
+  items (`validation_helpers.assert_checked`) — a validator that iterates
+  zero times and reports "0 failed" is, from its own output alone,
+  indistinguishable from one that checked everything and found no
+  problems (this is exactly the shape of the `validate.py` stale-path bug,
+  2026-07-13, commit `2d5fc9d`, and of `archive_diversity_audit.py`'s
+  hardcoded README summary, found and fixed 2026-08-03 — see
+  `analysis/VALIDATOR_SWEEP.md`).
 
 ## Layout
 - `src/` library code

@@ -16,7 +16,7 @@ i.e. C(5,2) = 10 pairs per template. A template is flagged if *any* single pair 
 *any* measure crosses its applicable threshold.
 
 BLEU-4 backend: real `sacrebleu` (added as a project dependency this run — prior
-runs before 2026-07-14 silently fell back to a 4-gram Jaccard approximation because
+runs before 2026-08-03 silently fell back to a 4-gram Jaccard approximation because
 sacrebleu was not installed).
 
 Embedding backend: TF-IDF cosine over docstring tokens — documented in diversity_v2.py

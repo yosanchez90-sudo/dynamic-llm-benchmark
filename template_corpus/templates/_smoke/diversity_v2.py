@@ -24,34 +24,24 @@ sys.path.insert(0, str(TEMPLATES_ROOT))
 sys.path.insert(0, str(TEMPLATES_ROOT / "_smoke"))
 
 from engine import instantiate, load_template  # noqa: E402
+from validation_helpers import require_library  # noqa: E402
 
 # ---- BLEU-4 ----
-try:
-    import sacrebleu
-    HAVE_SACREBLEU = True
-except ImportError:
-    HAVE_SACREBLEU = False
+# Required, not optional -- a silent try/except ImportError fallback here
+# previously substituted a cruder 4-gram Jaccard approximation for real
+# BLEU-4 in every within-tier diversity run before 2026-07-14 (sacrebleu
+# was never a declared dependency until commit d16f122), with nothing but
+# one print() line distinguishing which metric had actually run. See
+# CLAUDE.md's "library fallbacks must raise, not approximate" rule.
+sacrebleu = require_library("sacrebleu", "real BLEU-4 in the within-tier diversity check")
 
 
 def bleu4(a: str, b: str) -> float:
     """BLEU-4 score of a against b as the single reference, [0, 1]."""
-    if not HAVE_SACREBLEU:
-        return _bleu4_fallback(a, b)
     if not a.strip() or not b.strip():
         return 0.0
     score = sacrebleu.sentence_bleu(a, [b]).score / 100.0
     return float(score)
-
-
-def _bleu4_fallback(a: str, b: str) -> float:
-    wa = a.lower().split()
-    wb = b.lower().split()
-    if len(wa) < 4 or len(wb) < 4:
-        sa, sb = set(wa), set(wb)
-        return len(sa & sb) / max(1, len(sa | sb))
-    grams_a = {tuple(wa[i:i + 4]) for i in range(len(wa) - 3)}
-    grams_b = {tuple(wb[i:i + 4]) for i in range(len(wb) - 3)}
-    return len(grams_a & grams_b) / max(1, len(grams_a | grams_b))
 
 
 # ---- embedding cosine ----
@@ -239,7 +229,7 @@ def diversity_for_template(template):
 
 def main():
     print("Diversity sweep v2 (union of 4 measures, all-pairs aggregation)")
-    print(f"BLEU-4 backend: {'sacrebleu' if HAVE_SACREBLEU else 'fallback (4-gram Jaccard)'}")
+    print("BLEU-4 backend: sacrebleu (required; no fallback)")
     print(f"Embedding backend: TF-IDF cosine stand-in (production HPC: sentence-transformers)")
     print(f"Flag rule: code measures > {CODE_FLAG_THRESHOLD}; "
           f"docstring measures > {DOC_FLAG_THRESHOLD_LONG} (>= {SHORT_DOC_CUTOFF_WORDS} words) "

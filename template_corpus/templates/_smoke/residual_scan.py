@@ -29,6 +29,7 @@ from engine import (  # noqa: E402
     instantiate, load_template,
     _AN_BEFORE_CONSONANT_LETTER, _A_BEFORE_VOWEL_LETTER,
 )
+from validation_helpers import assert_checked  # noqa: E402
 
 SEEDS = [101, 102, 103, 104, 105]
 
@@ -157,6 +158,7 @@ def scan(tier_dir: Path) -> int:
 
 if __name__ == "__main__":
     total = 0
+    n_templates_scanned = 0
     for tier in ["L1", "L2", "L3", "L4"]:
         d = ROOT / tier
         if not d.exists():
@@ -164,8 +166,10 @@ if __name__ == "__main__":
         templates_in_tier = list(d.glob("*.py"))
         if not templates_in_tier:
             continue
+        n_templates_scanned += len(templates_in_tier)
         print(f"\n========== {tier} ({len(templates_in_tier)} templates) ==========\n")
         total += scan(d)
+    assert_checked(n_templates_scanned, "residual_scan.py's template population")
     print()
-    print(f"Total warnings: {total}")
+    print(f"Total warnings: {total} (across {n_templates_scanned} templates)")
     sys.exit(0 if total == 0 else 1)

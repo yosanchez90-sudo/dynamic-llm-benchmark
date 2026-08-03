@@ -8,12 +8,17 @@ Usage: python scripts/archive_diversity_audit.py
 """
 import csv
 import json
+import re
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SMOKE = ROOT / "template_corpus" / "templates" / "_smoke"
 OUT = ROOT / "analysis" / "diversity"
+
+sys.path.insert(0, str(SMOKE))
+from validation_helpers import assert_checked  # noqa: E402
 
 TIERS = ["L1", "L2", "L3", "L4"]
 
@@ -25,11 +30,33 @@ def _git_commit() -> str:
     ).stdout.strip()
 
 
+def _run_validator(script_name: str) -> tuple[int, int]:
+    """Run one of the _smoke/ validators fresh and parse its own genuine
+    "Total: X, Failed: Y" line -- the README below used to hardcode these
+    two numbers as literal prose (same anti-pattern as the fixed
+    validate_cc.py bug, just relocated here); this makes them re-verified
+    on every archive run instead of hand-transcribed once and left stale.
+    """
+    proc = subprocess.run(
+        [sys.executable, str(SMOKE / script_name)],
+        cwd=SMOKE, capture_output=True, text=True,
+    )
+    m = re.search(r"Total:\s*(\d+),\s*Failed:\s*(\d+)", proc.stdout)
+    if not m:
+        raise RuntimeError(
+            f"{script_name} did not print a parseable 'Total: X, Failed: Y' "
+            f"line -- stdout was:\n{proc.stdout}\nstderr:\n{proc.stderr}"
+        )
+    return int(m.group(1)), int(m.group(2))
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
 
     diversity = json.loads((SMOKE / "diversity_v2.json").read_text())
     density = json.loads((SMOKE / "mutation_density.json").read_text())
+    assert_checked(len(diversity), "diversity_v2.json records")
+    assert_checked(len(density), "mutation_density.json records")
 
     # ---- per-tier diversity CSV ----
     div_fields = [
@@ -106,11 +133,29 @@ def main() -> None:
                 "within_soft_margin": sum(1 for r in recs if r["within_soft_margin"]),
             })
 
+    # ---- re-run validate.py/validate_cc.py fresh for genuine totals ------
+    # (previously hardcoded as literal "60/60 pass" prose below -- same
+    # anti-pattern as the fixed validate_cc.py bug, just relocated to this
+    # script's README generator; see analysis/VALIDATOR_SWEEP.md item #9)
+    validate_total, validate_failed = _run_validator("validate.py")
+    validate_cc_total, validate_cc_failed = _run_validator("validate_cc.py")
+
+    # ---- genuine summary numbers from the loaded diversity/density data --
+    n_templates = len(diversity)
+    n_flagged = sum(1 for r in diversity.values() if r["flagged"])
+    density_total = len(density)
+    density_in_band = sum(1 for r in density if r["in_band"])
+    tier_means = {
+        tier: round(sum(r["actual_total"] for r in density if r["tier"] == tier)
+                     / max(1, sum(1 for r in density if r["tier"] == tier)), 1)
+        for tier in TIERS
+    }
+
     # ---- thresholds doc ----
     commit = _git_commit()
     import datetime
     run_date = datetime.date.today().isoformat()
-    job_id = "9377396"
+    job_id = "9377396"  # the SLURM job that produced diversity_v2.json/mutation_density.json specifically
 
     thresholds_md = f"""# Diversity flag-rule thresholds (locked policy)
 
@@ -156,22 +201,38 @@ the fallback 4-gram Jaccard approximation in `diversity_v2.py`, not real BLEU-4.
 
 This run: (1) added `sacrebleu` as a pinned dependency, (2) re-ran
 `validate.py` + `validate_cc.py` + `diversity_v2.py` + `mutation_sweep.py`
-against the full, current 60-template corpus (15/tier, L1-L4) via SLURM.
+against the full, current {n_templates}-template corpus (L1-L4) via SLURM.
 
 ## Results summary
 
-- **Template validation** (`validate.py`): 60/60 pass (load, skeleton substitution,
-  oracle self-consistency on smoke_test_inputs).
-- **Tier-separation sanity** (`validate_cc.py`): 60/60 pass — CC of every template
-  falls in its declared tier's band (L1=1, L2=2-3, L3=4-7, L4>=8).
+Every number below is recomputed by this script on each run (from
+`validate.py`/`validate_cc.py`'s own fresh stdout, and from the loaded
+`diversity_v2.json`/`mutation_density.json`) — none of it is hand-transcribed
+prose, so a future corpus change that breaks a validator will change this
+file's numbers too, not silently leave stale claims in place (see
+`analysis/VALIDATOR_SWEEP.md` for why this matters).
+
+- **Template validation** (`validate.py`, re-run fresh at archive time, not
+  from the SLURM job below): {validate_total}/{validate_total} pass, {validate_failed} failed
+  (load, skeleton substitution, oracle self-consistency on smoke_test_inputs).
+- **Tier-separation sanity** (`validate_cc.py`, also re-run fresh): {validate_cc_total}/{validate_cc_total}
+  pass, {validate_cc_failed} failed — CC of every template falls in its declared
+  tier's band (L1=1, L2=2-3, L3=4-7, L4>=8).
 - **Within-tier diversity** (`diversity_v2.py`, union of 4 measures, length-aware
-  flag rule): **0/60 templates flagged** across all four tiers. See
-  `diversity_tier_summary.csv` / `diversity_by_template.csv`; `flagged_pairs.csv`
-  is header-only (nothing to report).
-- **Mutation density** (`mutation_sweep.py`): 60/60 templates land inside their
-  declared per-template stability band; mean mutants/instance scale as expected
-  with tier (L1 7.7, L2 13.4, L3 21.1, L4 35.6), consistent with the PROJECT_BRIEF.md
-  target bands (5-10 / 10-15 / 15-25 / 25-40).
+  flag rule, from the SLURM-produced JSON): **{n_flagged}/{n_templates} templates
+  flagged** across all four tiers. See `diversity_tier_summary.csv` /
+  `diversity_by_template.csv`; `flagged_pairs.csv` is {"header-only (nothing to report)" if n_flagged == 0 else f"populated with the {n_flagged} flagged template(s)"}.
+- **Mutation density** (`mutation_sweep.py`, from the SLURM-produced JSON):
+  {density_in_band}/{density_total} templates land inside their declared
+  per-template stability band; mean mutants/instance by tier: L1 {tier_means.get('L1', 'n/a')},
+  L2 {tier_means.get('L2', 'n/a')}, L3 {tier_means.get('L3', 'n/a')}, L4 {tier_means.get('L4', 'n/a')}
+  — compare against PROJECT_BRIEF.md's target bands (5-10 / 10-15 / 15-25 / 25-40).
+  **Scope note**: this validates only the single canonical instance
+  (seed=42) per Dynamic template against a band set from one author
+  spot-check — it says nothing about ULT/PLT (not templated, no
+  `expected_mutant_count`, real mutant counts there range far outside any
+  Dynamic band — see `analysis/MUTANT_COUNT_SPEC_AUDIT.md`) or about the
+  full multi-seed instantiation distribution actually used at eval time.
 
 ## Files
 
