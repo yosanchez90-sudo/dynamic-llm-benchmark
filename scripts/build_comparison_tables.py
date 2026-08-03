@@ -271,6 +271,9 @@ CC bands: data/raw/ult_plt/subsample_manifest.json (tag=core_400).
 Missing (no scorable data on one or both sides — NOT zero-filled, simply
 absent from comparison_a_paired.csv): {a_missing or "none"}
 
+**Interpretation lives in `analysis/COMPARISON_A_INTERPRETATION.md`** — headline:
+no directional claim survives at the current n under any Mut@K definition tried.
+
 ## Comparison B (ULT vs PLT) — {len(b_paired)}/{len(CANONICAL_MODELS)} models
 Missing: {b_missing or "none"}
 

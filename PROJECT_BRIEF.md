@@ -60,7 +60,7 @@ score inflation.
 
 | RQ | Hypothesis | Test |
 |----|-----------|------|
-| RQ1 | H1 (observational) | Paired Wilcoxon signed-rank, dynamic vs ULT mutation score at model–problem level |
+| RQ1 | H1 (observational) | Paired Wilcoxon signed-rank, dynamic vs ULT mutation score at **model level** (one paired observation per model — Dynamic and ULT/PLT share no problem identity, so a literal model–problem pairing isn't possible; see `src/Analysis/comparison.py`'s module docstring for the full rationale. Corrected 2026-08-04 from an earlier "model–problem level" phrasing that never matched the implementation.) |
 | RQ1 | H2 (causal) | Difference-in-differences on the 2×3 design (pre/post fine-tune × ULT/PLT/Dynamic) |
 | RQ2 | H3 | Spearman ρ between tier index and mutation score, per model and pooled |
 | RQ3 | H4 | Tier × benchmark interaction term in a mixed-effects regression (model as random effect) |
@@ -121,6 +121,25 @@ Logical Operator Replacement (**LOR**), Constant Replacement (**CR**), Boundary 
 (**BM**), Statement Deletion (**SDL**), Return/Statement Mutation (**RSM**). Single-edit
 per mutant; cap **30 mutants/instance** (sample if more). SPC operators are future work.
 
+**Deviation, disclosed 2026-08-04 (full audit: `analysis/
+MUTANT_COUNT_SPEC_AUDIT.md`): the 30-mutant cap and stratified sampler
+were never implemented** — `generate_mutants()` returns every mutation
+site the 7 operators find, uncapped, for both Dynamic and ULT/PLT. In
+practice this only matters for Dynamic's L4 tier: L1-L3 land inside their
+§5.1 target bands without ever approaching 30 mutants (0% of rows exceed
+it), but L4's own target band (25-40, see §5.1) already exceeds this
+section's 30-mutant cap, and 93.3% of real L4 rows exceed 30 — the corpus
+was built to satisfy the per-tier band, and this section's blanket cap was
+the part that went unenforced, not the reverse. ULT/PLT mutants are
+**intentionally** uncapped (mean 94.8/80.7, up to 771/991 for individual
+functions) to match the source paper's own "generate all possible
+mutants" methodology, required for Comparison A/B to compare against
+ULT/PLT on like terms. Checked directly whether this affects any reported
+conclusion (macro-mean vs a micro/pooled alternative that would be
+sensitive to this variance): no change to Comparison A's or B's reported
+qualitative direction; some reordering possible among closely-scored
+models on ULT/PLT specifically (`MUTANT_COUNT_SPEC_AUDIT.md` §(d)).
+
 ### 5.4 Metrics (Pass@K-style naming, K = attempts/problem)
 | Metric | Symbol | Meaning | Level |
 |--------|--------|---------|-------|
@@ -128,14 +147,44 @@ per mutant; cap **30 mutants/instance** (sample if more). SPC operators are futu
 | Statement coverage | Cov-S@K | Mean line coverage over executable suites | Secondary |
 | Branch coverage | Cov-B@K | Mean branch coverage over executable suites | Secondary |
 | Mutation score | Mut@K | Killed / total mutants (raw); validated variant divides by total − est. equivalent | **Headline** |
+| Coverage-adjusted score | `coverage_adjusted` | Mut@K × baseline_pass_rate — a zero-filled/unconditional co-primary, added 2026-08-03 (see below) | Co-primary |
 | Stability | StableMut@K | Mean Mut@K across the instantiations (4 executed; 5 design target — see §11), SD reported | Stability |
 
 Headline K=1; sensitivity sweep at K=5. Temperature fixed **0.2** (ULT convention),
 max output 2048 tokens, deterministic seeding where the API exposes it.
 
+**Mut@K is conditional, not unconditional — disclosed here 2026-08-04 after
+an external review found this table didn't make the distinction explicit.**
+As implemented (`src/eval/test_gen_scorer.py::score_problem`), Mut@K is the
+mean mutation score **over baseline-passing problems only** — a problem
+whose generated suite fails against the original, correct function is
+**excluded** from the mean entirely, not scored as 0. This is the
+pre-registered primary metric throughout this project and is never
+swapped out. A second, zero-filled/unconditional reading also exists
+(`coverage_adjusted` above = Mut@K × baseline_pass_rate, proven
+algebraically and empirically identical to a true zero-filled mean —
+`analysis/RQ5_CROSS_DEFINITION_AUDIT.md` §3) and is reported everywhere as
+a labelled co-primary, not a replacement. The two are different estimands
+even for identical data (a model with a low baseline-pass rate can show a
+high conditional Mut@K while its coverage-adjusted score is much lower) —
+see `analysis/METRICS_AND_FINDINGS_EXPLAINED.md` §2 for the full
+definitions and known failure modes of each, and
+`analysis/RQ5_CROSS_DEFINITION_AUDIT.md` for why this distinction also
+turns out to be the crux of a genuine, unresolved contradiction between
+the ULT/PLT paper's own stated Mut@k formula and its own published code.
+
 ### 5.5 Equivalent mutants
 Default = raw score (pessimistic, comparable). Validation = 30 mutants/tier hand-inspected
 (120 total); report a sample-validated score + estimated equivalent-mutant rate with CIs.
+
+**Note (2026-08-04): this is a different thing from the ULT/PLT paper's
+own "non-equivalent mutants" language.** That paper's prose claims its
+Mut@k reports "the percentage of non-equivalent mutants that are killed,"
+but no equivalent-mutant detection or filtering exists anywhere in its
+own published code (`analysis/RQ5_CROSS_DEFINITION_AUDIT.md` §1c,
+`analysis/ULT_DATA_QUALITY_AUDIT.md` finding 3) — this project's own
+validated-sample estimate above should not be assumed comparable to
+whatever the paper's "non-equivalent" qualifier is actually describing.
 
 ---
 

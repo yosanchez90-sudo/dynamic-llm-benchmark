@@ -1,7 +1,7 @@
 # Comparison A/B generation provenance
 
-Generated: 2026-08-03T01:45:26.652054+00:00
-Git commit: 48296ad
+Generated: 2026-08-03T13:50:40.953552+00:00
+Git commit: 8aca291
 
 Sources: data/results/dynamic/*.jsonl (tier=L4 only for Comparison A),
 data/results/ult/*.jsonl, data/results/plt/*.jsonl.
@@ -10,6 +10,9 @@ CC bands: data/raw/ult_plt/subsample_manifest.json (tag=core_400).
 ## Comparison A (Dynamic-L4 vs ULT) — 5/9 models
 Missing (no scorable data on one or both sides — NOT zero-filled, simply
 absent from comparison_a_paired.csv): ['Qwen__Qwen2.5-Coder-1.5B-Instruct', 'gemini-3.1-pro-preview', 'gpt-5-2025-08-07', 'gpt-5-mini-2025-08-07']
+
+**Interpretation lives in `analysis/COMPARISON_A_INTERPRETATION.md`** — headline:
+no directional claim survives at the current n under any Mut@K definition tried.
 
 ## Comparison B (ULT vs PLT) — 7/9 models
 Missing: ['gpt-5-2025-08-07', 'gpt-5-mini-2025-08-07']
