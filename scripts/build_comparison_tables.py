@@ -46,6 +46,7 @@ from src.Analysis.comparison import (  # noqa: E402
 from src.Analysis.loader import load_records  # noqa: E402
 
 ANALYSIS_DIR = ROOT / "analysis"
+THIN_N_DEFINED = 20  # below this, a model's own mean Mut@K is a shaky point estimate
 
 
 def _git_commit() -> str:
@@ -99,6 +100,23 @@ def main() -> None:
     a_paired_adj["dynamic_l4_adj"] = a_paired_adj["dynamic_l4"] * a_paired_adj["baseline_pass_rate_dynamic_l4"]
     a_paired_adj["ult_adj"] = a_paired_adj["ult"] * a_paired_adj["baseline_pass_rate_ult"]
     a_wilcoxon_adj = paired_wilcoxon(a_paired_adj, label_a="dynamic_l4_adj", label_b="ult_adj")
+
+    # --- Thin-cell filter (n_defined<20 on either side is a shaky point
+    # estimate for that model, not just a conditioning-direction question) --
+    a_thin_stats = a_paired.merge(
+        a_coverage_dyn[["model_label", "n_defined_dynamic_l4"]], on="model_label"
+    ).merge(
+        a_coverage_ult[["model_label", "n_defined_ult"]], on="model_label"
+    )
+    a_thin_models = a_thin_stats[
+        (a_thin_stats["n_defined_dynamic_l4"] < THIN_N_DEFINED)
+        | (a_thin_stats["n_defined_ult"] < THIN_N_DEFINED)
+    ]
+    a_paired_thick = a_thin_stats[
+        (a_thin_stats["n_defined_dynamic_l4"] >= THIN_N_DEFINED)
+        & (a_thin_stats["n_defined_ult"] >= THIN_N_DEFINED)
+    ][["model_label", "dynamic_l4", "ult"]]
+    a_wilcoxon_thick = paired_wilcoxon(a_paired_thick, label_a="dynamic_l4", label_b="ult")
 
     # --- Comparison B: ULT vs PLT -------------------------------------------
     b_paired = paired_model_table(ult, plt, label_a="ult", label_b="plt")
@@ -168,6 +186,43 @@ folds the conditioning back in -- NOT the same estimand as Mut@K itself,
         and a_wilcoxon.effect_r * a_wilcoxon_adj.effect_r < 0)
     else f"Effect direction is the SAME sign raw vs coverage-adjusted; magnitude/significance may still differ (see table above), but the qualitative read (which side is higher, and that n={a_wilcoxon.n_pairs} is too small at either p-value to call this a real effect) does not flip."
 }
+
+## Comparison A thin-cell audit (added 2026-07-30)
+
+A model's own paired Mut@K is a shaky point estimate when it's averaged
+over very few baseline-passing problems -- n_defined<{THIN_N_DEFINED} on
+either side is flagged thin here, same threshold used in
+`analysis/RQ5_DIAGNOSTICS.md`. Per-model n_defined for both sides:
+
+{a_thin_stats[['model_label', 'n_defined_dynamic_l4', 'n_defined_ult']].to_string(index=False)}
+
+**Thin model(s) excluded from the {len(a_paired_thick)}-model thick-only
+result below**: {sorted(a_thin_models['model_label'].tolist()) or "none -- all models thick on both sides"}.
+
+| | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
+|---|---|---|---|---|---|
+| raw Mut@K, unfiltered (primary) | {a_wilcoxon.n_pairs} | {a_wilcoxon.mean_a:.4f} | {a_wilcoxon.mean_b:.4f} | {a_wilcoxon.effect_r if a_wilcoxon.effect_r is not None else float('nan'):.3f} | {a_wilcoxon.p_value if a_wilcoxon.p_value is not None else float('nan'):.4f} |
+| raw Mut@K, thin cells (n_defined<{THIN_N_DEFINED}) excluded | {a_wilcoxon_thick.n_pairs} | {a_wilcoxon_thick.mean_a if a_wilcoxon_thick.n_pairs else float('nan'):.4f} | {a_wilcoxon_thick.mean_b if a_wilcoxon_thick.n_pairs else float('nan'):.4f} | {a_wilcoxon_thick.effect_r if a_wilcoxon_thick.effect_r is not None else float('nan'):.3f} | {a_wilcoxon_thick.p_value if a_wilcoxon_thick.p_value is not None else float('nan'):.4f} |
+
+**Does the {a_wilcoxon.n_pairs}-model result survive thin-cell filtering?**
+{
+    f"NO in the sense that it shrinks to n={a_wilcoxon_thick.n_pairs} once thin cells are excluded -- {len(a_thin_models)} of the original {a_wilcoxon.n_pairs} model(s) were resting on a point estimate averaged over fewer than {THIN_N_DEFINED} baseline-passing problems, not a stable per-model mean."
+    if len(a_thin_models) > 0 else
+    f"Yes -- no model in the {a_wilcoxon.n_pairs}-model result has n_defined<{THIN_N_DEFINED} on either side."
+}
+
+## Cross-definition note (added 2026-07-30, see analysis/RQ5_CROSS_DEFINITION_AUDIT.md)
+
+Every Mut@K number in this file uses this project's own EXCLUDE/conditional
+definition (mean over baseline-passing rows only). The ULT/PLT paper's own
+published mutation score is, by the project's reading of its stated formula
+(N = total function count, not passing-only), an INCLUDE-AS-ZERO/
+unconditional definition -- a different estimand, even for identical
+functions. This does NOT affect the internal validity of Comparison A/B
+(both arms use this project's own scorer, so the comparison is
+self-consistent) -- it means these numbers should not be read as directly
+comparable to the ULT/PLT paper's own reported ~40.21% average mutation
+score. Full writeup: `analysis/RQ5_CROSS_DEFINITION_AUDIT.md`.
 
 ## Dedup-fix status (src/Analysis/loader.py, fixed 2026-07-25)
 

@@ -21,8 +21,32 @@ DESIGN DECISIONS (viva-relevant)
 4. KILLED DEFINITION. A mutant is KILLED iff the suite PASSES on the original
    and FAILS (or times out) on the mutant. If the suite does not pass on the
    original, mutation score is ill-defined; we record baseline_passed=False and
-   mutation_score=None so downstream analysis can exclude it.
-   >>> CONFIRM this against ULT's methodology (your decision). <<<
+   mutation_score=None so downstream analysis can exclude it -- an EXCLUDE
+   (conditional-mean) definition.
+   RESOLVED 2026-07-30 (analysis/RQ5_CROSS_DEFINITION_AUDIT.md has the full
+   writeup): checked against the ULT/PLT paper (Huang & Du et al., ACM TOSEM
+   / arXiv:2508.00408, Sec 3.4.3). The paper's own Mut@k formula is
+   `Mut@k = sum(Mi) / N` with N defined explicitly as "the total number of
+   functions in the benchmark" -- NOT "the number of functions whose test
+   suite passed on the original." The paper does not contain a sentence
+   spelling out what Mi is for a non-passing suite, but with N pinned to the
+   full benchmark size, Mi=0 for any non-passing function is the only
+   arithmetic reading consistent with the stated formula (a passing-only N
+   would make the formula's own "total number of functions" definition
+   false) -- i.e. an INCLUDE-AS-ZERO (unconditional-mean) definition. This
+   is an inference from the stated formula, not a directly quoted
+   confirmation -- flagged as such, not asserted as certain.
+   CONSEQUENCE: this project's Mut@K (exclude/conditional) and the paper's
+   own Mut@K (include-as-zero/unconditional) are DIFFERENT ESTIMANDS, even
+   when scoring identical functions -- this project's `coverage_adjusted`
+   score (mutation_score.mean() x baseline_pass_rate, already computed in
+   scripts/analyze_rq5_diagnostics.py and scripts/analyze_rq5_cross_family.py)
+   is the metric that actually matches the paper's own methodology, not the
+   pre-registered primary conditional Mut@K. Every Comparison A/B number
+   built from conditional Mut@K should be read as this project's own metric,
+   not as directly comparable to the ULT paper's published ~40.21% average
+   mutation score -- see analysis/COMPARISON_PROVENANCE.md's cross-definition
+   note.
 
 5. PARALLELISM. Mutants for ONE problem are evaluated in a thread pool (Level 1
    parallelism). Threads rather than processes: each worker just coordinates a

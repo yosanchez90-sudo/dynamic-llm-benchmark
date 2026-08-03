@@ -1,7 +1,7 @@
 # Comparison A/B generation provenance
 
-Generated: 2026-07-30T15:52:13.043831+00:00
-Git commit: f263050
+Generated: 2026-08-03T00:30:18.323749+00:00
+Git commit: 8a5a6e8
 
 Sources: data/results/dynamic/*.jsonl (tier=L4 only for Comparison A),
 data/results/ult/*.jsonl, data/results/plt/*.jsonl.
@@ -48,6 +48,44 @@ folds the conditioning back in -- NOT the same estimand as Mut@K itself,
 | coverage-adjusted (robustness) | 5 | 0.1875 | 0.1041 | -0.600 | 0.3125 |
 
 **Does the conclusion change?** Effect direction FLIPS between raw and coverage-adjusted (sign of effect_r differs) -- treat Comparison A's direction as conditioning-sensitive, not robust.
+
+## Comparison A thin-cell audit (added 2026-07-30)
+
+A model's own paired Mut@K is a shaky point estimate when it's averaged
+over very few baseline-passing problems -- n_defined<20 on
+either side is flagged thin here, same threshold used in
+`analysis/RQ5_DIAGNOSTICS.md`. Per-model n_defined for both sides:
+
+                     model_label  n_defined_dynamic_l4  n_defined_ult
+Qwen__Qwen2.5-Coder-32B-Instruct                    13             31
+ Qwen__Qwen2.5-Coder-7B-Instruct                     1              7
+       claude-haiku-4-5-20251001                    77             35
+               claude-sonnet-4-6                    97             78
+           gemini-3.1-flash-lite                   145            106
+
+**Thin model(s) excluded from the 3-model thick-only
+result below**: ['Qwen__Qwen2.5-Coder-32B-Instruct', 'Qwen__Qwen2.5-Coder-7B-Instruct'].
+
+| | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
+|---|---|---|---|---|---|
+| raw Mut@K, unfiltered (primary) | 5 | 0.7333 | 0.8346 | 0.200 | 0.8125 |
+| raw Mut@K, thin cells (n_defined<20) excluded | 3 | 0.8598 | 0.7928 | -1.000 | 0.2500 |
+
+**Does the 5-model result survive thin-cell filtering?**
+NO in the sense that it shrinks to n=3 once thin cells are excluded -- 2 of the original 5 model(s) were resting on a point estimate averaged over fewer than 20 baseline-passing problems, not a stable per-model mean.
+
+## Cross-definition note (added 2026-07-30, see analysis/RQ5_CROSS_DEFINITION_AUDIT.md)
+
+Every Mut@K number in this file uses this project's own EXCLUDE/conditional
+definition (mean over baseline-passing rows only). The ULT/PLT paper's own
+published mutation score is, by the project's reading of its stated formula
+(N = total function count, not passing-only), an INCLUDE-AS-ZERO/
+unconditional definition -- a different estimand, even for identical
+functions. This does NOT affect the internal validity of Comparison A/B
+(both arms use this project's own scorer, so the comparison is
+self-consistent) -- it means these numbers should not be read as directly
+comparable to the ULT/PLT paper's own reported ~40.21% average mutation
+score. Full writeup: `analysis/RQ5_CROSS_DEFINITION_AUDIT.md`.
 
 ## Dedup-fix status (src/Analysis/loader.py, fixed 2026-07-25)
 

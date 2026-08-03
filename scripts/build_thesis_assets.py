@@ -52,6 +52,8 @@ STEPS: list[tuple[str, str, str]] = [
      "RQ5 cross-family extension: canonical-only vs +4-family correlations"),
     ("rq5_cross_family_figure", "scripts/plot_rq5_cross_family_correlation.py",
      "RQ5 cross-family correlation scatter figure(s)"),
+    ("rq5_sanitizer_sensitivity", "scripts/analyze_rq5_sanitizer_sensitivity.py",
+     "RQ5 sanitizer-repair sensitivity (per-model repair fraction, with/without repaired rows)"),
 ]
 
 

@@ -74,16 +74,18 @@ from the raw pooled result. This is the strongest single piece of evidence
 in this diagnosis, but decomposing the product (`analysis/RQ5_DIAGNOSTICS.md`
 sec 3b) sharpens what it actually shows: **baseline_pass_rate ALONE already
 gives τ=0.810** — nearly all of the recovered agreement is models agreeing
-on who can produce an executable, baseline-passing suite at all, not on
-mutation-killing quality. Conditioned Mut@K alone (the pre-registered
-primary metric, restricted to the same n=7/same models for a fair
-comparison) is τ=0.143 — identical to the full-pool result, meaning models
-that clear the executability bar do **not** then agree on which suites are
-the *better* mutation killers. So: most of the apparent Dynamic/ULT
-disagreement is not that the two benchmarks disagree about model
-*capability* broadly — it's specifically that they disagree about
-*executability* very little and about *mutation-quality-conditional-on-passing*
-almost completely. Mut@K and coverage-adjusted-Mut@K are different
+on who can produce a baseline-passing suite at all (PASSES against the real
+function — a stricter, later gate than mere exec/collection, which this
+project's scorer tracks separately as `exec_ok`), not on mutation-killing
+quality. Conditioned Mut@K alone (the pre-registered primary metric,
+restricted to the same n=7/same models for a fair comparison) is τ=0.143 —
+identical to the full-pool result, meaning models that clear the
+baseline-pass bar do **not** then agree on which suites are the *better*
+mutation killers. So: most of the apparent Dynamic/ULT disagreement is not
+that the two benchmarks disagree about model *capability* broadly — it's
+specifically that they disagree about *baseline pass rate* very little and
+about *mutation-quality-conditional-on-passing* almost completely. Mut@K
+and coverage-adjusted-Mut@K are different
 estimands measuring different things (respectively: "how good are the
 tests that already passed" vs "how good is the model overall, including
 whether it clears the gate"); this result says the cross-benchmark
@@ -99,9 +101,12 @@ models and the thing that stays comparatively stable WITHIN a model across
 instantiations.
 
 **(c) Reliability ceiling — a minor factor.** Disattenuating the observed
-τ=0.143 by Dynamic's own RQ4.1 self-consistency (mean pairwise Kendall tau
-0.675 across instantiations) gives τ_disattenuated≈0.174 — barely moved.
-Dynamic's own noisiness is not why the cross-benchmark number is low.
+τ=0.143 by Dynamic's own RQ4.1 self-consistency (mean pairwise Kendall tau,
+computed live rather than a frozen constant — see
+`analysis/RQ5_DIAGNOSTICS.md` sec 4 for the current figure and why it's
+computed live, not hard-coded) gives a disattenuated τ barely moved from
+the raw observed value. Dynamic's own noisiness is not why the
+cross-benchmark number is low.
 
 **(d) Genuine construct difference — what's left over.** After (a) and (c)
 are largely ruled out as the main drivers and (b) is shown to recover most
@@ -145,23 +150,28 @@ sharper edge than it first appeared: most of the gap is attributable to how
 Mut@K conditions on baseline-pass rather than to Dynamic and ULT
 disagreeing about model capability outright, and a coverage-adjusted
 re-scoring that folds the baseline-pass rate back in recovers τ=0.905. But
-decomposing that recovered agreement shows it is almost entirely an
-*executability* story, not a mutation-quality one: baseline_pass_rate alone
-already correlates at τ=0.810 across benchmarks, while Mut@K conditional on
-passing (the actual pre-registered metric) stays at τ=0.143 even within
-that same matched comparison. Disattenuating for Dynamic's own measurement
-reliability moves the raw number by only 0.04 (0.143→0.179), while the
-coverage-adjusted score's own (much higher, and independently verified,
-N=4 τ=1.000) reliability leaves ITS disattenuated figure essentially
-unchanged (0.905→0.905) — reliability is not the limiting factor for either
-reading. So the honest statement is two-sided but more specific than before:
-the metric as pre-registered and specified does rank models inconsistently
-across benchmarks on mutation-quality-conditional-on-passing, which is a
-real limitation to disclose, but models agree well on the more basic
-question of who can produce an executable, baseline-passing suite at all —
-"the underlying capabilities are less disconnected" is true of
-executability specifically, not of test-suite quality once that bar is
-cleared. The one
+decomposing that recovered agreement shows it is almost entirely a
+*baseline-pass-rate* story, not a mutation-quality one: baseline_pass_rate
+alone already correlates at τ=0.810 across benchmarks, while Mut@K
+conditional on passing (the actual pre-registered metric) stays at τ=0.143
+even within that same matched comparison. Disattenuating for Dynamic's own
+measurement reliability moves the raw number only slightly (see
+`analysis/RQ5_DIAGNOSTICS.md` sec 4 for the current, live-computed figure),
+while the coverage-adjusted score's own (much higher, and independently
+verified) reliability leaves ITS disattenuated figure essentially
+unchanged — reliability is not the limiting factor for either reading. **A
+further check against the pre-registered interpretation frame itself
+(`analysis/RQ5_ANALYSIS_PLAN.md`, Spearman ρ 0.4–0.8 = validity-supporting,
+near-perfect = redundant) sharpens this further: τ=0.905 sits at or above
+the "redundant" line, not inside the validity-supporting zone.** So the
+honest statement is two-sided, more specific, and less comfortable than a
+first pass suggests: the metric as pre-registered and specified does rank
+models inconsistently across benchmarks on mutation-quality-conditional-
+on-passing (the validity-undermining zone), while the coverage-adjusted
+score's cross-benchmark agreement is strong enough to raise a redundancy
+concern rather than resolve a validity one. Neither candidate reading of
+this benchmark's primary metric lands in the zone the plan predicted in
+advance. The one
 clean, strong correlation available (Dynamic/ULT vs BigCodeBench, n=3) is
 confined to a single model family's size sweep and is better read as
 evidence that scale predicts everything within a family than as independent
@@ -250,22 +260,52 @@ diversity enters the comparison (τ 1.000→0.429/0.238, both statistically
 indistinguishable from chance). The coverage-adjusted score's correlation
 survives this test essentially intact (τ 1.000→0.905 for Dynamic, a real,
 significant, n=7, 4-family result) — independent, external evidence for
-the same "executability agreement is real and robust" finding as the
+the same "baseline-pass-rate agreement is real and robust" finding as the
 Dynamic↔ULT internal comparison above, now validated against a public
 benchmark this project had no hand in constructing.
 
-**Bottom-line construct-validity statement, updated**: the benchmark's
-pre-registered primary metric (Mut@K conditional on baseline-pass) does not
-show robust cross-benchmark rank agreement, internally (Dynamic↔ULT) or
-externally (↔BigCodeBench), once tested past a single model family. The
-coverage-adjusted variant (which folds baseline-pass rate back into the
-score) does — robustly, internally AND externally, across 4 distinct model
-families. This is not a case of "the benchmark doesn't validate" — it's
-that construct validity holds for the *executability* component of what
-this benchmark measures, and the diagnosis (above) already explains
-precisely why: baseline-pass rate is the dominant, stable, cross-benchmark-
-agreed-upon signal, and fine-grained mutation-quality differences
-(conditional on passing) are not.
+**Bottom-line construct-validity statement, checked directly against the
+pre-registered frame (`analysis/RQ5_ANALYSIS_PLAN.md`), not smoothed over.**
+That frame set three zones in advance: near-zero = undermines validity,
+Spearman ρ roughly 0.4–0.8 = validity-supporting, near-perfect = makes the
+benchmark **redundant** ("if Dynamic's ranking were fully predictable from a
+generic code-gen leaderboard, there would be no reason to run a separate
+test-generation benchmark at all"). Neither of this analysis's two headline
+numbers lands in the validity-supporting zone:
+
+- The pre-registered primary (conditional Mut@K, τ=0.143, and its
+  cross-family echo τ=0.345) sits in the near-zero, validity-undermining
+  zone — reported as-is throughout this document, not re-litigated here.
+- The coverage-adjusted score (τ=0.905 canonical, 0.855 cross-family
+  internal, 0.905/0.714 cross-family external) sits at or above the
+  near-perfect end — by the pre-registered frame's own logic, **this is
+  the "redundant" zone, not the "validity-supporting" one.** Presenting
+  0.905 as an unqualified win misreads the frame that was written down
+  specifically to prevent exactly that reading. Taken at face value, a
+  benchmark whose coverage-adjusted score predicts a generic code-gen
+  leaderboard this well is not adding much test-generation-specific
+  signal beyond "can this model produce working code at all" — which is
+  close to what BigCodeBench's own Pass@1 already measures.
+
+**So the honest two-sided statement is not "the benchmark validates via the
+coverage-adjusted score" — it is that NEITHER of this project's two
+candidate primary-metric readings lands where the pre-registered frame
+called validity-supporting.** The conditional metric is too disconnected
+from external benchmarks; the coverage-adjusted metric is disconnected in
+the other direction, tracking external benchmarks closely enough to raise
+a redundancy concern rather than resolve it. What's left, and what actually
+IS informative, is the diagnosis itself (secs above, `RQ5_DIAGNOSTICS.md`):
+this benchmark's headline metric decomposes cleanly into a baseline-pass-
+rate component that is highly redundant with generic coding ability
+(consistent with "redundant") and a mutation-quality-conditional-on-passing
+component that shows no measurable cross-benchmark signal at all
+(consistent with "undermines validity", though sec 2b's noise-floor audit
+shows part of that near-zero reading is a resolving-power artifact among
+closely-scored models, not necessarily genuine disagreement for every
+pair). Neither component, nor their product, is the "related but distinct,
+ρ 0.4–0.8" result the plan predicted in advance. This should be written up
+as a genuine, unresolved tension for the construct-validity argument, not
+narrated past.
 
 ## Cross-family extension (approved 2026-07-28) — limitations
 

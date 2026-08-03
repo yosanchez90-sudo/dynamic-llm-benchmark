@@ -5,18 +5,27 @@ PRIMARY result (analysis/RQ5_ANALYSIS_PLAN.md) — this script exists to
 DIAGNOSE why Dynamic(pooled)<->ULT rank agreement came out low (Kendall
 tau=0.143 at n=7), not to replace or flatter that result.
 
-Four diagnostics, in order:
+Diagnostics, in order:
   1. Tier-matched (Dynamic-L4-only, matching Comparison A's CC>=8
-     convention) vs pooled vs per-tier correlations, side by side.
+     convention) vs pooled vs per-tier correlations, side by side, plus a
+     THIN_N_DEFINED-filtered version excluding any model whose own
+     per-tier/pooled mean rests on fewer than 20 baseline-passing problems.
   2. Discrimination audit: score spread (range, SD, adjacent-rank gaps)
      per tier and pooled -- quantifies the ceiling-effect compression
      visible in analysis/figures/rq5_correlation.png.
+  2b. Noise-floor / resolving-power audit: for pooled and each tier,
+     compares the between-model score spread (sec 2) against the mean
+     within-model between-instantiation SD (RQ4.1 stability data) --
+     when the former is smaller than the latter, the benchmark cannot
+     actually resolve those models' rank order; it's noise, not signal.
   3. Conditioning/survivorship audit: Mut@K is only defined where
      baseline_passed=True, so each model is scored on a DIFFERENT subset
-     of problems. Reports n_defined + baseline_pass_rate per model/tier,
-     a coverage-adjusted score (Mut@K x baseline_pass_rate, which does NOT
-     drop the conditioning -- see caveat below), and re-runs the rank
-     correlation on that adjusted score.
+     of problems, and L4 coverage is thin or entirely missing for several
+     models, not just one (checked explicitly, not assumed). Reports
+     n_defined + baseline_pass_rate per model/tier, a coverage-adjusted
+     score (Mut@K x baseline_pass_rate, which does NOT drop the
+     conditioning -- see caveat below), and re-runs the rank correlation on
+     that adjusted score, both unfiltered and with thin cells excluded.
   4. Attenuation: disattenuates the observed cross-benchmark tau using
      RQ4.1's within-Dynamic reliability ceiling (N=4 mean pairwise Kendall
      tau, computed live from CANONICAL_MODELS-filtered data -- see
@@ -29,7 +38,9 @@ Four diagnostics, in order:
      an approximation, not a rigorously derived correction for rank
      statistics). No repeat-measure reliability estimate exists for ULT in
      this project (K=1, no instantiation concept for a static benchmark) --
-     stated plainly rather than assumed.
+     stated plainly rather than assumed. Reports the reliability figure's
+     own n and per-model instantiation counts (they vary -- not a single
+     clean n).
 
 Output: analysis/RQ5_DIAGNOSTICS.md
 Usage: python scripts/analyze_rq5_diagnostics.py
@@ -51,13 +62,14 @@ import pandas as pd
 from coverage_matrix import CANONICAL_MODELS
 from src.Analysis.correlation import compute_correlations
 from src.Analysis.loader import load_records
-from src.Analysis.stability import mean_pairwise_tau_scoped, pairwise_kendall_tau
+from src.Analysis.stability import mean_pairwise_tau_scoped, pairwise_kendall_tau, stable_mut_at_k
 
 # N=4 scope (PROJECT_BRIEF.md Sec 11): reliability is computed from pairs
 # among instantiations 1-4 only, excluding instantiation 5 (the deferred K=5
 # sensitivity sweep, only ever partially run for a few models). Shared with
 # analyze_stability.py's own reporting via mean_pairwise_tau_scoped().
 N4_INSTANTIATIONS = {"1", "2", "3", "4"}
+THIN_N_DEFINED = 20  # below this, a model's own mean Mut@K is a shaky point estimate
 
 
 def _git_commit() -> str:
@@ -140,6 +152,28 @@ def main() -> None:
             f"{res.kendall_p_perm:.4f} |"
         )
     out.append("")
+    out += [f"**Same table, thin cells excluded** (n_defined<{THIN_N_DEFINED} on either side for that "
+            f"tier -- a model whose own mean is a shaky point estimate shouldn't drive a "
+            f"cross-model correlation any more than it should drive a paired comparison, "
+            f"same threshold as Comparison A's thin-cell audit,",
+            "`analysis/COMPARISON_PROVENANCE.md`):", ""]
+    out += ["| Dynamic side | n | Kendall τ | CI | perm p (τ) | thin model(s) excluded |",
+            "|---|---|---|---|---|---|"]
+    for tier_label in ["pooled", "L1", "L2", "L3", "L4"]:
+        sub_all = df.dropna(subset=[f"dyn_{tier_label}_mutk", "ult_mutk"])
+        thin_mask = (sub_all[f"dyn_{tier_label}_n_defined"] < THIN_N_DEFINED) | (sub_all["ult_n_defined"] < THIN_N_DEFINED)
+        excluded = sorted(sub_all.loc[thin_mask, "model_short"].tolist())
+        sub_thick = sub_all.loc[~thin_mask]
+        if len(sub_thick) < 3:
+            out.append(f"| {tier_label} | {len(sub_thick)} | - | - | (n<3, skipped) | {excluded or 'none'} |")
+            continue
+        res_t = compute_correlations(sub_thick[f"dyn_{tier_label}_mutk"].to_numpy(), sub_thick["ult_mutk"].to_numpy())
+        out.append(
+            f"| {tier_label} | {res_t.n} | {res_t.kendall_tau:.3f} | "
+            f"[{res_t.kendall_tau_ci_lo:.2f}, {res_t.kendall_tau_ci_hi:.2f}] | "
+            f"{res_t.kendall_p_perm:.4f} | {excluded or 'none'} |"
+        )
+    out.append("")
 
     # --- 2. Discrimination audit ---------------------------------------------
     out += ["## 2. Discrimination audit: score spread per tier / pooled", ""]
@@ -173,6 +207,97 @@ def main() -> None:
     out.append(f"Highest-SD (best-discriminating) tier among the top models: **{best_tier}**.")
     out.append("")
 
+    # --- 2b. Noise-floor / resolving-power audit ------------------------------
+    out += ["## 2b. Noise-floor / resolving-power audit", "",
+            "The discrimination audit above (sec 2) shows the between-model SPREAD; on",
+            "its own that doesn't say whether pooled Mut@K can actually RESOLVE which",
+            "model ranks above which -- for that, the spread has to be compared against",
+            "each model's own between-instantiation noise (RQ4.1, `analysis/STABILITY.md`).",
+            "If two adjacent models' score gap is smaller than either model's own SD",
+            "across repeat instantiations, their relative rank is not distinguishable from",
+            "noise -- re-running the same model would plausibly reorder them on its own.",
+            "ULT has no repeat-instantiation concept (K=1, static benchmark), so this audit",
+            "is Dynamic-only.", ""]
+    stable_pooled = stable_mut_at_k(dynamic)
+    stable_by_tier = stable_mut_at_k(dynamic, extra_group_cols=("tier",))
+    out += ["| Dynamic side | between-model SD | mean within-model SD (n models w/ 2+ inst) | ratio (between/within) |",
+            "|---|---|---|---|"]
+    noise_floor_rows = {}
+    for tier_label in ["pooled", "L1", "L2", "L3", "L4"]:
+        between_vals = df[f"dyn_{tier_label}_mutk"].dropna().to_numpy()
+        if len(between_vals) < 2:
+            continue
+        between_sd = between_vals.std(ddof=1)
+        if tier_label == "pooled":
+            within = stable_pooled[stable_pooled["n_instantiations"] >= 2]["sd_mut_at_k"]
+        else:
+            within = stable_by_tier[
+                (stable_by_tier["tier"] == tier_label) & (stable_by_tier["n_instantiations"] >= 2)
+            ]["sd_mut_at_k"]
+        if len(within) == 0:
+            out.append(f"| {tier_label} | {between_sd:.4f} | n/a (no model with 2+ scorable instantiations) | n/a |")
+            continue
+        within_mean = float(within.mean())
+        ratio = between_sd / within_mean if within_mean > 0 else float("inf")
+        noise_floor_rows[tier_label] = (between_sd, within_mean, ratio)
+        out.append(f"| {tier_label} | {between_sd:.4f} | {within_mean:.4f} | {ratio:.2f} |")
+    out.append("")
+    pooled_ratio = noise_floor_rows.get("pooled")
+    if pooled_ratio is not None:
+        out.append(f"**Pooled ratio = {pooled_ratio[2]:.2f}** ({'below 1 -- between-model spread is SMALLER than average within-model noise' if pooled_ratio[2] < 1 else 'above 1'}).")
+    out.append("")
+
+    # Adjacent-rank resolvability: sort models by pooled Mut@K, compare each
+    # adjacent gap to the larger of the two models' own SD (from stable_pooled).
+    # Only models with 2+ scorable instantiations have a REAL SD estimate --
+    # a single-instantiation model's sd_mut_at_k is filled to 0.0 by
+    # stable_mut_at_k() (undefined std of one value), which would otherwise
+    # look like "zero noise" and falsely inflate resolvability chains via
+    # the max(sd_a, sd_b) check below. Excluded here, not defaulted to 0.
+    sd_by_model = dict(zip(
+        stable_pooled.loc[stable_pooled["n_instantiations"] >= 2, "model_label"],
+        stable_pooled.loc[stable_pooled["n_instantiations"] >= 2, "sd_mut_at_k"],
+    ))
+    pooled_sorted = df.dropna(subset=["dyn_pooled_mutk"]).sort_values("dyn_pooled_mutk", ascending=False)
+    unresolved_chain: list[str] = []
+    max_chain: list[str] = []
+    prev_label = None
+    for _, r in pooled_sorted.iterrows():
+        label, short, score = r["model_label"], r["model_short"], r["dyn_pooled_mutk"]
+        if prev_label is not None:
+            gap = prev_score - score
+            sd_a = sd_by_model.get(prev_label)
+            sd_b = sd_by_model.get(label)
+            resolvable = (sd_a is None or sd_b is None) or (gap >= max(sd_a, sd_b))
+            if not resolvable:
+                if not unresolved_chain:
+                    unresolved_chain = [prev_short]
+                unresolved_chain.append(short)
+                if len(unresolved_chain) > len(max_chain):
+                    max_chain = list(unresolved_chain)
+            else:
+                unresolved_chain = []
+        prev_label, prev_short, prev_score = label, short, score
+    out.append("**Largest run of adjacent models whose pooled Mut@K gap is smaller than "
+               "either model's own between-instantiation SD (i.e. not reliably orderable "
+               "against each other from this data alone)**: "
+               f"{' > '.join(max_chain) if len(max_chain) >= 2 else '(none found)'}"
+               + (f" -- {len(max_chain)} models." if len(max_chain) >= 2 else ""))
+    if len(max_chain) >= 2:
+        chain_scores = pooled_sorted[pooled_sorted["model_short"].isin(max_chain)]["dyn_pooled_mutk"]
+        chain_spread = float(chain_scores.max() - chain_scores.min())
+        chain_sds = [f"{sd_by_model.get(pooled_sorted[pooled_sorted['model_short']==m]['model_label'].iloc[0]):.3f}"
+                     for m in max_chain if pooled_sorted[pooled_sorted['model_short']==m]['model_label'].iloc[0] in sd_by_model]
+        out.append(f"Their pooled spread is {chain_spread:.3f}; their own individual SDs are "
+                   f"{', '.join(chain_sds)} -- the spread is smaller than every one of these "
+                   f"models' own measurement noise. **Rewriting the tau=0.143 interpretation "
+                   f"accordingly: at least part of the low rank agreement is not that Dynamic "
+                   f"and ULT disagree about these models' quality, it's that pooled Mut@K lacks "
+                   f"the resolving power to rank them AT ALL, on this data alone -- \"the "
+                   f"benchmarks disagree\" and \"this benchmark can't resolve close scores\" are "
+                   f"different claims, and the tau=0.143 headline conflates them.**")
+    out.append("")
+
     # --- 3. Conditioning / survivorship audit --------------------------------
     out += ["## 3. Conditioning / survivorship audit", "",
             "Mut@K is defined only where baseline_passed=True -- each model's pooled/per-tier",
@@ -199,11 +324,56 @@ def main() -> None:
         out.append(f"| {r['model_short']} | ult | {r['ult_n_total']} | {r['ult_n_defined']} | "
                    f"{r['ult_bp_rate']:.3f} | {r['ult_mutk']:.3f} | {r['ult_coverage_adj']:.4f} |")
     out.append("")
-    out.append("**Flagged explicitly**: Qwen-1.5B's pooled Dynamic Mut@K is computed over "
-               "L1-L3 only (dyn_L4_n_defined=0 -- null throughout, see analysis/STABILITY.md), "
-               "while every OTHER model's pooled score includes L4 rows. \"Pooled\" therefore "
-               "silently means a different tier composition per model -- not an apples-to-apples "
-               "average, a real methodological gap in the pre-registered primary metric as computed.")
+
+    # --- L4 coverage flag, computed generally -- NOT just Qwen-1.5B --------
+    def _l4_status(n_total, n_defined) -> str:
+        if n_total == 0:
+            return "MISSING (never attempted -- data-collection gap, not a capability result)"
+        if n_defined == 0:
+            return "FLOOR (attempted, 0 passed baseline -- a genuine capability finding)"
+        if n_defined < THIN_N_DEFINED:
+            return f"THIN (n_defined={n_defined} < {THIN_N_DEFINED})"
+        return "OK"
+
+    l4_flags = []
+    for _, r in df.iterrows():
+        status = _l4_status(r["dyn_L4_n_total"], r["dyn_L4_n_defined"])
+        if status != "OK":
+            l4_flags.append((r["model_short"], status))
+    out.append(f"**Flagged explicitly ({len(l4_flags)} of {len(df)} canonical models have a "
+               f"compromised L4 contribution to their pooled score, not just one)**:")
+    for short, status in l4_flags:
+        out.append(f"- {short}: {status}")
+    out.append("\"Pooled\" therefore silently means a different tier composition per model for "
+               f"{len(l4_flags)}/{len(df)} models -- not an apples-to-apples average, a real "
+               "methodological gap in the pre-registered primary metric as computed.")
+    out.append("")
+
+    top_pooled = df.loc[df["dyn_pooled_mutk"].idxmax()]
+    top_adj = df.loc[df["dyn_pooled_coverage_adj"].idxmax()]
+    top_pooled_status = _l4_status(top_pooled["dyn_L4_n_total"], top_pooled["dyn_L4_n_defined"])
+    top_adj_status = _l4_status(top_adj["dyn_L4_n_total"], top_adj["dyn_L4_n_defined"])
+    same_model = top_pooled["model_label"] == top_adj["model_label"]
+    out.append(
+        f"**Top-ranked model check**: by pooled Mut@K, **{top_pooled['model_short']}** ranks "
+        f"highest ({top_pooled['dyn_pooled_mutk']:.3f}) -- its L4 status is {top_pooled_status}. "
+        + (
+            f"By coverage-adjusted score, the SAME model ({top_adj['model_short']}) also ranks "
+            f"highest ({top_adj['dyn_pooled_coverage_adj']:.4f})."
+            if same_model else
+            f"By coverage-adjusted score, **{top_adj['model_short']}** ranks highest instead "
+            f"({top_adj['dyn_pooled_coverage_adj']:.4f}) -- its L4 status is {top_adj_status}."
+        )
+        + (
+            " **The top-ranked model on both metrics never faced the hardest tier at all** -- "
+            "its apparent lead may reflect having only been scored on easier problems, not "
+            "genuine superiority over models that were tested on L4 and paid a real cost for it."
+            if "MISSING" in top_pooled_status or "MISSING" in top_adj_status
+            else " Neither top-ranked model has a MISSING L4 status, so this specific confound "
+                 "does not apply to the top rank, though thin coverage elsewhere in the table "
+                 "still affects the tier composition comparability noted above."
+        )
+    )
     out.append("")
 
     sub = df.dropna(subset=["dyn_pooled_coverage_adj", "ult_coverage_adj"])
@@ -218,10 +388,12 @@ def main() -> None:
     # --- 3b. Decomposing the coverage-adjusted agreement ---------------------
     out += ["## 3b. Decomposing the coverage-adjusted agreement", "",
             "coverage_adjusted = Mut@K x baseline_pass_rate is a PRODUCT of two signals --",
-            "how much of its tau=0.905 agreement is just executability (can the model",
-            "produce a suite that runs and passes at all) vs actual mutation-killing",
-            "quality? Same n, same models (dropna on the coverage-adjusted columns) for",
-            "all three rows, so they're directly comparable.", ""]
+            "how much of its tau=0.905 agreement is just baseline pass rate (can the model",
+            "produce a suite that PASSES against the original function, a stricter and",
+            "later gate than mere exec/collection -- src/eval/test_gen_scorer.py's",
+            "exec_ok and baseline_passed are distinct checks, not the same thing) vs",
+            "actual mutation-killing quality? Same n, same models (dropna on the",
+            "coverage-adjusted columns) for all three rows, so they're directly comparable.", ""]
     out += ["| Component | n | Pearson r | Spearman ρ | Kendall τ | perm p (τ) |",
             "|---|---|---|---|---|---|"]
     res_bp = res_mutk = None
@@ -238,17 +410,19 @@ def main() -> None:
     out.append("")
     if res_bp is not None and res_mutk is not None and res_adj is not None:
         out.append(
-            f"**How much of τ={res_adj.kendall_tau:.3f} is executability vs mutation quality:** "
-            f"baseline_pass_rate ALONE already gives τ={res_bp.kendall_tau:.3f} -- "
+            f"**How much of τ={res_adj.kendall_tau:.3f} is baseline pass rate vs mutation "
+            f"quality:** baseline_pass_rate ALONE already gives τ={res_bp.kendall_tau:.3f} -- "
             f"{'nearly all' if abs(res_bp.kendall_tau - res_adj.kendall_tau) < 0.1 else 'most' if res_bp.kendall_tau > 0.5 else 'some'} "
-            f"of the coverage-adjusted agreement is explained by which models can produce "
-            f"an executable, baseline-passing suite at all, not by mutation-killing quality "
-            f"once that's controlled for -- conditioned Mut@K alone (row b, the actual "
-            f"pre-registered primary result) is τ={res_mutk.kendall_tau:.3f}, i.e. models that "
-            f"clear the executability bar do NOT then agree on which suites are the BETTER "
-            f"mutation killers. Read literally: the coverage-adjusted score's apparent "
-            f"validity is substantially an executability-agreement result, not evidence that "
-            f"Mut@K itself (conditional on passing) is cross-benchmark valid."
+            f"of the coverage-adjusted agreement is explained by which models can produce a "
+            f"baseline-passing suite at all (a suite that PASSES against the real function --"
+            f" not merely one that executes/collects, a weaker, earlier gate this project's "
+            f"scorer calls exec_ok), not by mutation-killing quality once that's controlled "
+            f"for -- conditioned Mut@K alone (row b, the actual pre-registered primary result) "
+            f"is τ={res_mutk.kendall_tau:.3f}, i.e. models that clear the baseline-pass bar do "
+            f"NOT then agree on which suites are the BETTER mutation killers. Read literally: "
+            f"the coverage-adjusted score's apparent validity is substantially a baseline-"
+            f"pass-rate-agreement result, not evidence that Mut@K itself (conditional on "
+            f"passing) is cross-benchmark valid."
         )
     out.append("")
 
@@ -271,6 +445,10 @@ def main() -> None:
     out.append("")
     if tau_n4_raw is not None and tau_n4_adj is not None:
         if tau_n4_adj > tau_n4_raw + 0.02:
+            n_inst_summary = ", ".join(
+                f"{_model_shortname(r['model_label'])}={int(r['n_instantiations'])}"
+                for _, r in stable_pooled.sort_values("model_label").iterrows()
+            )
             out.append(f"**The coverage-adjusted score IS more reliable** across Dynamic "
                        f"instantiations ({tau_n4_adj:.3f} vs {tau_n4_raw:.3f} raw) -- this makes it "
                        f"both more valid (sec 3b) and more reliable, a real argument for reporting "
@@ -279,13 +457,19 @@ def main() -> None:
                        f"unqualified win, though: verified this is not a degenerate small-n artifact "
                        f"(n_models=7 per pair, every pair individually significant at p<0.02, not just "
                        f"the mean) -- it is the SAME mechanism as sec 3b, not a separate finding. "
+                       f"**Qualification: \"n=7\" is models, not a uniform amount of repeat "
+                       f"measurement per model** -- instantiation counts vary: {n_inst_summary}. "
+                       f"A model with only 4 scorable instantiations (or with some instantiations "
+                       f"partially landed, see analysis/STABILITY.md) contributes a noisier "
+                       f"per-model SD to this figure than one with a full 5, so treat the exact "
+                       f"tau value as somewhat more uncertain than a clean n=7 label implies. "
                        f"baseline_pass_rate apparently varies enormously and consistently BETWEEN "
                        f"models (a 45x spread, sec 3 above) while staying comparatively stable WITHIN "
                        f"a model across instantiations, so a score dominated by that spread ranks "
                        f"models the same way every time almost by construction -- the same reason it's "
-                       f"more cross-benchmark-valid (executability dominates the signal) is why it's "
-                       f"more reliable (executability is itself the stable quantity). Neither result is "
-                       f"suspect; both are the same underlying fact read two ways.")
+                       f"more cross-benchmark-valid (baseline pass rate dominates the signal) is why "
+                       f"it's more reliable (baseline pass rate is itself the stable quantity). "
+                       f"Neither result is suspect; both are the same underlying fact read two ways.")
         elif tau_n4_raw > tau_n4_adj + 0.02:
             out.append(f"**The coverage-adjusted score is LESS reliable** across Dynamic "
                        f"instantiations ({tau_n4_adj:.3f} vs {tau_n4_raw:.3f} raw) -- its apparent "
@@ -349,11 +533,33 @@ def main() -> None:
         out.append(f"- Compare to the raw-matched {disattenuated_partial:.3f} above -- the "
                    f"coverage-adjusted score's disattenuated agreement is "
                    f"{'still much higher' if disattenuated_adj > disattenuated_partial + 0.1 else 'similar'}, "
-                   f"consistent with sec 3b's finding that most of its apparent validity is an "
-                   f"executability-agreement effect rather than a reliability artifact of either "
-                   f"metric.")
+                   f"consistent with sec 3b's finding that most of its apparent validity is a "
+                   f"baseline-pass-rate-agreement effect rather than a reliability artifact of "
+                   f"either metric.")
     else:
         out.append("- Could not compute (insufficient data for the adjusted correlation or reliability).")
+    out.append("")
+
+    # --- Thin-cell-filtered primary correlation (item 3) ---------------------
+    pooled_thin_mask = (pooled_pair["dyn_pooled_n_defined"] < THIN_N_DEFINED) | (pooled_pair["ult_n_defined"] < THIN_N_DEFINED)
+    pooled_excluded = sorted(pooled_pair.loc[pooled_thin_mask, "model_short"].tolist())
+    pooled_thick = pooled_pair.loc[~pooled_thin_mask]
+    out.append("**Thin-cell-filtered primary correlation** (n_defined<{0} on either side -- same "
+               "threshold as secs 1/3b and Comparison A's audit):".format(THIN_N_DEFINED))
+    if len(pooled_thick) >= 3:
+        res_pooled_thick = compute_correlations(
+            pooled_thick["dyn_pooled_mutk"].to_numpy(), pooled_thick["ult_mutk"].to_numpy())
+        out.append(f"- Unfiltered: τ={res_pooled.kendall_tau:.3f} (n={res_pooled.n}). "
+                   f"Thin-cell-excluded: τ={res_pooled_thick.kendall_tau:.3f} "
+                   f"(n={res_pooled_thick.n}, excluded: {pooled_excluded or 'none'}).")
+        out.append(f"- **Mistral is unquotable on this pair once cross-family models are in "
+                   f"scope** (ULT n_defined=1, analysis/RQ5_CROSS_FAMILY_PROVENANCE.md) -- not "
+                   f"applicable to this canonical-only n=7 table (Mistral isn't one of the 9 "
+                   f"canonical models), flagged here so the rule is visible in one place; see "
+                   f"the cross-family provenance doc for its own thin-cell flags.")
+    else:
+        out.append(f"- Excluding thin cells leaves n={len(pooled_thick)} (<3) -- cannot compute "
+                   f"a correlation. Excluded: {pooled_excluded or 'none'}.")
     out.append("")
 
     doc = "\n".join(out)
