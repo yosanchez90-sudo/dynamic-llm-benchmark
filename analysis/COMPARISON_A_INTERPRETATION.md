@@ -102,3 +102,23 @@ Comparison B's — both use the identical machinery — it is a genuine
 difference in what the underlying data supports: Comparison B has more
 models available (7 vs 5) and a real, consistent effect to detect; 
 Comparison A currently has neither.
+
+## Multiple-comparisons correction for RQ1 (H1 + H2) — a stated no-op, not a silent omission
+
+PROJECT_BRIEF.md §3.1 requires Holm-Bonferroni correction "within each RQ
+family." RQ1 contains two hypotheses: **H1 is this comparison** (the
+Wilcoxon test above); **H2 is Comparison C's difference-in-differences**
+(`analysis/COMPARISON_C_INTERPRETATION.md`). H2's DiD estimator
+(`src/Contamination/did.py::compute_did`) reports an effect size with a
+bootstrap CI and **never computes a p-value** — consistent with
+PROJECT_BRIEF.md §3.1's own stated philosophy ("effect sizes with CIs are
+primary; p-values support"), but it means RQ1's family contains exactly
+**one** correctable p-value (H1's raw p=0.8125 above), not two. Applying
+Holm-Bonferroni to a family of one p-value is a mathematical no-op (the
+Holm multiplier for the only member of a size-1 family is 1, so the
+adjusted p-value equals the raw one). This is stated here explicitly,
+verified rather than assumed, so the correction's absence for RQ1 is a
+documented consequence of the family's actual shape, not an unchecked gap
+— contrast with RQ4/H5 and RQ5/H6 (`analysis/HYPOTHESIS_COVERAGE_AUDIT.md`),
+which do run multiple tests within their own families and are corrected
+accordingly as of 2026-08-04.

@@ -151,9 +151,26 @@ Full table: `analysis/stability_stablemut_by_tier.csv`. Two patterns worth calli
 ## Kendall tau — do models RANK the same way across instantiations?
 
 See `analysis/STABILITY.md` for the current live N=4 and all-pairs per-pair table
-and means. Four to five of six N=4 pairs are typically significant at p<0.05 in any
-given snapshot (the inst-4-involving pairs are the weakest, expected given how few
-models drive each pairwise comparison at n=7, not evidence of instability by itself).
+and means. **Updated 2026-08-04, after adding Holm-Bonferroni correction
+(PROJECT_BRIEF.md Sec 3.1, previously never applied anywhere in this
+project — see `analysis/HYPOTHESIS_COVERAGE_AUDIT.md`): as of the current
+snapshot, 3 of 6 N=4 pairs (and 3 of 10 all-pairs) are significant at raw
+p<0.05 — but 0 of 6 (and 0 of 10) remain significant once each set is
+Holm-Bonferroni-corrected within its own family** (`analysis/STABILITY.md`'s
+own generated table has the full raw-vs-adjusted-p breakdown, corrected as
+two separate families — N=4's 6 pairs and all-pairs' 10 pairs — not one
+pooled 16-test correction). This revises the previous, uncorrected framing
+below ("four to five of six... typically significant") downward
+substantially: **individual pairwise Kendall tau tests should not be
+described as significant in isolation** — the mean pairwise tau point
+estimate (0.635 N=4 / 0.661 all-pairs) remains the primary, more robust
+stability claim (see "Recommendation for the write-up" below, already the
+project's stated preference before this correction was added), and this
+correction sharpens why: none of the individual pairs backing that mean
+would survive a family-wise correction on their own. This is a real,
+disclosed weakening of the write-up's language, not a cosmetic addition —
+treat any future citation of "most pairs are significant" as superseded by
+this section until re-verified against a fresh `STABILITY.md` run.
 
 ### Why score-level stability (0.82-0.97) reads higher than rank-level tau (~0.6-0.7)
 

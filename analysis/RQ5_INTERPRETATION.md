@@ -432,6 +432,32 @@ literature-matching score, so redundancy is the literature's problem too"
 would be an overreach this note forecloses: coverage-adjusted matches the
 literature's STATED method, not its ACHIEVED one.
 
+## Holm-Bonferroni correction (added 2026-08-04)
+
+PROJECT_BRIEF.md §3.1 requires Holm-Bonferroni correction "within each RQ
+family" — never applied anywhere in this project until now
+(`analysis/HYPOTHESIS_COVERAGE_AUDIT.md`). Applied to the 12 headline
+Kendall-tau tests this document narrates (3 benchmark pairs × 2 scopes ×
+2 metric versions — Hard-split pairs excluded as a secondary check, not
+part of this headline family; `scripts/analyze_rq5_cross_family.py`,
+`analysis/RQ5_CROSS_FAMILY_PROVENANCE.md` has the full table): **4/12
+significant at raw p<0.05, 3/12 after Holm correction.** The one that
+drops out is the weakest of the four — ULT↔public, cross-family,
+coverage-adjusted (τ=0.714, raw p=0.032, Holm-adjusted p=0.285). **The
+three results this write-up leans on hardest survive**: Dynamic↔ULT
+coverage-adjusted (both canonical and cross-family scopes, Holm-adjusted
+p=0.037 and p=0.001) and Dynamic↔public coverage-adjusted cross-family
+(Holm-adjusted p=0.037). Every raw-Mut@K correlation was already
+non-significant uncorrected and stays that way. **Practical effect on
+this document's conclusions: none of the qualitative claims above change**
+— the coverage-adjusted score's cross-benchmark agreement was never
+claimed to hold for the ULT↔public pair specifically as strongly as for
+the other two pairs (the "Bottom-line construct-validity statement"
+already treats τ=0.905/0.855 as the headline evidence, with the
+BigCodeBench comparisons as corroborating, not load-bearing, evidence) —
+but the ULT↔public cross-family number should not be quoted as
+independently significant going forward without this caveat.
+
 ## What this means going forward
 
 Superseded by the cross-family extension above (completed 2026-07-29,

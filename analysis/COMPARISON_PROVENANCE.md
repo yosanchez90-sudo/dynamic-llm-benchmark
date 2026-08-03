@@ -1,7 +1,7 @@
 # Comparison A/B generation provenance
 
-Generated: 2026-08-03T13:50:40.953552+00:00
-Git commit: 8aca291
+Generated: 2026-08-03T19:04:53.560207+00:00
+Git commit: 5a56a97
 
 Sources: data/results/dynamic/*.jsonl (tier=L4 only for Comparison A),
 data/results/ult/*.jsonl, data/results/plt/*.jsonl.

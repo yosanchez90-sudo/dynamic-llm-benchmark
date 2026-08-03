@@ -1,7 +1,7 @@
 # Stability (RQ4.1) — raw tables
 
-Generated: 2026-08-03T13:51:10.027120+00:00
-Git commit: 8aca291
+Generated: 2026-08-03T19:05:07.343770+00:00
+Git commit: 5a56a97
 Script: scripts/analyze_stability.py
 
 **Interpretation lives in `analysis/STABILITY_INTERPRETATION.md`**
@@ -70,3 +70,38 @@ instantiation_a instantiation_b  n_models      tau  p_value
 
 N=4 (pairs among instantiations ['1', '2', '3', '4'], headline scope) mean pairwise tau: 0.635
 All-pairs mean pairwise tau (incl. instantiation 5): 0.661
+
+## Holm-Bonferroni within RQ4/H5 (PROJECT_BRIEF.md Sec 3.1)
+
+Two SEPARATE corrections (not one 16-test family): the N=4 set (6 pairs
+among instantiations 1-4, the headline scope) and the all-pairs set (10
+pairs, including instantiation 5) are corrected independently, since they
+are two different reported scopes, not one pooled family.
+
+### N=4 set (6 pairs)
+
+instantiation_a instantiation_b  n_models      tau  p_value  p_value_holm
+              1               2         7 0.809524 0.010714      0.064286
+              1               3         7 0.714286 0.030159      0.150794
+              1               4         7 0.428571 0.238889      0.272222
+              2               3         7 0.523810 0.136111      0.272222
+              2               4         7 0.619048 0.069048      0.207143
+              3               4         7 0.714286 0.030159      0.150794
+
+Significant at raw p<0.05: 3/6. Significant at Holm-adjusted p<0.05: **0/6**.
+
+### All-pairs set (10 pairs, corrected separately from the N=4 set above)
+
+instantiation_a instantiation_b  n_models      tau  p_value  p_value_holm
+              1               2         7 0.809524 0.010714      0.107143
+              1               3         7 0.714286 0.030159      0.271429
+              1               4         7 0.428571 0.238889      0.700000
+              1               5         5 0.600000 0.233333      0.700000
+              2               3         7 0.523810 0.136111      0.544444
+              2               4         7 0.619048 0.069048      0.483333
+              2               5         5 0.800000 0.083333      0.500000
+              3               4         7 0.714286 0.030159      0.271429
+              3               5         5 0.600000 0.233333      0.700000
+              4               5         5 0.800000 0.083333      0.500000
+
+Significant at raw p<0.05: 3/10. Significant at Holm-adjusted p<0.05: **0/10**.

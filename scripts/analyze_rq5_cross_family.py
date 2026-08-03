@@ -50,6 +50,7 @@ import pandas as pd
 from coverage_matrix import CANONICAL_MODELS
 from src.Analysis.correlation import compute_correlations
 from src.Analysis.loader import load_records
+from src.Analysis.multiple_comparisons import holm_bonferroni
 from src.Analysis.provenance import stamp_block
 
 # Must never be added to coverage_matrix.py::CANONICAL_MODELS -- see this
@@ -200,6 +201,35 @@ def main() -> None:
             _add_pair(label, ranking, metric_a, "public_score_hard", "canonical+cross-family")
 
     corr_df = pd.DataFrame(corr_rows)
+
+    # --- Holm-Bonferroni within the RQ5/H6 family (PROJECT_BRIEF.md Sec 3.1) -
+    # Scoped to the 12 headline Kendall-tau tests this project's own
+    # write-up (RQ5_INTERPRETATION.md) actually narrates and treats as
+    # evidence for/against cross-benchmark validity: 3 benchmark pairs
+    # (Dynamic<->ULT, Dynamic<->public Complete-split, ULT<->public
+    # Complete-split) x 2 scopes (canonical-only, canonical+cross-family) x
+    # 2 metric versions (raw Mut@K, coverage-adjusted) = 12. Hard-split
+    # pairs are a secondary consistency check, not part of this headline
+    # family, and are excluded from this correction on that basis (not
+    # silently -- stated here explicitly).
+    headline_mask = corr_df["pair"].str.startswith("Dynamic(pooled) <-> ULT") | corr_df["pair"].str.contains("Complete-split")
+    headline = corr_df[headline_mask].copy()
+    corr_df["kendall_p_perm_holm"] = float("nan")
+    if len(headline):
+        headline["kendall_p_perm_holm"] = holm_bonferroni(headline["kendall_p_perm"].tolist())
+        corr_df.loc[headline.index, "kendall_p_perm_holm"] = headline["kendall_p_perm_holm"]
+        n_sig_raw = int((headline["kendall_p_perm"] < 0.05).sum())
+        n_sig_holm = int((headline["kendall_p_perm_holm"] < 0.05).sum())
+        print(f"\n=== Holm-Bonferroni within RQ5/H6's {len(headline)} headline Kendall-tau tests "
+              f"(Dynamic<->ULT + Dynamic/ULT<->public Complete-split, both scopes, both metric versions) ===")
+        print(headline[["pair", "scope", "kendall_tau", "kendall_p_perm", "kendall_p_perm_holm"]].to_string(index=False))
+        print(f"Significant at raw p<0.05: {n_sig_raw}/{len(headline)}. "
+              f"Significant at Holm-adjusted p<0.05: {n_sig_holm}/{len(headline)}.")
+    else:
+        n_sig_raw = n_sig_holm = 0
+        print("\n=== Holm-Bonferroni within RQ5/H6: skipped -- no headline pairs computed yet "
+              "(public scores not merged) ===")
+
     corr_df.to_csv(ROOT / "analysis" / "rq5_cross_family_correlations.csv", index=False)
 
     landed = ranking[ranking["family"] == "cross_family"]
@@ -243,6 +273,20 @@ supervisor's bottom-up validity question.
 ## Correlations: canonical-only vs canonical+cross-family, side by side
 
 {corr_df.to_string(index=False) if len(corr_df) else "(none computed)"}
+
+## Holm-Bonferroni within RQ5/H6 (PROJECT_BRIEF.md Sec 3.1)
+
+Scoped to the {len(headline)} headline Kendall-tau tests this project's
+own interpretation (`analysis/RQ5_INTERPRETATION.md`) actually narrates:
+3 benchmark pairs (Dynamic<->ULT, Dynamic<->public Complete-split,
+ULT<->public Complete-split) x 2 scopes (canonical-only, canonical+
+cross-family) x 2 metric versions (raw Mut@K, coverage-adjusted).
+Hard-split pairs are a secondary consistency check, excluded from this
+family on that basis, not silently.
+
+{headline[["pair", "scope", "kendall_tau", "kendall_p_perm", "kendall_p_perm_holm"]].to_string(index=False) if len(headline) else "(skipped -- no headline pairs computed yet, public scores not merged)"}
+
+Significant at raw p<0.05: {n_sig_raw}/{len(headline)}. Significant at Holm-adjusted p<0.05: **{n_sig_holm}/{len(headline)}**.
 """
     (ROOT / "analysis" / "RQ5_CROSS_FAMILY_PROVENANCE.md").write_text(provenance)
     print("\nWritten: analysis/rq5_cross_family_model_ranking.csv, "
