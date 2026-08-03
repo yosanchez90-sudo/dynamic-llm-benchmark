@@ -401,6 +401,37 @@ genuine capability-limitation finding for this model on this benchmark, by
 the same evidence standard already applied to Qwen 1.5B, not a
 template-drift or extraction artifact.
 
+## Cross-definition reconciliation (added 2026-08-03)
+
+Every "coverage-adjusted" number in this document (τ=0.905 canonical,
+0.855 cross-family, 0.905/0.714 vs BigCodeBench) is **numerically
+unchanged** by this note — it was already being computed correctly. What
+changes is the justification: a 2026-07-30 note (`src/eval/test_gen_scorer.py`,
+`analysis/RQ5_CROSS_DEFINITION_AUDIT.md`) had concluded, from an
+LLM-summarized reading of the ULT/PLT paper, that coverage-adjusted Mut@K
+"matches the ULT paper's own methodology." Re-verified 2026-08-03 against
+raw (non-summarized) paper text AND the paper's own published code
+(`github.com/huangd1999/UnLeakedTestBench`): the paper's PROSE does read
+that way, but its own CODE (`Ray/main.py::mutation_statistic()`, the
+function its CLI actually invokes) computes a baseline-pass-CONDITIONED
+mean — the same estimand as this project's pre-registered primary
+(conditional Mut@K, τ=0.143/0.345), not the zero-filled one its prose
+describes. Full evidence and the algebraic proof that coverage-adjusted
+exactly equals the zero-filled/prose-matched reading:
+`analysis/RQ5_CROSS_DEFINITION_AUDIT.md`.
+
+**This sharpens rather than undermines the "redundant zone" reading
+above**: the metric that happens to match ULT's own achieved
+implementation (conditional Mut@K) is the one with near-zero cross-
+benchmark agreement; the metric with the strong, "redundant"-zone
+agreement (coverage-adjusted) matches only the paper's stated formula, not
+its code. Neither fact changes which zone τ=0.905 or τ=0.143 fall into —
+both were already read against the pre-registered plan's zones above,
+unaffected by this reconciliation — but "coverage-adjusted is the
+literature-matching score, so redundancy is the literature's problem too"
+would be an overreach this note forecloses: coverage-adjusted matches the
+literature's STATED method, not its ACHIEVED one.
+
 ## What this means going forward
 
 Superseded by the cross-family extension above (completed 2026-07-29,

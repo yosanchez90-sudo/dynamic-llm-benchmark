@@ -1,7 +1,7 @@
 # RQ5 sanitizer sensitivity analysis (post-hoc, zero-compute)
 
-Generated: 2026-08-03T00:36:58.043460+00:00
-Git commit: 8a5a6e8
+Generated: 2026-08-03T01:50:48.814899+00:00
+Git commit: 48296ad
 Script: scripts/analyze_rq5_sanitizer_sensitivity.py
 
 src/eval/test_gen_scorer.py::sanitize_test_file strips a reimplementation of

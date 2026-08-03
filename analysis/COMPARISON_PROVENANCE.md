@@ -1,7 +1,7 @@
 # Comparison A/B generation provenance
 
-Generated: 2026-08-03T00:30:18.323749+00:00
-Git commit: 8a5a6e8
+Generated: 2026-08-03T01:45:26.652054+00:00
+Git commit: 48296ad
 
 Sources: data/results/dynamic/*.jsonl (tier=L4 only for Comparison A),
 data/results/ult/*.jsonl, data/results/plt/*.jsonl.
@@ -37,24 +37,31 @@ Qwen__Qwen2.5-Coder-1.5B-Instruct               375.0                   0.0     
                  gpt-5-2025-08-07                70.0                  67.0                       0.957143          NaN            NaN                     NaN
             gpt-5-mini-2025-08-07                74.0                  62.0                       0.837838          NaN            NaN                     NaN
 
-**Coverage-adjusted robustness row** (Mut@K x baseline_pass_rate per side,
-folds the conditioning back in -- NOT the same estimand as Mut@K itself,
-`analysis/comparison_a_coverage_adjusted.csv` /
-`analysis/comparison_a_coverage_adjusted_wilcoxon.csv`):
+**Co-primary definition-matched row** (labelled "coverage-adjusted" in prior
+versions of this file -- 2026-08-03: PROVEN algebraically and code-verified
+identical to the true zero-filled/unconditional Mut@K, i.e. this project's
+best-effort reading of the ULT/PLT paper's own Sec 3.4.3 PROSE formula. This
+is a co-primary reported alongside, not a replacement for, the pre-registered
+primary above -- see "Cross-definition note" below for why it is NOT simply
+"the literature-matching score" without qualification.
+Max |coverage_adjusted - independently-recomputed def-b| across all rows in
+this table: 5.55e-17 (floating-point noise only --
+`analysis/comparison_a_coverage_adjusted.csv`):
 
 | | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
 |---|---|---|---|---|---|
-| raw Mut@K (primary) | 5 | 0.7333 | 0.8346 | 0.200 | 0.8125 |
-| coverage-adjusted (robustness) | 5 | 0.1875 | 0.1041 | -0.600 | 0.3125 |
+| raw Mut@K (pre-registered primary) | 5 | 0.7333 | 0.8346 | 0.200 | 0.8125 |
+| definition-matched / coverage-adjusted (co-primary) | 5 | 0.1875 | 0.1041 | -0.600 | 0.3125 |
 
-**Does the conclusion change?** Effect direction FLIPS between raw and coverage-adjusted (sign of effect_r differs) -- treat Comparison A's direction as conditioning-sensitive, not robust.
+**Does the conclusion change?** Effect direction FLIPS between raw and definition-matched (sign of effect_r differs) -- treat Comparison A's direction as conditioning-sensitive, not robust.
 
-## Comparison A thin-cell audit (added 2026-07-30)
+## Comparison A thin-cell audit (added 2026-07-30, extended 2026-08-03)
 
-A model's own paired Mut@K is a shaky point estimate when it's averaged
-over very few baseline-passing problems -- n_defined<20 on
-either side is flagged thin here, same threshold used in
-`analysis/RQ5_DIAGNOSTICS.md`. Per-model n_defined for both sides:
+A model's own paired Mut@K (pre-registered primary) is a shaky point
+estimate when it's averaged over very few baseline-passing problems --
+n_defined<20 on either side is flagged thin here, same
+threshold used in `analysis/RQ5_DIAGNOSTICS.md`. Per-model n_defined for
+both sides:
 
                      model_label  n_defined_dynamic_l4  n_defined_ult
 Qwen__Qwen2.5-Coder-32B-Instruct                    13             31
@@ -74,18 +81,97 @@ result below**: ['Qwen__Qwen2.5-Coder-32B-Instruct', 'Qwen__Qwen2.5-Coder-7B-Ins
 **Does the 5-model result survive thin-cell filtering?**
 NO in the sense that it shrinks to n=3 once thin cells are excluded -- 2 of the original 5 model(s) were resting on a point estimate averaged over fewer than 20 baseline-passing problems, not a stable per-model mean.
 
-## Cross-definition note (added 2026-07-30, see analysis/RQ5_CROSS_DEFINITION_AUDIT.md)
+**Does thin-cell filtering even apply to the definition-matched/coverage-
+adjusted co-primary?** The pre-registered primary's thinness comes from
+n_defined (few baseline-passing rows -> shaky conditional mean); the
+definition-matched score is a zero-filled mean over ALL n_total rows, so
+ITS precision is governed by n_total, not n_defined -- a model with
+n_defined=1 but n_total=375 (e.g. Qwen 7B, dynamic_l4) still gives a
+well-estimated near-zero definition-matched score, not a shaky one. Checked
+directly against the same THIN_N_DEFINED=20 threshold applied to n_total
+instead: 0 models -- every model's n_total is >>20 on both sides (min n_total this table: dynamic_l4=70, ult=101), so no model is excluded from the co-primary row above on thinness grounds.
 
-Every Mut@K number in this file uses this project's own EXCLUDE/conditional
-definition (mean over baseline-passing rows only). The ULT/PLT paper's own
-published mutation score is, by the project's reading of its stated formula
-(N = total function count, not passing-only), an INCLUDE-AS-ZERO/
-unconditional definition -- a different estimand, even for identical
-functions. This does NOT affect the internal validity of Comparison A/B
-(both arms use this project's own scorer, so the comparison is
-self-consistent) -- it means these numbers should not be read as directly
-comparable to the ULT/PLT paper's own reported ~40.21% average mutation
-score. Full writeup: `analysis/RQ5_CROSS_DEFINITION_AUDIT.md`.
+## Comparison B conditioning/survivorship + co-primary + thin-cell audit (added 2026-08-03)
+
+Same conditioning applies to Comparison B (ULT vs PLT) as Comparison A --
+mutation_score is only defined where baseline_passed=True on each side. Full
+per-model n_total/n_defined/baseline_pass_rate: `analysis/comparison_b_coverage.csv`.
+
+                      model_label  n_total_ult  n_defined_ult  baseline_pass_rate_ult  n_total_plt  n_defined_plt  baseline_pass_rate_plt
+Qwen__Qwen2.5-Coder-1.5B-Instruct          400              8                0.020000          400             30                0.075000
+ Qwen__Qwen2.5-Coder-32B-Instruct          400             31                0.077500          400             52                0.130000
+  Qwen__Qwen2.5-Coder-7B-Instruct          400              7                0.017500          400             26                0.065000
+        claude-haiku-4-5-20251001          400             35                0.087500          400             71                0.177500
+                claude-sonnet-4-6          400             78                0.195000          400            107                0.267500
+            gemini-3.1-flash-lite          400            106                0.265000          400            169                0.422500
+           gemini-3.1-pro-preview          101             74                0.732673          116             82                0.706897
+
+**Co-primary definition-matched row** (max |coverage_adjusted -
+independently-recomputed def-b|: 5.55e-17, floating-point noise
+only -- `analysis/comparison_b_coverage_adjusted.csv`):
+
+| | n_pairs | mean_a (ult) | mean_b (plt) | effect_r | p |
+|---|---|---|---|---|---|
+| raw Mut@K (pre-registered primary) | 7 | 0.7811 | 0.8346 | 0.714 | 0.1094 |
+| definition-matched / coverage-adjusted (co-primary) | 7 | 0.1685 | 0.2287 | 0.929 | 0.0312 |
+
+**Does the conclusion change?** Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read does not flip at n=7.
+
+**Thin-cell audit** (n_defined<20 on either side flagged thin):
+
+                      model_label  n_defined_ult  n_defined_plt
+Qwen__Qwen2.5-Coder-1.5B-Instruct              8             30
+ Qwen__Qwen2.5-Coder-32B-Instruct             31             52
+  Qwen__Qwen2.5-Coder-7B-Instruct              7             26
+        claude-haiku-4-5-20251001             35             71
+                claude-sonnet-4-6             78            107
+            gemini-3.1-flash-lite            106            169
+           gemini-3.1-pro-preview             74             82
+
+**Thin model(s) excluded from the 5-model thick-only
+result below**: ['Qwen__Qwen2.5-Coder-1.5B-Instruct', 'Qwen__Qwen2.5-Coder-7B-Instruct'].
+
+| | n_pairs | mean_a (ult) | mean_b (plt) | effect_r | p |
+|---|---|---|---|---|---|
+| raw Mut@K, unfiltered (primary) | 7 | 0.7811 | 0.8346 | 0.714 | 0.1094 |
+| raw Mut@K, thin cells (n_defined<20) excluded | 5 | 0.8335 | 0.8775 | 0.867 | 0.1250 |
+
+**Does the 7-model result survive thin-cell filtering?**
+NO in the sense that it shrinks to n=5 once thin cells are excluded -- 2 of the original 7 model(s) were resting on a point estimate averaged over fewer than 20 baseline-passing problems.
+
+## Directional-stability verdict across ALL conditionings tried (added 2026-08-03)
+
+Comparison A's effect_r sign, across every conditioning computed in this
+file: raw-unfiltered=0.200, raw-thin-cell-filtered=-1.000,
+definition-matched/coverage-adjusted=-0.600. The sign FLIPS depending on which conditioning is applied -- raw/thin/definition-matched do not agree on which side (dynamic_l4 or ult) scores higher. This is the second flip on top of the raw-vs-coverage-adjusted flip already noted above (first flip found 2026-07-30). Given this, the honest conclusion is that Comparison A supports no directional claim at the current n (<=5 models, p>0.05 in every conditioning) -- not "the effect is X, but weak," but "this data cannot currently establish which of Dynamic-L4 or ULT scores a model higher, under any of the definitions tried."
+
+Comparison B's effect_r sign: raw-unfiltered=0.714,
+raw-thin-cell-filtered=0.867,
+definition-matched/coverage-adjusted=0.929. All three share the same sign -- a directional read is at least internally consistent across conditionings. See
+`analysis/RQ5_CROSS_DEFINITION_AUDIT.md` "Consequence audit" for the
+narrative verdict on both comparisons together (this block reports the raw
+numbers; that doc reports the reasoned conclusion).
+
+## Cross-definition note (added 2026-07-30, revised 2026-08-03 -- see analysis/RQ5_CROSS_DEFINITION_AUDIT.md)
+
+Every "raw Mut@K" number in this file uses this project's own EXCLUDE/
+conditional definition (mean over baseline-passing rows only) -- the
+pre-registered primary, never swapped out.
+
+The "definition-matched / coverage-adjusted" co-primary row is this
+project's best-effort reading of the ULT/PLT paper's Sec 3.4.3 PROSE
+formula (Mut@k = sum(Mi)/N, N stated as "the total number of functions in
+the benchmark," read as INCLUDE-AS-ZERO/unconditional). **This reading is
+contradicted by the paper's own published code**: `Ray/main.py`'s
+`mutation_statistic()`, the function actually invoked from that repo's CLI,
+divides by `len(correct_tasks)` -- a baseline-pass-conditioned count, the
+SAME estimand as this project's pre-registered primary Mut@K, not the
+zero-filled one the paper's prose describes. Full evidence (verbatim
+quotes, code excerpts, the algebraic proof that coverage_adjusted equals
+the zero-filled reading exactly): `analysis/RQ5_CROSS_DEFINITION_AUDIT.md`.
+Practical upshot: neither of this project's two metrics should be assumed
+to reproduce the ULT/PLT paper's own reported ~40.21% average mutation
+score without this caveat attached.
 
 ## Dedup-fix status (src/Analysis/loader.py, fixed 2026-07-25)
 
