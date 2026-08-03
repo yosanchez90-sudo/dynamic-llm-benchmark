@@ -54,6 +54,8 @@ STEPS: list[tuple[str, str, str]] = [
      "RQ5 cross-family correlation scatter figure(s)"),
     ("rq5_sanitizer_sensitivity", "scripts/analyze_rq5_sanitizer_sensitivity.py",
      "RQ5 sanitizer-repair sensitivity (per-model repair fraction, with/without repaired rows)"),
+    ("h3_tier_gradient", "scripts/analyze_h3_tier_gradient.py",
+     "H3/RQ2 tier gradient: per-model + pooled Spearman rho, Holm-corrected"),
 ]
 
 
