@@ -1,6 +1,14 @@
-"""Unit tests for the grammar auto-fix rules in engine._grammar_fix.
+"""Self-check for the grammar auto-fix rules in engine._grammar_fix.
 
-Run with:  python3 _smoke/test_grammar.py
+Standalone script, not a pytest suite -- deliberately named without a
+`test_`/`_test` prefix so bare `pytest` from the repo root does not try to
+collect it (its top-level `sys.exit()` used to crash pytest's collection
+phase with an INTERNALERROR when it was named test_grammar.py; renamed
+2026-08-04, see analysis/VALIDATOR_SWEEP.md item #6 and pyproject.toml's
+`testpaths` setting, which now scopes bare `pytest` to `tests/` as a
+second, independent layer of defence against the same trap).
+
+Run with:  python3 _smoke/grammar_selfcheck.py
 """
 import sys
 from pathlib import Path

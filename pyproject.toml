@@ -46,3 +46,15 @@ dev = [
 
 [tool.uv]
 index-strategy = "unsafe-best-match"
+
+[tool.pytest.ini_options]
+# Scope bare `pytest`/`pytest -q` (no path argument) to tests/ only, per
+# CLAUDE.md's "Tests in `tests/`, run with `pytest`" convention. Without
+# this, pytest's default rootdir-wide collection walks template_corpus/
+# too, which previously crashed collection entirely with an INTERNALERROR
+# on template_corpus/templates/_smoke/test_grammar.py (a standalone script
+# with a top-level sys.exit(), not a pytest file -- renamed to
+# grammar_selfcheck.py 2026-08-04 as the primary fix; this setting is the
+# second, independent layer so no future _smoke/test_*.py-named script can
+# reintroduce the same trap for anyone running `pytest` from repo root).
+testpaths = ["tests"]
