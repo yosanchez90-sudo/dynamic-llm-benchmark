@@ -35,6 +35,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from src.Analysis.provenance import stamp_block  # noqa: E402
 
 
 INST_LABELS = {
@@ -143,6 +146,30 @@ def main() -> None:
 
     out_path = args.out or ROOT / "analysis/figures/epoch_perf.pdf"
     plot(all_rows, args.metric, title, out_path)
+
+    # analysis/figures/ is entirely gitignored (.gitignore:49) -- a sidecar
+    # written there would never be committed, so (matching
+    # plot_comparison_c_onset_curve.py / plot_rq5_correlation.py's
+    # convention) it's written to analysis/ root instead, which is only
+    # ignored for .csv/.xlsx. Added 2026-08-05: this script previously had
+    # no provenance stamping at all (analysis/FIGURE_AUDIT.md). Only for
+    # real output under analysis/figures/ -- guards against
+    # tests/ad hoc runs with an arbitrary --out (e.g. a pytest tmp_path)
+    # leaking a stray sidecar into the tracked repo, which happened once
+    # (analysis/out_PROVENANCE.md, found and removed 2026-08-05).
+    figures_dir = (ROOT / "analysis" / "figures").resolve()
+    if figures_dir in out_path.resolve().parents:
+        provenance = f"""# {out_path.stem} — provenance
+
+{stamp_block("scripts/plot_epoch_perf.py")}
+Sources: {[str(p) for p in args.csv]} (draw filter: {args.draw!r}).
+Metric: {args.metric}.
+
+Output: {out_path.relative_to(ROOT)}.
+"""
+        provenance_out = ROOT / "analysis" / (out_path.stem + "_PROVENANCE.md")
+        provenance_out.write_text(provenance)
+        print(f"Provenance: {provenance_out.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

@@ -78,6 +78,9 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from src.Analysis.provenance import stamp_block  # noqa: E402
 
 
 # ── column auto-detection ──────────────────────────────────────────────────
@@ -369,6 +372,29 @@ def main() -> None:
     print_gap_table(rows)
     if args.gap_csv is not None:
         write_gap_csv(rows, args.gap_csv)
+
+    # analysis/figures/ is entirely gitignored (.gitignore:49) -- sidecar
+    # written to analysis/ root instead (only ignored for .csv/.xlsx),
+    # matching plot_comparison_c_onset_curve.py's convention. Added
+    # 2026-08-05: this script previously had no provenance stamping at all
+    # (analysis/FIGURE_AUDIT.md). Only for real output under
+    # analysis/figures/ -- guards against tests/ad hoc runs with an
+    # arbitrary --out (e.g. a pytest tmp_path) leaking a stray sidecar into
+    # the tracked repo, which happened once (analysis/out_PROVENANCE.md,
+    # found and removed 2026-08-05).
+    figures_dir = (ROOT / "analysis" / "figures").resolve()
+    if figures_dir in args.out.resolve().parents:
+        provenance = f"""# {args.out.stem} — provenance
+
+{stamp_block("scripts/plot_epoch_perf_comparison.py")}
+Sources: {[str(p) for p in args.csv]} (draw filter: {args.draw!r}).
+Conditions plotted: {sorted(conditions.keys())}.
+
+Output: {args.out.relative_to(ROOT)}{' (+ .png)' if args.also_png else ''}.
+"""
+        provenance_out = ROOT / "analysis" / (args.out.stem + "_PROVENANCE.md")
+        provenance_out.write_text(provenance)
+        print(f"Provenance: {provenance_out.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
