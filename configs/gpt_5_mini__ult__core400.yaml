@@ -1,7 +1,11 @@
 # Comparison A/B: GPT-5-mini on the pinned core_400 ULT subsample, zero-shot.
-# Supervisor holds the OpenAI credits — this config is for
-# scripts/create_batch.py --no-submit only; the batch input JSONL goes to the
-# supervisor to submit, never sbatch'd or hit with a real API call here.
+# This config is for scripts/create_batch.py, whose default (no --submit
+# flag) only writes the batch input JSONL — never sbatch'd or hit with a
+# real API call by this config alone. Historically the supervisor held the
+# OpenAI credits and submitted the prepared JSONL; as of 2026-08-05 the
+# batch can equally be self-funded on your own key (see
+# analysis/OPENAI_COST_AND_BILLING.md) — either way, submission is a
+# separate, explicit --submit step, not something this config triggers.
 # core_400 is the universal 400-problem CC-stratified subsample every model
 # (closed-source + Qwen) shares — see data/raw/ult_plt/subsample_manifest.json.
 

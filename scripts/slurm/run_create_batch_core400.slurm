@@ -1,7 +1,7 @@
 #!/bin/bash --norc
 #SBATCH --job-name=create-batch-core400
 #SBATCH --partition=k2-medpri
-#SBATCH --time=02:00:00               # CPU-only: builds messages + mutants for 1600 problems, no API calls (--no-submit)
+#SBATCH --time=02:00:00               # CPU-only: builds messages + mutants for 1600 problems, no API calls (write-only, no --submit)
 #SBATCH --mem=8G
 #SBATCH --cpus-per-task=1
 #SBATCH --output=logs/%x-%j.out
@@ -31,16 +31,15 @@ echo "Job:     $SLURM_JOB_ID on $(hostname)"
 echo "Started: $(date -u +%FT%TZ)"
 echo
 
-# --no-submit: writes the batch input JSONL + state file only. No upload, no
-# API call, no spend — this project doesn't hold the OpenAI credits (see
-# PROJECT_BRIEF.md Sec 11). The output file goes to the supervisor to submit.
-_log "launching python (--no-submit)"
+# No --submit flag: writes the batch input JSONL + state file only (this is
+# now create_batch.py's default, changed 2026-08-05 so a bare invocation
+# never spends money). No upload, no API call, no spend.
+_log "launching python (write-only, --submit not passed)"
 python scripts/create_batch.py \
     configs/gpt_5__ult__core400.yaml \
     configs/gpt_5__plt__core400.yaml \
     configs/gpt_5_mini__ult__core400.yaml \
     configs/gpt_5_mini__plt__core400.yaml \
-    --no-submit \
     | tee -a "$PROGRESS"
 _log "python exited cleanly"
 

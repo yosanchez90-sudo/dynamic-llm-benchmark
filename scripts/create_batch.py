@@ -60,9 +60,13 @@ def main() -> None:
     parser.add_argument("configs", nargs="+", type=Path,
                         help="One or more YAML experiment configs")
     parser.add_argument("--batches-dir", default="data/batches", type=Path)
-    parser.add_argument("--no-submit", action="store_true",
-                        help="Write the batch JSONL but do not upload or submit. "
-                             "Use this to share the file with someone else to submit.")
+    parser.add_argument("--submit", action="store_true",
+                        help="Upload and submit the batch to OpenAI (spends real money). "
+                             "Default is to only write the batch JSONL/state files without "
+                             "uploading or submitting — changed 2026-08-05 so the default "
+                             "action of this script is never a paid submission; the prior "
+                             "default was --no-submit as an opt-OUT, i.e. running this script "
+                             "with no flags used to submit and spend by default.")
     args = parser.parse_args()
 
     client = OpenAI()
@@ -130,9 +134,10 @@ def main() -> None:
     batch_input_path.write_text("\n".join(batch_lines) + "\n")
     print(f"Batch input written: {batch_input_path}")
 
-    if args.no_submit:
+    if not args.submit:
         # Also save a state file without a batch_id so process_batch.py can
-        # be used once the supervisor provides the batch_id / results file.
+        # be used once someone (you or a supervisor) submits and provides
+        # the batch_id / results file.
         state = {
             "batch_id":      None,
             "input_file_id": None,
@@ -143,8 +148,10 @@ def main() -> None:
         }
         state_path.write_text(json.dumps(state, indent=2))
         print(f"State saved: {state_path}")
-        print(f"\nSend {batch_input_path} to your supervisor.")
-        print("When they return the results JSONL, run:")
+        print(f"\nNot submitted (default — pass --submit to upload and submit for real).")
+        print(f"Send {batch_input_path} to your supervisor, or re-run with --submit")
+        print("using your own OpenAI API key to fund it yourself.")
+        print("When you have the results JSONL, run:")
         print(f"  python scripts/process_batch.py {state_path} \\")
         print(f"      --results-file <path-to-results.jsonl>")
         return
