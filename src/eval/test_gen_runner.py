@@ -174,6 +174,16 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
     if n_shards > 1:
         problems = problems[shard_id::n_shards]
 
+    # Optional tier prioritisation (added 2026-08-05 for the Gemini Pro daily
+    # crawl, generic/reusable beyond that use case): a stable sort so
+    # problems whose tier is in config["tier_priority"] come first, without
+    # disturbing relative order otherwise. No-op (default) when absent, so
+    # every existing config's behaviour is unchanged.
+    tier_priority = config.get("tier_priority")
+    if tier_priority:
+        priority_rank = {t: i for i, t in enumerate(tier_priority)}
+        problems = sorted(problems, key=lambda p: priority_rank.get(p.tier, len(tier_priority)))
+
     run_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
     adapter_path = config["model"].get("adapter_path")
     # Fine-tuned models share the same base model id — the adapter tag in
@@ -218,6 +228,17 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
     print(f"Output: {out_path}")
     shard_info = f" (shard {shard_id}/{n_shards})" if n_shards > 1 else ""
     print(f"{len(problems)} problems remaining{shard_info} | K={K} | workers={n_workers}\n")
+
+    # Optional per-run request cap (added 2026-08-05 for the Gemini Pro daily
+    # crawl, generic/reusable): stop cleanly after this many NEW requests in
+    # THIS call, leaving the rest for a future resumed run. Already-done
+    # problems (filtered out above by the resume logic) never count against
+    # this. No-op (default) when absent.
+    max_requests = config.get("max_requests")
+    if max_requests is not None and len(problems) > max_requests:
+        print(f"max_requests={max_requests}: capping this run to the first "
+              f"{max_requests} of {len(problems)} remaining problems.\n")
+        problems = problems[:max_requests]
 
     total_cost = 0.0
     for i, prob in enumerate(problems, 1):

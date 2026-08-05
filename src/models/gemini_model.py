@@ -94,6 +94,16 @@ class GeminiModel(Model):
                     response.candidates[0].finish_reason.name
                     if response.candidates else None
                 ),
+                # Preview-alias model IDs (e.g. "gemini-3.1-pro-preview") can
+                # point to a different underlying checkpoint over time --
+                # model_version/model_status are the SDK's own audit trail
+                # for which actual snapshot served this response, distinct
+                # from the (fixed, requested) self.model_id above. Added
+                # 2026-08-05 for the multi-day Gemini Pro crawl, where a
+                # silent mid-crawl version change would otherwise be
+                # invisible in the logged data.
+                "model_version": getattr(response, "model_version", None),
+                "model_status": getattr(response, "model_status", None),
             },
             provider=self.provider,
             cost_usd=cost,
