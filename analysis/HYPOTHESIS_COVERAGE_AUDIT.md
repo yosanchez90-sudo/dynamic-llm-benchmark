@@ -122,6 +122,16 @@ pooling issue was.
 
 ## H4 (RQ3) — Tier × benchmark interaction term in a mixed-effects regression, model as random effect
 
+**UPDATE 2026-08-05: CLOSED, not built — supervisor-approved.** The
+analysis below (written 2026-08-04, preserved unedited) correctly
+identified the gap and its cause; the design memo it points to
+(`analysis/H4_DESIGN_MEMO.md`) went on to recommend building a Dynamic-
+only mixed model (option (b)). Pinzhen Chen's decision instead was option
+(c) — declare H4 untestable-by-construction, build nothing. See
+`PROJECT_BRIEF.md` §3.1's H4 row and `analysis/OPEN_ITEMS.md` for the
+current, authoritative status; the (i)-(iv) analysis immediately below is
+historical record of the investigation, not a live TODO.
+
 **(i) Implemented — no.** Confirmed by search: no mixed-effects/
 regression code exists anywhere in `scripts/` or `src/`, and
 **`statsmodels` (or any other mixed-model library) is not even an

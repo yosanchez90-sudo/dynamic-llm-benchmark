@@ -15,24 +15,24 @@ session).
 ## BLOCKING-FOR-SUBMISSION
 
 **Added 2026-08-04 from `analysis/HYPOTHESIS_COVERAGE_AUDIT.md`; revised
-same day once the Holm-Bonferroni and H3 gaps closed.** A full H1-H6 audit
-against PROJECT_BRIEF.md §3.1 found H1, H2, H5, H6 fully implemented/run/
-interpreted (H1 in particular was previously believed missing — it's
-Comparison A under a different name); H3 and H4 had never been
-implemented; Holm-Bonferroni had never been applied anywhere. **Since
-then: the shared Holm-Bonferroni utility is built and applied to RQ4/H5
-and RQ5/H6 (see the DISCLOSE-AND-PROCEED table below for the results —
-several previously-uncorrected "significant" findings did not survive);
-H3 is fully implemented, run, and interpreted (`analysis/
-H3_INTERPRETATION.md`) — a clean, unanimous result across all 9 canonical
-models. Only H4 remains open**, and deliberately so — a design memo
-(`analysis/H4_DESIGN_MEMO.md`) lays out three options with a
-recommendation, but nothing is built pending the user's decision and
-supervisor sign-off.
+2026-08-04 once the Holm-Bonferroni and H3 gaps closed; revised again
+2026-08-05 once H4 closed.** A full H1-H6 audit against PROJECT_BRIEF.md
+§3.1 found H1, H2, H5, H6 fully implemented/run/interpreted (H1 in
+particular was previously believed missing — it's Comparison A under a
+different name); H3 and H4 had never been implemented; Holm-Bonferroni
+had never been applied anywhere. **All four gaps are now closed**: the
+shared Holm-Bonferroni utility is built and applied to RQ4/H5 and RQ5/H6
+(see the DISCLOSE-AND-PROCEED table below for the results — several
+previously-uncorrected "significant" findings did not survive); H3 is
+fully implemented, run, and interpreted (`analysis/H3_INTERPRETATION.md`)
+— a clean, unanimous result across all 9 canonical models; **H4 is
+CLOSED, not built — supervisor-approved 2026-08-05, declared untestable-
+by-construction** (`analysis/H4_DESIGN_MEMO.md`'s decision record,
+`PROJECT_BRIEF.md` §3.1). Nothing remains BLOCKING from the original
+hypothesis-coverage audit.
 
 | Item | What's needed | Owner | Notes |
 |---|---|---|---|
-| **H4 (RQ3) has never been implemented — decision pending, not just unbuilt** — tier × benchmark interaction, mixed-effects regression, model as random effect | **Read `analysis/H4_DESIGN_MEMO.md` and decide between its three options** (recommended: (b), a Dynamic-only mixed model with the cross-benchmark form declared untestable), get supervisor sign-off, **then** add a mixed-model dependency (`statsmodels` or equivalent — not currently installed), reshape the data, fit the model. | **User decides; supervisor signs off; only then does anyone implement anything.** | The memo quantifies why the obvious "reuse ULT/PLT's CC-quartile bands as its tier-analog" option doesn't work: Dynamic's L1-L3 (CC 1-7) has zero ULT/PLT counterpart at all, and Dynamic's L4 (CC 8-11) overlaps only ~41% of ULT/PLT's already-CC-filtered sample, with no internal Dynamic tier variation inside that overlap. This is a genuine design decision, not an implementation detail — do not build anything for H4 before it's made. |
 | **Equivalent-mutant validation** (120 hand-inspected mutants, 30/tier) | Finish the hand-inspection pack (`scripts/build_equiv_mutant_sample.py` already builds the sample; the inspection itself is manual) and compute the validated Mut@K variant (raw score minus estimated equivalent-mutant rate, with CIs) that PROJECT_BRIEF.md §5.5/§5.4 commits to reporting alongside the raw headline score. | User (explicitly "my ... inspection" per the close-out prompt — this is manual work, not something to automate) | Tracked as a P4-gate item since 2026-07-25 (PROJECT_BRIEF.md §11); still open as of this register. Without it, Comparison A's "validated Mut@K variant" companion figure (committed to in §5.4/§5.5) is missing. |
 | **The dissertation write-up itself** | Phase 6 (§8, weeks 14-16): six hypothesis tests written up, figures/tables finalised, full draft, submission. | User | Everything else in this register feeds into this; listed for completeness, not because it's a surprise. |
 
@@ -40,6 +40,7 @@ supervisor sign-off.
 
 | Item | Current disclosure | Why it doesn't block |
 |---|---|---|
+| **H4 (RQ3) is closed, not built — declared untestable-by-construction, supervisor-approved 2026-08-05** | `PROJECT_BRIEF.md` §3.1's H4 row (decision + provenance + date), `analysis/H4_DESIGN_MEMO.md` (decision record at the top, original analysis preserved unedited below it) | Not a gap — a made decision. RQ3 is answered narratively (H3's within-Dynamic tier gradient + the structural CC-overlap finding itself), not via a mixed-effects model; `statsmodels` was deliberately not added. Any future doc that promises a forthcoming H4 mixed-effects model is stale and should be corrected to match this closure. |
 | **`analysis/ULT_DATA_QUALITY_AUDIT.md`'s three findings about the published ULT/PLT artifact** (ground-truth pass rate 8.4%, self-reported CC unreliability, the metric-definition contradiction) | `analysis/ULT_DATA_QUALITY_AUDIT.md` itself, presented as this project's own measurements throughout `analysis/` | Re-tagged 2026-08-04 from BLOCKING-FOR-SUBMISSION — the audit doc's own recommendation already says this is "not blocking for internal dissertation use with the findings presented as this project's own measurements." **Supervisor review is still required before any external use** (an email to the ULT authors, a related-work paragraph naming these specific numbers, anything leaving this repository) — that requirement doesn't block writing up or submitting the dissertation itself, only a separate, later step of external communication. |
 | **The ULT/PLT paper's Mut@k formula contradicts its own published code** (prose = unconditional/zero-fill; `Ray/main.py`'s actual code = conditional, matching this project's own primary) | `analysis/RQ5_CROSS_DEFINITION_AUDIT.md` (full evidence), `analysis/ULT_DATA_QUALITY_AUDIT.md` finding 3, `PROJECT_BRIEF.md` §5.4 | **The caveat must travel with every Comparison A/B number** — neither this project's conditional Mut@K nor its `coverage_adjusted` co-primary should be described as "the metric that matches the ULT paper" without qualification, since the paper's prose and its own code point to different estimands. Already applied at every point this project reports either metric (`COMPARISON_PROVENANCE.md`'s cross-definition note, `RQ5_INTERPRETATION.md`'s reconciliation section) — flagged here so a future edit doesn't drop the caveat from a new table without carrying it over. |
 | **Holm-Bonferroni, applied 2026-08-04: RQ4/H5's pairwise Kendall τ tests do not survive correction** (3/6 N=4 pairs and 3/10 all-pairs significant at raw p<0.05; **0/6 and 0/10 after Holm correction**) | `analysis/STABILITY.md` (full raw-vs-adjusted table, two separate families), `analysis/STABILITY_INTERPRETATION.md` (revised claim, was "four to five of six... typically significant") | A real, substantive weakening of the write-up's language — already applied: no individual pairwise Kendall τ result should be called "significant" in the dissertation. The mean pairwise tau point estimates (0.635 N=4 / 0.661 all-pairs) remain the primary, more robust stability claim, per the document's own long-standing recommendation, now with a stronger reason why. |
@@ -78,4 +79,4 @@ supervisor sign-off.
 - **Hypothesis coverage audit** (`analysis/HYPOTHESIS_COVERAGE_AUDIT.md`, same date) — H1/H2/H5/H6 confirmed fully implemented/run/interpreted (H1 corrects a prior belief that it was missing — it's Comparison A); H3/H4 confirmed genuinely unimplemented and added above as BLOCKING; Holm-Bonferroni confirmed applied nowhere, with real exposure isolated to RQ4/H5 and RQ5/H6 specifically (RQ1's is a no-op given H2 produces no p-value).
 - **Holm-Bonferroni implemented and applied** (`src/Analysis/multiple_comparisons.py`) to RQ4/H5 (`scripts/analyze_stability.py`, two families: N=4's 6 pairs, all-pairs' 10 pairs — both drop to 0 significant after correction) and RQ5/H6 (`scripts/analyze_rq5_cross_family.py`, 12 headline Kendall-tau tests — 4/12 raw-significant, 3/12 after correction). RQ1's no-op documented explicitly in `analysis/COMPARISON_A_INTERPRETATION.md`.
 - **H3 pre-specified, implemented, run, interpreted** — `analysis/H3_ANALYSIS_PLAN.md` written before any code existed; `scripts/analyze_h3_tier_gradient.py` implements it exactly; `analysis/H3_INTERPRETATION.md` reports a clean, unanimous result (9/9 models significant, Holm-corrected) — the strongest, least-contested finding in the project.
-- **H4 design memo written, nothing built** — `analysis/H4_DESIGN_MEMO.md` quantifies the CC-range overlap between Dynamic and ULT/PLT (near-zero for L1-L3, ~41% for L4 with no internal Dynamic variation in the overlap), rejects the CC-quartile-band option on that evidence, and recommends a Dynamic-only mixed model with the cross-benchmark form declared untestable. Awaiting the user's decision and supervisor sign-off before anything is implemented.
+- **H4 design memo written, then closed** — `analysis/H4_DESIGN_MEMO.md` quantified the CC-range overlap between Dynamic and ULT/PLT (near-zero for L1-L3, ~41% for L4 with no internal Dynamic variation in the overlap), rejected the CC-quartile-band option on that evidence, and recommended a Dynamic-only mixed model. **2026-08-05: supervisor Pinzhen Chen approved closing H4 instead (option (c), untestable-by-construction) — no mixed-effects model will be built.** Decision recorded in the memo itself, `PROJECT_BRIEF.md` §3.1, and this register.

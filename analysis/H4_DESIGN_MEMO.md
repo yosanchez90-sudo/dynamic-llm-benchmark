@@ -1,5 +1,21 @@
 # H4 (RQ3) design memo — three options, costs, and a recommendation
 
+**DECISION RECORDED 2026-08-05 — approved by supervisor Pinzhen Chen:
+option (c), CLOSED, not built.** H4 is declared untestable-by-construction
+on the CC-overlap evidence below; no mixed-effects model will be built,
+`statsmodels` is not added as a dependency, and RQ3 is answered
+narratively (H3's within-Dynamic tier gradient + this structural finding
+itself — see `PROJECT_BRIEF.md` §3.1's H4 row and
+`analysis/OPEN_ITEMS.md`). **This memo is preserved as-is below, unedited,
+as the record of the reasoning behind that decision** — it originally
+recommended option (b) (a Dynamic-only mixed model); the supervisor's
+decision went with (c) instead, for reasons that are the supervisor's own
+judgement call, not a correction of this memo's analysis. The CC-overlap
+quantification and the rejection of option (a) both still stand as
+accurate evidence regardless of which of (b)/(c) was ultimately chosen.
+
+---
+
 **Decision memo only — nothing for H4 is implemented in this document or
 alongside it.** Per instruction: the user decides which option to pursue,
 and it goes to the supervisor before anything is built. This memo exists

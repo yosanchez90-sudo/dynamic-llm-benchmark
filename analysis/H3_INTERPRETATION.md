@@ -86,9 +86,11 @@ models whose `baseline_pass_rate` doesn't collapse sharply at higher
 tiers (the high-capability API models), folding coverage back in can
 offset the raw mutation-quality decline — but at n≤4 per model this is
 far too underpowered to treat as a real reversal; flagged here as a
-pattern worth a closer, properly-powered look (e.g. via H4's mixed-model
-machinery, if built — see `analysis/H4_DESIGN_MEMO.md`), not asserted as a
-finding in its own right.
+pattern worth a closer, properly-powered look, not asserted as a finding
+in its own right. (H4's mixed-model machinery, which could have offered
+that closer look, was closed rather than built — supervisor decision,
+2026-08-05, `analysis/H4_DESIGN_MEMO.md` — so this pattern stays an
+observation, not something a future analysis will formally resolve.)
 
 ## Bottom line
 
