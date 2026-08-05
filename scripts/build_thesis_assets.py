@@ -58,6 +58,12 @@ STEPS: list[tuple[str, str, str]] = [
      "H3/RQ2 tier gradient: per-model + pooled Spearman rho, Holm-corrected"),
     ("ranking_matrix", "scripts/build_ranking_matrix.py",
      "Metric-agnostic ranking matrix: exec_rate/baseline_pass_rate/Mut@K/coverage-adjusted side by side"),
+    ("ranking_matrix_heatmap_figure", "scripts/plot_ranking_matrix_heatmap.py",
+     "Ranking matrix heatmap figure (Kendall tau by metric x benchmark pair, Holm-marked)"),
+    ("noise_floor_figure", "scripts/plot_noise_floor.py",
+     "Noise floor by metric and Dynamic tier figure"),
+    ("collapse_vs_survival_figure", "scripts/plot_collapse_vs_survival.py",
+     "Collapse vs survival figure (raw vs coverage-adjusted Mut@K at n=3 vs n=7)"),
 ]
 
 

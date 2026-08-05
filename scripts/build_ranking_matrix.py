@@ -147,42 +147,58 @@ def main() -> None:
             scores_df.loc[grp_idx, f"{metric}_rank"] = _rank_column(grp, score_col)
     scores_df.to_csv(ANALYSIS_DIR / "ranking_matrix_scores.csv", index=False)
 
-    # ================= TABLE 2: cross-benchmark rank agreement, canonical scope only
-    canon = scores_df[scores_df["scope"] == "canonical"]
-
-    def _pivot(benchmark: str, metric: str) -> pd.Series:
-        sub = canon[canon["benchmark"] == benchmark].set_index("model_label")
-        col = "conditional_mutk" if benchmark == "bigcodebench" else metric
-        return sub[col]
-
-    corr_rows = []
+    # ================= TABLE 2: cross-benchmark rank agreement
+    # Canonical scope is THE deliverable ("ONE table" in the written MD,
+    # below); canonical+cross-family is computed too (same pairs/metrics)
+    # so the ranking-matrix heatmap figure can show both scopes side by
+    # side -- Holm-corrected SEPARATELY per scope (each is its own 12-test
+    # family, same discipline as RQ4/H5's N=4-vs-all-pairs split), not
+    # pooled into one 24-test correction.
     pairs = [
         ("Dynamic<->ULT", "dynamic_pooled", "ult_core400"),
         ("Dynamic<->BigCodeBench", "dynamic_pooled", "bigcodebench"),
         ("ULT<->BigCodeBench", "ult_core400", "bigcodebench"),
     ]
-    for metric in METRICS:
-        for pair_name, bench_a, bench_b in pairs:
-            sa, sb = _pivot(bench_a, metric), _pivot(bench_b, metric)
-            joint = pd.concat([sa.rename("a"), sb.rename("b")], axis=1).dropna()
-            if len(joint) < 3:
+
+    def _pivot(scope_df: pd.DataFrame, benchmark: str, metric: str) -> pd.Series:
+        sub = scope_df[scope_df["benchmark"] == benchmark].set_index("model_label")
+        col = "conditional_mutk" if benchmark == "bigcodebench" else metric
+        return sub[col]
+
+    all_corr_frames = []
+    for scope_name in SCOPES:
+        scope_df = scores_df[scores_df["scope"] == scope_name]
+        corr_rows = []
+        for metric in METRICS:
+            for pair_name, bench_a, bench_b in pairs:
+                sa, sb = _pivot(scope_df, bench_a, metric), _pivot(scope_df, bench_b, metric)
+                joint = pd.concat([sa.rename("a"), sb.rename("b")], axis=1).dropna()
+                if len(joint) < 3:
+                    corr_rows.append({
+                        "scope": scope_name, "metric": metric, "pair": pair_name, "n": len(joint),
+                        "kendall_tau": None, "kendall_p_perm": None,
+                        "spearman_rho": None, "spearman_p_perm": None,
+                    })
+                    continue
+                res = compute_correlations(joint["a"].to_numpy(), joint["b"].to_numpy())
                 corr_rows.append({
-                    "metric": metric, "pair": pair_name, "n": len(joint),
-                    "kendall_tau": None, "kendall_p_perm": None,
-                    "spearman_rho": None, "spearman_p_perm": None,
+                    "scope": scope_name, "metric": metric, "pair": pair_name, "n": res.n,
+                    "kendall_tau": res.kendall_tau, "kendall_ci_lo": res.kendall_tau_ci_lo,
+                    "kendall_ci_hi": res.kendall_tau_ci_hi, "kendall_p_perm": res.kendall_p_perm,
+                    "spearman_rho": res.spearman_rho, "spearman_ci_lo": res.spearman_rho_ci_lo,
+                    "spearman_ci_hi": res.spearman_rho_ci_hi, "spearman_p_perm": res.spearman_p_perm,
                 })
-                continue
-            res = compute_correlations(joint["a"].to_numpy(), joint["b"].to_numpy())
-            corr_rows.append({
-                "metric": metric, "pair": pair_name, "n": res.n,
-                "kendall_tau": res.kendall_tau, "kendall_ci_lo": res.kendall_tau_ci_lo,
-                "kendall_ci_hi": res.kendall_tau_ci_hi, "kendall_p_perm": res.kendall_p_perm,
-                "spearman_rho": res.spearman_rho, "spearman_ci_lo": res.spearman_rho_ci_lo,
-                "spearman_ci_hi": res.spearman_rho_ci_hi, "spearman_p_perm": res.spearman_p_perm,
-            })
-    corr_df = pd.DataFrame(corr_rows)
-    corr_df["kendall_p_holm"] = holm_bonferroni(corr_df["kendall_p_perm"].tolist())
-    corr_df.to_csv(ANALYSIS_DIR / "ranking_matrix_correlations.csv", index=False)
+        scope_corr_df = pd.DataFrame(corr_rows)
+        scope_corr_df["kendall_p_holm"] = holm_bonferroni(scope_corr_df["kendall_p_perm"].tolist())
+        all_corr_frames.append(scope_corr_df)
+
+    corr_df_all_scopes = pd.concat(all_corr_frames, ignore_index=True)
+    corr_df_all_scopes.to_csv(ANALYSIS_DIR / "ranking_matrix_correlations.csv", index=False)
+    # The written MD table (below) reports canonical only, per the original
+    # "ONE table" deliverable -- kept as a plain variable name for the
+    # f-string block further down, unchanged from before this scope
+    # extension.
+    corr_df = corr_df_all_scopes[corr_df_all_scopes["scope"] == "canonical"].drop(columns=["scope"])
 
     # ================= TABLE 3: noise floor (canonical, Dynamic pooled)
     noise_rows = []
@@ -197,7 +213,7 @@ def main() -> None:
         stable_2plus = stable_raw[stable_raw["n_instantiations"] >= 2]
         mean_within_sd = float(stable_2plus["sd_mut_at_k"].mean()) if len(stable_2plus) else None
 
-        pooled_scores = canon[canon["benchmark"] == "dynamic_pooled"][metric].dropna()
+        pooled_scores = scores_df[(scores_df["scope"] == "canonical") & (scores_df["benchmark"] == "dynamic_pooled")][metric].dropna()
         spread = float(pooled_scores.max() - pooled_scores.min()) if len(pooled_scores) else None
         ratio = (spread / mean_within_sd) if (spread is not None and mean_within_sd) else None
         noise_rows.append({
