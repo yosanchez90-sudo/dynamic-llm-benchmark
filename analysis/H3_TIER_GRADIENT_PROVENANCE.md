@@ -1,7 +1,7 @@
 # H3 (RQ2) tier gradient -- raw tables
 
-Generated: 2026-08-05T13:30:12.302908+00:00
-Git commit: c60a84a
+Generated: 2026-08-05T20:37:09.412111+00:00
+Git commit: d07d7c8
 Script: scripts/analyze_h3_tier_gradient.py
 
 Pre-registered plan (written before this script existed):
