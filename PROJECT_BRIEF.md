@@ -74,8 +74,10 @@ Corrections: Holm–Bonferroni **within each RQ family**. Effect sizes with CIs 
 ## 4. Scope
 
 **In scope:** Python only · function-level test generation · 4 CC tiers (L1–L4) with
-secondary descriptors (AST depth, edge-case count) · **60 templates (15/tier), K=5
-instances/template/instantiation → 300 problems/instantiation** · **5 instantiations**
+secondary descriptors (AST depth, edge-case count) · **60 templates (15/tier), m=5
+instances/template/instantiation → 300 problems/instantiation** (m, not K — see
+§5.4's notation note: K is reserved for Pass@K-style attempts/problem, which is a
+different quantity that happens to also be 5 in one sensitivity sweep) · **5 instantiations**
 (design target) **for stability, executed as 4** per the pre-registered gate
 cut-priority — see §11 for the cost/stability rationale · 7 SAC mutation operators ·
 4 metrics + StableMut@K · zero-shot & one-shot prompting · comparison vs ULT
@@ -109,11 +111,26 @@ are recorded as secondary descriptors.
 
 ### 5.2 Templates & instances
 A **template** = body skeleton with placeholders + parameter-domain spec + oracle
-(reference implementation) + docstring template. Each template yields K instances by
+(reference implementation) + docstring template. Each template yields m instances by
 sampling its parameter domain; variable names, values, constants, and docstring synonyms
 vary across instances. Instances are validated post-hoc: CC must stay in-band, and the
 oracle must pass a lightweight property-based smoke test. A **benchmark instantiation**
-= one full generator run (60 templates × K=5).
+= one full generator run (60 templates × m=5).
+
+**Notation note (added 2026-08-05, terminology audit):** this brief previously used
+`K` for both instances-per-template (this section, §4, §12) and Pass@K-style
+attempts-per-problem (§5.4) — the same symbol, and in several places the same
+numeric value (5), for two different quantities. Fixed here and throughout this
+document: **`K` is reserved for attempts/problem** (§5.4's Pass@K-style usage,
+matching Exec@K/Cov-S@K/Cov-B@K/Mut@K and the `K` field actually recorded in every
+result row, `src/eval/test_gen_problem.py`) — **`m` denotes instances/template**,
+a prose-only symbol with no code equivalent (the code represents this quantity as
+`len(instance_seeds)` on a 5-element seed tuple, never a variable literally named
+`K` or `m` — see `src/data/test_gen.py`). This is a documentation/prose fix only;
+no code identifier is renamed. Every run in this project used K=1 (one attempt per
+problem) — so "Mut@K" should be read as "Mut@1" throughout unless a K=5 sensitivity
+sweep is explicitly named, and that sweep was itself cut (§8's gate-cut-priority
+item #1) and never run.
 
 ### 5.3 Mutation operators — SAC only (headline)
 Arithmetic Operator Replacement (**AOR**), Relational Operator Replacement (**ROR**),
@@ -433,7 +450,9 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
 - **CC** — cyclomatic complexity (McCabe): 1 + number of decision points.
 - **SAC / SPC** — semantic-altering / semantic-preserving mutation changes.
 - **ULT / PLT** — UnLeakedTestBench (decontaminated) / its leaked twin.
+- **K** — attempts/problem, Pass@K-style (§5.4). Every run in this project used K=1; a K=5 sensitivity sweep was cut (§8) and never run. Not to be confused with **m** below.
+- **m** — instances/template (§5.2), a distinct quantity from K that this brief previously also called "K" — see §5.2's notation note. m=5 throughout.
 - **Mut@K, Exec@K, Cov-S@K, Cov-B@K** — the four metrics; **StableMut@K** = mean Mut@K over the instantiations (4 executed; 5 was the design target — see §11).
-- **Instantiation** — one full generator run (60 templates × K=5 = 300 problems).
+- **Instantiation** — one full generator run (60 templates × m=5 = 300 problems).
 - **DiD** — difference-in-differences (the causal estimator for Comparison C).
 - **LoRA / QLoRA** — parameter-efficient fine-tuning (frozen base + trained adapters / quantised variant).

@@ -21,6 +21,59 @@ explicitly).
 
 ## 1. The measurement chain
 
+### Stage -1 — the task as actually posed (added 2026-08-05, settling a prompt-content question definitively)
+
+Before any scoring happens, it matters exactly what the model was shown.
+Quoted **verbatim** from `src/data/test_gen.py`, the single builder every
+problem in this project — Dynamic and ULT/PLT alike — goes through:
+
+```python
+SYSTEM_INSTRUCTION = (
+    "You are an expert Python developer writing a pytest test suite. "
+    "You are given a Python function. "
+    "Write a complete pytest test file that thoroughly tests this function, "
+    "covering normal cases, edge cases, and boundary conditions. "
+    "IMPORTANT: you must import the function under test with exactly "
+    "`from under_test import <function_name>` — do NOT copy, redefine, or "
+    "reimplement the function in your test file. "
+    "Output only the test file, starting with the import statement."
+)
+
+def _build_messages(source, prompting_condition, supports_system_role=True):
+    user = f"Function under test:\n\n```python\n{source}\n```\n\nWrite the pytest test file."
+    ...
+```
+
+`source` is the **full function body** — for Dynamic, the complete
+rendered implementation (docstring, control flow, `return`, everything —
+see the `sum_values` worked example in Stage 2 below); for ULT/PLT,
+`r["code"]`, the complete shipped implementation from the raw dataset. **This
+is a "generate tests for this implementation" design, not a "generate
+tests from this specification" one** — the model is never asked to write
+tests from a signature-plus-docstring alone; it always sees, and can read,
+the real control flow it's being asked to exercise.
+
+**ULT/PLT poses the task identically to Dynamic, confirmed by code, not
+assumed**: `src/data/ult_plt.py` imports `_build_messages` directly from
+`src/data/test_gen.py` (its own import comment: `# identical prompting to
+Dynamic`) and calls it the same way, `source = r["code"]` in place of a
+template-rendered function. Same system instruction, same user-message
+template, same full-body framing, same import-line requirement. The two
+benchmarks differ in **where the function came from** (a parameterised
+template vs. real, scraped code) and in the CC/complexity distribution
+that follows from that — not in how the task is posed to the model. This
+is a load-bearing fact for Comparison A specifically: its comparability
+claim (Dynamic-L4 vs ULT, same model, same prompting structure) depends on
+this, and it now has a direct code citation rather than an assumption.
+
+One conditional wrinkle, already documented elsewhere and repeated here
+for completeness: `supports_system_role=False`
+(`configs/*starcoder2*.yaml`) folds `SYSTEM_INSTRUCTION` into the first
+user turn instead of a separate `role="system"` message, for the one
+model (StarCoder2-15B-Instruct) whose chat template rejects a system role
+outright. The instruction **text** is byte-identical either way — only
+its delivery position differs.
+
 Every model response goes through the same three-stage pipeline before it
 produces a single number. All three stages live in
 `src/eval/test_gen_scorer.py`, and the stages are strictly sequential — a
@@ -417,6 +470,54 @@ the ratio. If dropped mutants were incorrectly counted as survived, every
 Mut@K score would be systematically deflated by however common import
 failures are for that function; the harness's `_evaluate_mutant()`
 explicitly avoids this (§1 Stage 3).
+
+### Aggregation scope, at a glance (added 2026-08-05, terminology-uniformity
+sweep — this table is the canonical statement of pooling behaviour; no
+other doc in this project should restate these scopes, only cite this one)
+
+Every row a scorer writes is scoped to exactly one
+`(model, benchmark, instantiation, template_id, instance_seed, tier, K,
+prompting_condition)` tuple (`src/eval/test_gen_problem.py`). Every metric
+above is a function of a *set* of such rows, and this project pools that
+set along two independent axes depending on which table is being built:
+**tier** (report per-tier, or pool all tiers into one `*_pooled` figure)
+and **instantiation** (report per-instantiation, or pool across
+instantiations 1-4/5). The table below states, for each metric, what its
+*default* reported scope is and which pooling axes are actually used
+anywhere in this project — nothing here introduces a new scope, it names
+the ones already computed by `src/Analysis/*.py` and cross-references
+where each is used.
+
+| Metric | Row-level quantity | Default reported scope | Tier axis | Instantiation axis |
+|---|---|---|---|---|
+| `exec_rate` | 0/1 per row | mean per model × benchmark × tier | reported per-tier, and pooled (`*_pooled`, e.g. `dyn_pooled`) in RQ5's tables | almost always pooled across instantiations (per-instantiation exec_rate is not separately tracked anywhere) |
+| `baseline_pass_rate` | 0/1 per row (`= n_defined/n_total` over the group) | mean per model × benchmark × tier | per-tier and pooled, same as `exec_rate` | pooled, same as `exec_rate` |
+| `Mut@K` (conditional, def. (a)) | `mutation_score` per baseline-passing row | mean per model × benchmark × tier, over rows with `baseline_passed=True` **within that group only** | per-tier (H3); **single-tier, L4-only** for Comparison A (`build_comparison_tables.py`'s `dynamic_l4 = dynamic[dynamic["tier"] == DYNAMIC_TIER]` — deliberately not pooled, since L4 is the CC band closest to ULT/PLT's own CC≥8 filter, see `H4_DESIGN_MEMO.md`); tier-**pooled** (`dyn_pooled`) for RQ5's canonical Dynamic↔ULT correlation, since ULT/PLT has no tier structure to align a per-tier Dynamic figure against. Comparison B (ULT vs PLT) has no Dynamic tier axis at all — neither side of that comparison is CC-tiered the way Dynamic is. | pooled across instantiations for Comparison A/B/RQ5's headline figures; held **per-instantiation** as the input to `StableMut@K` below — these are the same formula applied at two different instantiation-scopes, not two different metrics |
+| `coverage_adjusted` | `mutation_score`, zero-filled per row (`= Mut@K(a) × baseline_pass_rate` over the group) | mean per model × benchmark × tier | mirrors `Mut@K`'s tier-axis scoping exactly (per-tier for H3, L4-only for Comparison A, `dyn_pooled` for RQ5 canonical) | pooled across instantiations for its RQ5/Comparison A/B co-primary use; can also be computed per-instantiation (`stability.py`'s `coverage_adjust=True` path) for a coverage-adjusted `StableMut@K` variant, used only in the low-power tier-mean supplementary rows (`H3_INTERPRETATION.md`) |
+| `StableMut@K` | — (a statistic *of* per-instantiation `Mut@K` or `coverage_adjusted` values, not of rows directly) | one value per model (mean + SD **across instantiations**), optionally broken out per tier (`STABILITY.md`'s "by tier" table) | tier-pooled by default; a per-tier variant exists (`STABILITY.md`) | this metric's entire reason to exist **is** the instantiation axis — it is never reported pooled-to-one-instantiation, that would just be `Mut@K` |
+| `n_defined` | — (a count of rows, not a per-row quantity) | reported alongside whichever other metric's group it's counting for — no fixed default scope of its own | follows whatever grouping the accompanying metric uses | follows whatever grouping the accompanying metric uses |
+
+**The rule that keeps tier-pooling consistent — and the one deliberate
+exception**: a **tier**-pooled (`*_pooled`, e.g. `dyn_pooled`) figure is
+always a re-aggregation over the *same underlying rows* a per-tier figure
+would use, never a mean-of-per-tier-means (`dyn_pooled` Mut@K is
+`mean(mutation_score_i for all i across all tiers where baseline_passed_i)`,
+not `mean(per_tier_Mut@K_1, ..., per_tier_Mut@K_4)`, which would silently
+reweight tiers with fewer rows to count the same as tiers with more).
+`src/Analysis/comparison.py`'s `groupby(model_col)[metric].mean()` calls
+compute pooled figures this way directly off the row-level dataframe.
+**`StableMut@K` is the deliberate exception, not a violation of this
+rule**: `stability.py::stable_mut_at_k` computes per-instantiation Mut@K
+first (`mut_at_k()`, itself a row-level mean within that instantiation),
+then takes the mean **and SD** of those per-instantiation values
+(`stable_mut_at_k()` lines 96-104) — a genuine mean-of-means, because the
+per-instantiation SD is the entire quantity of interest for a stability
+metric; collapsing straight to row-level would make "how much does this
+model's score vary across instantiations" unanswerable. Only the
+**instantiation** axis is ever pooled this way; the tier axis inside a
+per-instantiation `StableMut@K` figure still follows the row-level rule
+above (or is itself a further `extra_group_cols=("tier",)` breakdown, per
+`STABILITY.md`'s "by tier" table).
 
 ---
 
