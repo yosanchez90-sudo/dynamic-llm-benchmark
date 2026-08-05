@@ -13,21 +13,35 @@ import pandas as pd
 from scipy.stats import kendalltau
 
 
-def mut_at_k(df: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame:
-    """Aggregate Mut@K per group: mean of per-problem `mutation_score` over
-    problems where the Exec@K/baseline gate passed (`mutation_score` is not
-    None). Gate-failed problems are excluded from the mean, not zero-filled
-    — matches the existing convention in scripts/results_to_excel.py's
-    Summary sheet. `n_scored` / `n_total` are reported alongside so a group
-    with a low scorable fraction is visible rather than hidden in the mean.
+def mut_at_k(df: pd.DataFrame, group_cols: list[str], metric_col: str = "mutation_score") -> pd.DataFrame:
+    """Aggregate a per-problem metric per group: mean of `metric_col` over
+    rows where it's defined (not None). Gate-failed problems are excluded
+    from the mean, not zero-filled — matches the existing convention in
+    scripts/results_to_excel.py's Summary sheet. `n_scored` / `n_total` are
+    reported alongside so a group with a low scorable fraction is visible
+    rather than hidden in the mean.
+
+    `metric_col` generalises this beyond `mutation_score` (the default,
+    used throughout RQ4.1/H5) to any per-row 0/1-or-float column --
+    `exec_rate` and `baseline_passed` are both always-defined (never None)
+    for every row, so for those two this reduces to a plain mean with no
+    conditioning; used by analysis/RANKING_MATRIX.md's per-metric
+    reliability table (added 2026-08-04) so every metric shares the exact
+    same aggregation/CI machinery rather than each being computed ad hoc.
+    Boolean columns (e.g. `baseline_passed`) are cast to float first --
+    pandas' own bool-mean works fine, but an explicit cast keeps the output
+    dtype consistent across metric_col choices.
     """
-    scored = df.dropna(subset=["mutation_score"])
+    working = df.copy()
+    if working[metric_col].dtype == bool:
+        working[metric_col] = working[metric_col].astype(float)
+    scored = working.dropna(subset=[metric_col])
     agg = (
-        scored.groupby(group_cols)["mutation_score"]
+        scored.groupby(group_cols)[metric_col]
         .agg(mut_at_k="mean", n_scored="count")
         .reset_index()
     )
-    totals = df.groupby(group_cols).size().rename("n_total").reset_index()
+    totals = working.groupby(group_cols).size().rename("n_total").reset_index()
     agg = agg.merge(totals, on=group_cols, how="right")
     agg["n_scored"] = agg["n_scored"].fillna(0).astype(int)
     return agg
@@ -52,6 +66,7 @@ def stable_mut_at_k(
     instantiation_col: str = "instantiation_id",
     extra_group_cols: tuple[str, ...] = (),
     coverage_adjust: bool = False,
+    metric_col: str = "mutation_score",
 ) -> pd.DataFrame:
     """StableMut@K: mean Mut@K per model across instantiations, with SD.
 
@@ -63,10 +78,22 @@ def stable_mut_at_k(
 
     coverage_adjust=True computes StableMut@K on the coverage-adjusted score
     (Mut@K x baseline_pass_rate per instantiation) instead of raw Mut@K --
-    see _apply_coverage_adjustment.
+    see _apply_coverage_adjustment. Only meaningful with the default
+    metric_col="mutation_score" (coverage_adjust=True with a different
+    metric_col raises via _apply_coverage_adjustment's own precondition).
+
+    metric_col: see mut_at_k()'s docstring -- generalises this beyond
+    mutation_score to exec_rate/baseline_passed for the per-metric
+    reliability comparison in analysis/RANKING_MATRIX.md.
     """
+    if coverage_adjust and metric_col != "mutation_score":
+        raise ValueError(
+            "coverage_adjust=True folds in baseline_pass_rate, which is only "
+            "meaningful as a correction to mutation_score -- pass "
+            "coverage_adjust=False for other metric_col choices."
+        )
     group_cols = [model_col, *extra_group_cols, instantiation_col]
-    per_inst = mut_at_k(df, group_cols)
+    per_inst = mut_at_k(df, group_cols, metric_col=metric_col)
     if coverage_adjust:
         per_inst = _apply_coverage_adjustment(per_inst)
     scorable = per_inst[per_inst["n_scored"] > 0]
@@ -86,20 +113,32 @@ def pairwise_kendall_tau(
     model_col: str = "model_label",
     instantiation_col: str = "instantiation_id",
     coverage_adjust: bool = False,
+    metric_col: str = "mutation_score",
 ) -> pd.DataFrame:
     """Pairwise Kendall tau between per-instantiation model rankings.
 
     For each pair of instantiations, ranks models by their aggregate
-    Mut@K within that instantiation and correlates the two rankings.
-    A model must have a scorable Mut@K in both instantiations of a pair
-    to be included in that pair's ranking; `n_models` reports how many
-    qualified (tau is NaN if fewer than 2).
+    metric (mutation_score by default, see metric_col) within that
+    instantiation and correlates the two rankings. A model must have a
+    scorable value in both instantiations of a pair to be included in
+    that pair's ranking; `n_models` reports how many qualified (tau is
+    NaN if fewer than 2).
 
     coverage_adjust=True ranks models by the coverage-adjusted score
     (Mut@K x baseline_pass_rate per instantiation) instead of raw Mut@K --
-    see _apply_coverage_adjustment.
+    see _apply_coverage_adjustment; only valid with the default metric_col.
+
+    metric_col: see mut_at_k()'s docstring -- generalises this beyond
+    mutation_score to exec_rate/baseline_passed for the per-metric
+    reliability comparison in analysis/RANKING_MATRIX.md.
     """
-    per_inst = mut_at_k(df, [model_col, instantiation_col])
+    if coverage_adjust and metric_col != "mutation_score":
+        raise ValueError(
+            "coverage_adjust=True folds in baseline_pass_rate, which is only "
+            "meaningful as a correction to mutation_score -- pass "
+            "coverage_adjust=False for other metric_col choices."
+        )
+    per_inst = mut_at_k(df, [model_col, instantiation_col], metric_col=metric_col)
     if coverage_adjust:
         per_inst = _apply_coverage_adjustment(per_inst)
     per_inst = per_inst[per_inst["n_scored"] > 0]

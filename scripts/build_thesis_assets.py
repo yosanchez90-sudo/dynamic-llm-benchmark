@@ -56,6 +56,8 @@ STEPS: list[tuple[str, str, str]] = [
      "RQ5 sanitizer-repair sensitivity (per-model repair fraction, with/without repaired rows)"),
     ("h3_tier_gradient", "scripts/analyze_h3_tier_gradient.py",
      "H3/RQ2 tier gradient: per-model + pooled Spearman rho, Holm-corrected"),
+    ("ranking_matrix", "scripts/build_ranking_matrix.py",
+     "Metric-agnostic ranking matrix: exec_rate/baseline_pass_rate/Mut@K/coverage-adjusted side by side"),
 ]
 
 

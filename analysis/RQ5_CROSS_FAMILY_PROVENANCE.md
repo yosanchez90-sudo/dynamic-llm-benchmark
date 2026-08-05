@@ -1,7 +1,7 @@
 # RQ5 cross-family extension -- correlations (raw tables)
 
-Generated: 2026-08-03T19:11:37.536071+00:00
-Git commit: 5a56a97
+Generated: 2026-08-05T12:56:41.622353+00:00
+Git commit: 09a8b99
 Script: scripts/analyze_rq5_cross_family.py
 
 Per `analysis/RQ5_CROSS_FAMILY_PROPOSAL.md` (approved 2026-07-28). This is a

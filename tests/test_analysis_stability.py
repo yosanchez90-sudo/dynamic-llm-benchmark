@@ -107,6 +107,52 @@ def test_stable_mut_at_k_coverage_adjust_scales_by_scored_fraction():
     assert adjusted.iloc[0]["stable_mut_at_k"] == pytest.approx(0.4)
 
 
+def test_mut_at_k_generalizes_to_exec_rate_never_conditioned():
+    """exec_rate is never None -- metric_col='exec_rate' should reduce to a
+    plain mean over ALL rows, n_scored == n_total always."""
+    df = pd.DataFrame([
+        {"model_label": "m1", "instantiation_id": "1", "exec_rate": 1.0, "mutation_score": None},
+        {"model_label": "m1", "instantiation_id": "1", "exec_rate": 0.0, "mutation_score": None},
+    ])
+    agg = mut_at_k(df, ["model_label", "instantiation_id"], metric_col="exec_rate")
+    row = agg.iloc[0]
+    assert row["n_scored"] == 2
+    assert row["n_total"] == 2
+    assert row["mut_at_k"] == pytest.approx(0.5)
+
+
+def test_mut_at_k_generalizes_to_baseline_passed_bool_cast():
+    """baseline_passed is a bool column -- must average correctly (True=1,
+    False=0), not raise or silently misbehave on non-numeric dtype."""
+    df = pd.DataFrame([
+        {"model_label": "m1", "instantiation_id": "1", "baseline_passed": True},
+        {"model_label": "m1", "instantiation_id": "1", "baseline_passed": True},
+        {"model_label": "m1", "instantiation_id": "1", "baseline_passed": False},
+        {"model_label": "m1", "instantiation_id": "1", "baseline_passed": False},
+    ])
+    agg = mut_at_k(df, ["model_label", "instantiation_id"], metric_col="baseline_passed")
+    assert agg.iloc[0]["mut_at_k"] == pytest.approx(0.5)
+
+
+def test_stable_mut_at_k_metric_col_propagates():
+    df = pd.DataFrame([
+        {"model_label": "m1", "instantiation_id": "1", "exec_rate": 1.0},
+        {"model_label": "m1", "instantiation_id": "1", "exec_rate": 0.0},
+        {"model_label": "m1", "instantiation_id": "2", "exec_rate": 1.0},
+        {"model_label": "m1", "instantiation_id": "2", "exec_rate": 1.0},
+    ])
+    out = stable_mut_at_k(df, metric_col="exec_rate")
+    assert out.iloc[0]["stable_mut_at_k"] == pytest.approx((0.5 + 1.0) / 2)
+
+
+def test_coverage_adjust_rejects_non_default_metric_col():
+    df = pd.DataFrame([{"model_label": "m1", "instantiation_id": "1", "exec_rate": 1.0}])
+    with pytest.raises(ValueError):
+        stable_mut_at_k(df, coverage_adjust=True, metric_col="exec_rate")
+    with pytest.raises(ValueError):
+        pairwise_kendall_tau(df, coverage_adjust=True, metric_col="exec_rate")
+
+
 def test_pairwise_kendall_tau_coverage_adjust_can_change_ranking():
     """Raw Mut@K ties b/c ahead of a; coverage-adjusting by a much lower
     baseline_pass_rate for b flips the ranking -- proves coverage_adjust
