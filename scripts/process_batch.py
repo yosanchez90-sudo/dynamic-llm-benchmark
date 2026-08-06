@@ -35,7 +35,7 @@ sys.path.insert(0, str(ROOT))
 load_dotenv(ROOT / ".env")
 
 from openai import OpenAI  # noqa: E402
-from src.data import test_gen  # noqa: E402
+from src.data import test_gen, ult_plt  # noqa: E402
 from src.eval.test_gen_problem import TestGenRecord, compute_model_label  # noqa: E402
 from src.eval.test_gen_scorer import (  # noqa: E402
     extract_test_file, sanitize_test_file, score_problem,
@@ -78,8 +78,22 @@ def download_results(client: OpenAI, output_file_id: str, dest: Path) -> Path:
 # ── reconstruct problems (for fn_name, source, mutants) ──────────────────────
 
 def build_problem_map(state: dict) -> dict[str, object]:
-    """Return {custom_id: TestGenProblem} by re-running the template engine."""
-    # Group requests by config so we call test_gen.load() once per config.
+    """Return {custom_id: TestGenProblem} by re-running the template engine
+    (Dynamic) or the ULT/PLT static-benchmark loader, dispatched per
+    req["benchmark"] -- mirrors test_gen_runner.py::_load_problems()'s own
+    dispatch.
+
+    Fixed 2026-08-06 (Phase B pre-scoring validation, caught before ever
+    running against a real batch): this previously called test_gen.load()
+    (the Dynamic loader) unconditionally, regardless of benchmark. For a
+    ULT/PLT batch this doesn't crash -- it just returns Dynamic-shaped
+    (template_id, instance_seed) keys that never match ULT/PLT's own
+    ("ULT-<task_id>"/"PLT-<task_id>", int(task_id)) keys, so every single
+    ULT/PLT row would silently print "problem not reconstructed" and get
+    skipped -- 1,600 real, already-paid-for API responses would never be
+    scored or written anywhere, with no exception raised to flag it.
+    """
+    # Group requests by config so we call the loader once per config.
     by_config: dict[str, list[dict]] = {}
     for req in state["requests"]:
         by_config.setdefault(req["config_name"], []).append(req)
@@ -90,14 +104,30 @@ def build_problem_map(state: dict) -> dict[str, object]:
         # tier, which varies per-request — derive it from the group itself
         # rather than assuming L1/L2 (batches can target L3/L4 too).
         r0 = reqs[0]
-        tiers = tuple(sorted({r["tier"] for r in reqs}))
-        problems = test_gen.load(
-            instantiation_id   = r0["instantiation_id"],
-            instantiation_seed = r0.get("instantiation_seed", 1),
-            instance_seeds     = (101,102,103,104,105),
-            tiers              = tiers,
-            prompting_condition= r0["prompting_condition"],
-        )
+        if r0["benchmark"] in ("ult", "plt"):
+            # task_id round-trips through instance_seed=int(task_id) in
+            # ult_plt.py's own load() -- reconstructing the string form
+            # from the batch's own recorded instance_seed rather than
+            # re-deriving which subsample_tag was used (not stored in
+            # request_meta). ult_plt.load() raises loudly if any requested
+            # task_id isn't found in the current candidate pool ("data
+            # drift?") rather than silently dropping it, so a formatting
+            # mismatch here surfaces as an exception, not silent data loss.
+            task_ids = {str(r["instance_seed"]) for r in reqs}
+            problems = ult_plt.load(
+                r0["benchmark"],
+                prompting_condition=r0["prompting_condition"],
+                task_ids=task_ids,
+            )
+        else:
+            tiers = tuple(sorted({r["tier"] for r in reqs}))
+            problems = test_gen.load(
+                instantiation_id   = r0["instantiation_id"],
+                instantiation_seed = r0.get("instantiation_seed", 1),
+                instance_seeds     = (101,102,103,104,105),
+                tiers              = tiers,
+                prompting_condition= r0["prompting_condition"],
+            )
         # Index by (template_id, instance_seed) for fast lookup.
         prob_index = {(p.template_id, p.instance_seed): p for p in problems}
         for req in reqs:
