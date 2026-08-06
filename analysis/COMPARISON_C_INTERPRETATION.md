@@ -25,7 +25,7 @@ gain(Dynamic).
 
 **Selection-effect check** (`scripts/audit_unseen_ult_vs_plt.py`,
 `analysis/comparison_c_unseen_vs_plt_audit.csv`, 2026-07-27): unseen-ULT
-(n=288) and PLT core_400 (n=400) are not comparable populations. unseen-ULT
+(n_problems=288) and PLT core_400 (n_problems=400) are not comparable populations. unseen-ULT
 is *defined* by NOT having a verified training pair — every one of its 288
 problems falls into a named defect category from the repair taxonomy, with
 no "randomly not selected" remainder: STRUCTURAL 34% (code can't execute at
@@ -72,16 +72,16 @@ picture:
 ## Mut@K tells a different, complementary story about test *quality*
 
 Even though seen-ULT reaches 100% baseline-pass and 100% verbatim
-reproduction, its POST Mut@K is only **0.438** (n=112, fully defined now
+reproduction, its POST Mut@K is only **0.438** (n_problems=112, fully defined now
 that every suite passes) — memorizing ULT's own ground-truth tests verbatim
 does not make them *good* tests. This is a ceiling inherited from ULT's own
 repair-verified ground truth (`data/raw/ult_plt/PROVENANCE.md`'s
 ground-truth-quality section), not a fine-tuning artifact: perfect
 reproduction of a mediocre test suite is still a mediocre test suite. Every
-other arm's POST Mut@K is measured on a small, PRE-side-limited n (see the
-analysis plan's "PRE data sparsity" section) and should not be
-over-interpreted — e.g. unseen-ULT's mean *drops* from 0.338 (n=7, PRE) to
-0.139 (n=52, POST) simply because the 45 newly-unlocked suites are, on
+other arm's POST Mut@K is measured on a small, PRE-side-limited n_problems
+(see the analysis plan's "PRE data sparsity" section) and should not be
+over-interpreted — e.g. unseen-ULT's mean *drops* from 0.338 (n_problems=7, PRE) to
+0.139 (n_problems=52, POST) simply because the 45 newly-unlocked suites are, on
 average, weaker than the tiny pre-existing PRE set, not because fine-tuning
 made tests worse.
 

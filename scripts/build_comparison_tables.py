@@ -311,7 +311,7 @@ this table: {a_defb_max_diff:.2e} (floating-point noise only --
     "Effect direction FLIPS between raw and definition-matched (sign of effect_r differs) -- treat Comparison A's direction as conditioning-sensitive, not robust."
     if (a_wilcoxon.effect_r is not None and a_wilcoxon_adj.effect_r is not None
         and a_wilcoxon.effect_r * a_wilcoxon_adj.effect_r < 0)
-    else f"Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read (which side is higher, and that n={a_wilcoxon.n_pairs} is too small at either p-value to call this a real effect) does not flip."
+    else f"Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read (which side is higher, and that n_models={a_wilcoxon.n_pairs} is too small at either p-value to call this a real effect) does not flip."
 }
 
 ## Comparison A thin-cell audit (added 2026-07-30, extended 2026-08-03)
@@ -334,7 +334,7 @@ result below**: {sorted(a_thin_models['model_label'].tolist()) or "none -- all m
 
 **Does the {a_wilcoxon.n_pairs}-model result survive thin-cell filtering?**
 {
-    f"NO in the sense that it shrinks to n={a_wilcoxon_thick.n_pairs} once thin cells are excluded -- {len(a_thin_models)} of the original {a_wilcoxon.n_pairs} model(s) were resting on a point estimate averaged over fewer than {THIN_N_DEFINED} baseline-passing problems, not a stable per-model mean."
+    f"NO in the sense that it shrinks to n_models={a_wilcoxon_thick.n_pairs} once thin cells are excluded -- {len(a_thin_models)} of the original {a_wilcoxon.n_pairs} model(s) were resting on a point estimate averaged over fewer than {THIN_N_DEFINED} baseline-passing problems, not a stable per-model mean."
     if len(a_thin_models) > 0 else
     f"Yes -- no model in the {a_wilcoxon.n_pairs}-model result has n_defined<{THIN_N_DEFINED} on either side."
 }
@@ -374,7 +374,7 @@ only -- `analysis/comparison_b_coverage_adjusted.csv`):
     "Effect direction FLIPS between raw and definition-matched (sign of effect_r differs) -- treat Comparison B's direction as conditioning-sensitive, not robust."
     if (b_wilcoxon.effect_r is not None and b_wilcoxon_adj.effect_r is not None
         and b_wilcoxon.effect_r * b_wilcoxon_adj.effect_r < 0)
-    else f"Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read does not flip at n={b_wilcoxon.n_pairs}."
+    else f"Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read does not flip at n_models={b_wilcoxon.n_pairs}."
 }
 
 **Thin-cell audit** (n_defined<{THIN_N_DEFINED} on either side flagged thin):
@@ -391,7 +391,7 @@ result below**: {sorted(b_thin_models['model_label'].tolist()) or "none -- all m
 
 **Does the {b_wilcoxon.n_pairs}-model result survive thin-cell filtering?**
 {
-    f"NO in the sense that it shrinks to n={b_wilcoxon_thick.n_pairs} once thin cells are excluded -- {len(b_thin_models)} of the original {b_wilcoxon.n_pairs} model(s) were resting on a point estimate averaged over fewer than {THIN_N_DEFINED} baseline-passing problems."
+    f"NO in the sense that it shrinks to n_models={b_wilcoxon_thick.n_pairs} once thin cells are excluded -- {len(b_thin_models)} of the original {b_wilcoxon.n_pairs} model(s) were resting on a point estimate averaged over fewer than {THIN_N_DEFINED} baseline-passing problems."
     if len(b_thin_models) > 0 else
     f"Yes -- no model in the {b_wilcoxon.n_pairs}-model result has n_defined<{THIN_N_DEFINED} on either side."
 }

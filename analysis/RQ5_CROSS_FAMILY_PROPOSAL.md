@@ -11,7 +11,7 @@ verification) — not updated to match final numbers.
 
 Per `analysis/RQ5_ANALYSIS_PLAN.md` Part 2 follow-up (see that plan's
 2026-07-28/29 addendum: this extension was a post-hoc addition, not part of
-the original pre-registration). The supervisor's actual ask: the n=3
+the original pre-registration). The supervisor's actual ask: the n_models=3
 BigCodeBench correlation is all-Qwen (a within-family size sweep,
 `analysis/RQ5_INTERPRETATION.md`'s "read this as size-scaling, not
 cross-benchmark validity"). Breaking that confound needs models from OTHER
@@ -49,7 +49,7 @@ this proposal was approved against, not touched up to match.
 Spans **3 distinct families** (DeepSeek, Meta/Llama, BigCode; +Mistral if
 the 5th is included) and a **6.7B-33B size range**. DeepSeek appears twice
 deliberately (6.7B and 33B) — a second within-family size pair from a
-DIFFERENT family than Qwen lets us check whether the n=3-type
+DIFFERENT family than Qwen lets us check whether the n_models=3-type
 "perfect-but-confounded" pattern is Qwen-specific or a general property of
 within-family sweeps, which is itself informative.
 
@@ -126,7 +126,7 @@ because any single submission approaches the threshold.
 
 **Your call before I submit anything:**
 1. Which candidates — all 4 (+ optional Mistral-7B, 5 total), or a subset?
-2. Dynamic only (cheaper, directly answers the Dynamic↔ULT n=7 question
+2. Dynamic only (cheaper, directly answers the Dynamic↔ULT n_models=7 question
    with more cross-family points) or Dynamic + ULT (fuller picture, lets
    the new models also feed the BigCodeBench correlation, ~2.3x the cost)?
 3. OK to spend the download bandwidth/time (~135 GB for all 4) from the

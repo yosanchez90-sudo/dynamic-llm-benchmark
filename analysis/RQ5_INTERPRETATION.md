@@ -79,7 +79,7 @@ regardless of what any external paper does.
 
 **The primary (Spearman/Kendall, per the pre-registered plan) result is much
 weaker than the score-level (Pearson) result suggests, and does not land in
-the pre-registered validity-supporting zone.** n=7 (all models with both
+the pre-registered validity-supporting zone.** n_models=7 (all models with both
 Dynamic and ULT core_400 data; GPT-5/GPT-5-mini have no ULT data yet):
 
 | Statistic | Value | 95% bootstrap CI | Permutation p |
@@ -106,7 +106,7 @@ the reverse for the two Qwen sizes.
 **Reading this against the pre-registered frame**: the interpretation frame
 recorded moderate-to-strong Spearman ρ as validity-supporting and near-zero
 as validity-undermining. 0.143 sits in the latter zone, not the former —
-but at n=7, this genuinely **cannot distinguish "no relationship" from
+but at n_models=7, this genuinely **cannot distinguish "no relationship" from
 "not enough power to detect one"** (CI spans nearly the entire [-1, 1]
 range). This is exactly the power limitation the plan pre-registered, not a
 post-hoc excuse: report the number honestly, do not claim validity is
@@ -122,7 +122,7 @@ higher, more flattering number to report instead.
 **(a) Difficulty composition.** Pooling L1-L4 compares a mixed-difficulty
 benchmark against ULT's CC>=8-only band. Tier-matching (Dynamic-L4 only,
 Comparison A's own convention) does not simply weaken the correlation — it
-**flips its sign** (Pearson r=-0.873, Kendall τ=-0.200, n=5). At n=5 with a
+**flips its sign** (Pearson r=-0.873, Kendall τ=-0.200, n_models=5). At n_models=5 with a
 CI spanning almost the full [-1,1] range this is not a confident finding on
 its own, but it rules out the easy story ("pooling just adds noise that
 tier-matching would fix") — the CC-matched comparison looks, if anything,
@@ -150,7 +150,7 @@ on who can produce a baseline-passing suite at all (PASSES against the real
 function — a stricter, later gate than mere exec/collection, which this
 project's scorer tracks separately as `exec_ok`), not on mutation-killing
 quality. Conditioned Mut@K alone (the pre-registered primary metric,
-restricted to the same n=7/same models for a fair comparison) is τ=0.143 —
+restricted to the same n_models=7/same models for a fair comparison) is τ=0.143 —
 identical to the full-pool result, meaning models that clear the
 baseline-pass bar do **not** then agree on which suites are the *better*
 mutation killers. So: most of the apparent Dynamic/ULT disagreement is not
@@ -196,7 +196,7 @@ are not as disconnected as that number alone implies.
 Also carried over from the per-tier check: Qwen 32B/7B score much higher on
 ULT (0.90/0.89) than their Dynamic-L4 performance predicts (0.55/0.54,
 already a documented stability outlier), while the API models show the
-opposite asymmetry. n=5 is too small to treat this as confirmed, but it's
+opposite asymmetry. n_models=5 is too small to treat this as confirmed, but it's
 the kind of pattern a contamination story would produce (open-weight models
 plausibly saw ULT-adjacent web content a leakage-free Dynamic instantiation
 can't replicate) — recorded as a lead for RQ1 cross-referencing, not a
@@ -214,7 +214,7 @@ designed in, not discovered after the fact. The **bottom-up** argument (this
 RQ5/H6 analysis) is empirical: does the benchmark's ranking of models agree
 with independent measures of related capability? The answer here is mixed
 and instructive rather than simply confirmatory. Cross-provider rank
-agreement with ULT (n=7, spanning distinct architectures and providers) is
+agreement with ULT (n_models=7, spanning distinct architectures and providers) is
 close to zero on the pre-registered primary metric (Kendall τ=0.143), and
 that finding is reported as-is, not smoothed over. A post-hoc diagnosis,
 however, complicates a simple "distinct capabilities" reading — with a
@@ -244,7 +244,7 @@ score's cross-benchmark agreement is strong enough to raise a redundancy
 concern rather than resolve a validity one. Neither candidate reading of
 this benchmark's primary metric lands in the zone the plan predicted in
 advance. The one
-clean, strong correlation available (Dynamic/ULT vs BigCodeBench, n=3) is
+clean, strong correlation available (Dynamic/ULT vs BigCodeBench, n_models=3) is
 confined to a single model family's size sweep and is better read as
 evidence that scale predicts everything within a family than as independent
 proxy validation across the field. Taken together, the two halves of
@@ -279,15 +279,15 @@ explicitly.** A perfect rank match across a 1.5B→7B→32B sweep within one
 model family is close to the least surprising result available: bigger
 Qwen-Coder checkpoints are better at essentially everything, so of course
 they rank the same way on Dynamic, ULT, and BigCodeBench. This is NOT the
-same kind of evidence as the n=7 Dynamic↔ULT result above, which spans
+same kind of evidence as the n_models=7 Dynamic↔ULT result above, which spans
 multiple providers/architectures and is the test that can actually fail
 (and did show near-zero rank agreement). The permutation p-value confirms
 this isn't statistically distinguishable from chance either (p=0.331 even
-at "perfect" τ=1.0 — n=3 has only 6 possible orderings, so a perfect match
-isn't rare enough to be significant). **Do not report the n=3 numbers as
+at "perfect" τ=1.0 — n_models=3 has only 6 possible orderings, so a perfect match
+isn't rare enough to be significant). **Do not report the n_models=3 numbers as
 "BigCodeBench validates this benchmark"** — report them as "consistent
 with, but not independent evidence for, cross-benchmark validity," and
-lead with the cross-provider n=7 Dynamic↔ULT result as the analysis that
+lead with the cross-provider n_models=7 Dynamic↔ULT result as the analysis that
 actually stress-tests the claim.
 
 ## Cross-family extension — final results (2026-07-29)
@@ -299,7 +299,7 @@ StarCoder2-15B-Instruct-v0.1, Mistral-7B-Instruct-v0.3. Full script:
 `analysis/RQ5_CROSS_FAMILY_PROVENANCE.md`.
 
 **Dynamic↔ULT** (breaks nothing new about the family confound — both sides
-are our own benchmarks — but adds statistical power, n=7→n=11):
+are our own benchmarks — but adds statistical power, n_models=7→n_models=11):
 
 | | n | Kendall τ |
 |---|---|---|
@@ -315,7 +315,7 @@ significant. The raw metric's rank agreement actually improves somewhat
 relationship.
 
 **Dynamic/ULT↔BigCodeBench — this is the result that actually breaks the
-size-sweep confound**, n=3 (all-Qwen)→n=7 (4 families):
+size-sweep confound**, n_models=3 (all-Qwen)→n_models=7 (4 families):
 
 | Pair | Metric | n | Kendall τ |
 |---|---|---|---|
@@ -326,12 +326,12 @@ size-sweep confound**, n=3 (all-Qwen)→n=7 (4 families):
 
 **This is exactly the confirmation the "read this as size-scaling, not
 cross-benchmark validity" caution above was waiting on.** The raw
-pre-registered metric's perfect n=3 correlation was indeed a within-family
+pre-registered metric's perfect n_models=3 correlation was indeed a within-family
 size-scaling artifact — it falls apart the moment real architectural
 diversity enters the comparison (τ 1.000→0.429/0.238, both statistically
 indistinguishable from chance). The coverage-adjusted score's correlation
 survives this test essentially intact (τ 1.000→0.905 for Dynamic, a real,
-significant, n=7, 4-family result) — independent, external evidence for
+significant, n_models=7, 4-family result) — independent, external evidence for
 the same "baseline-pass-rate agreement is real and robust" finding as the
 Dynamic↔ULT internal comparison above, now validated against a public
 benchmark this project had no hand in constructing.
@@ -533,11 +533,11 @@ independently significant going forward without this caveat.
 ## What this means going forward
 
 Superseded by the cross-family extension above (completed 2026-07-29,
-n=11 Dynamic↔ULT / n=7 Dynamic-ULT↔BigCodeBench) — the "genuinely larger N"
+n_models=11 Dynamic↔ULT / n_models=7 Dynamic-ULT↔BigCodeBench) — the "genuinely larger N"
 this section originally called for has now landed, and it changed the
 read: the raw pre-registered metric's apparent cross-benchmark agreement
 (both internal and external) does not survive it, while the coverage-
-adjusted score's does. One caution carried over unchanged: with n=7-11,
+adjusted score's does. One caution carried over unchanged: with n_models=7-11,
 individual points still matter — a future 5th or 6th cross-family model
 landing differently could move these numbers meaningfully, so treat this
 as strong current evidence, not a permanently closed question. The same

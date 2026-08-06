@@ -380,7 +380,7 @@ def main() -> None:
     res_adj = None
     if len(sub) >= 3:
         res_adj = compute_correlations(sub["dyn_pooled_coverage_adj"].to_numpy(), sub["ult_coverage_adj"].to_numpy())
-        out.append(f"**Rank correlation on coverage-adjusted score (n={res_adj.n})**: "
+        out.append(f"**Rank correlation on coverage-adjusted score (n_models={res_adj.n})**: "
                    f"Pearson r={res_adj.pearson_r:.3f}, Spearman ρ={res_adj.spearman_rho:.3f}, "
                    f"Kendall τ={res_adj.kendall_tau:.3f} (perm p={res_adj.kendall_p_perm:.4f}).")
     out.append("")
@@ -509,7 +509,7 @@ def main() -> None:
                "plainly rather than assumed: the correction below uses Dynamic's reliability "
                "only (equivalent to assuming ULT's reliability=1, which UNDERESTIMATES the "
                "true disattenuated correlation if ULT is not, in fact, perfectly reliable).")
-    out.append(f"- Observed pooled Kendall τ = {res_pooled.kendall_tau:.3f} (n={res_pooled.n}).")
+    out.append(f"- Observed pooled Kendall τ = {res_pooled.kendall_tau:.3f} (n_models={res_pooled.n}).")
     out.append(f"- Partial disattenuation (ULT reliability assumed = 1): "
                f"τ_disattenuated = {res_pooled.kendall_tau:.3f} / sqrt({reliability_dynamic:.3f}) "
                f"= **{disattenuated_partial:.3f}**.")
@@ -527,7 +527,7 @@ def main() -> None:
     if res_adj is not None and tau_n4_adj is not None:
         disattenuated_adj = res_adj.kendall_tau / (tau_n4_adj ** 0.5)
         out.append(f"- Coverage-adjusted reliability (N=4, sec 3c): **{tau_n4_adj:.3f}**.")
-        out.append(f"- Observed coverage-adjusted Kendall τ = {res_adj.kendall_tau:.3f} (n={res_adj.n}).")
+        out.append(f"- Observed coverage-adjusted Kendall τ = {res_adj.kendall_tau:.3f} (n_models={res_adj.n}).")
         out.append(f"- Matched disattenuation: τ_disattenuated = {res_adj.kendall_tau:.3f} / "
                    f"sqrt({tau_n4_adj:.3f}) = **{disattenuated_adj:.3f}**.")
         out.append(f"- Compare to the raw-matched {disattenuated_partial:.3f} above -- the "
@@ -549,16 +549,16 @@ def main() -> None:
     if len(pooled_thick) >= 3:
         res_pooled_thick = compute_correlations(
             pooled_thick["dyn_pooled_mutk"].to_numpy(), pooled_thick["ult_mutk"].to_numpy())
-        out.append(f"- Unfiltered: τ={res_pooled.kendall_tau:.3f} (n={res_pooled.n}). "
+        out.append(f"- Unfiltered: τ={res_pooled.kendall_tau:.3f} (n_models={res_pooled.n}). "
                    f"Thin-cell-excluded: τ={res_pooled_thick.kendall_tau:.3f} "
-                   f"(n={res_pooled_thick.n}, excluded: {pooled_excluded or 'none'}).")
+                   f"(n_models={res_pooled_thick.n}, excluded: {pooled_excluded or 'none'}).")
         out.append(f"- **Mistral is unquotable on this pair once cross-family models are in "
                    f"scope** (ULT n_defined=1, analysis/RQ5_CROSS_FAMILY_PROVENANCE.md) -- not "
                    f"applicable to this canonical-only n=7 table (Mistral isn't one of the 9 "
                    f"canonical models), flagged here so the rule is visible in one place; see "
                    f"the cross-family provenance doc for its own thin-cell flags.")
     else:
-        out.append(f"- Excluding thin cells leaves n={len(pooled_thick)} (<3) -- cannot compute "
+        out.append(f"- Excluding thin cells leaves n_models={len(pooled_thick)} (<3) -- cannot compute "
                    f"a correlation. Excluded: {pooled_excluded or 'none'}.")
     out.append("")
 

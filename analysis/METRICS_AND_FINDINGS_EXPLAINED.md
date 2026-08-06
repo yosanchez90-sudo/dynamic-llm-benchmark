@@ -519,9 +519,35 @@ per-instantiation `StableMut@K` figure still follows the row-level rule
 above (or is itself a further `extra_group_cols=("tier",)` breakdown, per
 `STABILITY.md`'s "by tier" table).
 
+### Notation table (added 2026-08-06, notation-consistency pass) — the
+canonical reference for every capital-N/lowercase-n symbol in this
+project; other docs should cite this table rather than redefine any of
+these. A bare, unsubscripted "n" in prose is always a bug from here on —
+every count below has exactly one correct subscript.
+
+| Symbol | Meaning | Distinguish from | Example |
+|---|---|---|---|
+| `K` | Attempts/problem, Pass@K-style (§5.4 of `PROJECT_BRIEF.md`; matches Exec@K/Mut@K/etc. and the `K` field on every result row). Always 1 in this project's real data. | `m` (a completely different quantity, below) | "Mut@K, K=1" |
+| `m` | Instances/template (`PROJECT_BRIEF.md` §5.2) — a prose-only symbol, no code equivalent (code uses `len(instance_seeds)`). | `K` | "60 templates × m=5" |
+| `N` | **Instantiation scope** — the project-wide design target vs. what was actually executed, a property of the *project's plan*, not of any one table or figure. | `n_instantiations` (a per-model, per-run *count*, below) | "N=5 design target, executed as N=4" |
+| `n_models` | Count of **models** entering one specific comparison/correlation/table. Varies by analysis — see the (renamed) table below. | `N`, `n_problems` | "Kendall τ, n_models=7" |
+| `n_problems` / `n_total` | Count of **problem rows** in a group (a model×benchmark×tier cell, a pooled scope, etc.). | `n_defined` (a subset of this) | "n_problems=300" |
+| `n_defined` | Count of rows within an `n_problems` group where `mutation_score is not None` (⊆ `n_problems`, never greater) — see `n_defined`'s own entry above. | `n_problems` | "n_defined=112 of n_problems=400" |
+| `n_instantiations` | **Code identifier**, not prose notation (`src/Analysis/stability.py::stable_mut_at_k`'s output column) — for *one model*, how many instantiations actually contributed a scorable value to that model's own `StableMut@K` mean. A per-model, per-run count, not the project-wide `N` above (a model can have `n_instantiations=3` in a partial run while the project's `N` is 5) — this is exactly the ambiguity flagged 2026-08-06: `STABILITY.md`'s raw tables print `n_instantiations` as a column header, which reads like a third notion of "n" next to `n_models` and `N` unless this distinction is stated explicitly, as it now is here. **Not renamed in code** (prose/docs-only fix, per this pass's own scope) — the thesis notation map should represent it with a symbol distinct from both `N` and `n_models` (e.g. a per-model subscript) rather than importing the code's exact column name verbatim. |
+
+**Code identifiers that embed one of these ambiguities, for the thesis
+notation map** (listed, not renamed — renaming code identifiers is out of
+scope for this pass): `src/eval/test_gen_problem.py`'s `K` field (=`K`
+above, already unambiguous); `src/data/test_gen.py`'s `len(instance_seeds)`
+(=`m` above, no literal variable named `K` or `m`); `src/Analysis/stability.py`'s
+`n_instantiations` output column (=the per-model count above, distinct
+from `N`); `scripts/coverage_matrix.py`'s `INSTANTIATIONS` constant (the
+project-wide `N`-scope's enumerable set, i.e. `("1","2","3","4","5")`) vs.
+its `EXPECTED_PER_CELL` (an `n_problems`-shaped constant, not `n_models`).
+
 ---
 
-## 3. Why n changes
+## 3. Why n_models changes
 
 This is the table to check before trusting any comparison across analyses.
 **The 9 canonical models** (`scripts/coverage_matrix.py::MODEL_SPECS`):
@@ -537,12 +563,12 @@ cross-family models or any fine-tuned adapter, unless a row explicitly says
 | Comparison A, thin-cell-filtered (n_defined≥20 both sides) | 3 | Claude Haiku, Claude Sonnet, Gemini Flash-Lite | + Qwen 32B (n_defined=13), Qwen 7B (n_defined=1) — both below the n_defined<20 threshold on the Dynamic-L4 side. |
 | **Comparison B** (ULT vs PLT) | 7 | Qwen 32B/7B/1.5B, Claude Haiku, Claude Sonnet, Gemini Flash-Lite, Gemini Pro Preview | GPT-5 / GPT-5-mini — no ULT or PLT data at all (same credit gate as above). |
 | Comparison B, thin-cell-filtered | 5 | Qwen 32B, Claude Haiku, Claude Sonnet, Gemini Flash-Lite, Gemini Pro Preview | + Qwen 1.5B (n_defined=8 on ULT), Qwen 7B (n_defined=7 on ULT). |
-| **Comparison C**, canonical 2×3 DiD | 1 model, multiple problem populations | Qwen2.5-Coder-1.5B-Instruct + LoRA (fine-tuned on ULT) | By design, not data availability — PROJECT_BRIEF.md O7 scopes fine-tuning to *one* small open-source model, not a sweep. Populations within this one model: seen-ULT n=112, unseen-ULT n=288, PLT core_400 n=400, Dynamic-L1-L3 n≈675, Dynamic-L4 n=225 (floor-limited both pre/post). |
+| **Comparison C**, canonical 2×3 DiD | 1 model, multiple problem populations | Qwen2.5-Coder-1.5B-Instruct + LoRA (fine-tuned on ULT) | By design, not data availability — PROJECT_BRIEF.md O7 scopes fine-tuning to *one* small open-source model, not a sweep. Populations within this one model: seen-ULT n_problems=112, unseen-ULT n_problems=288, PLT core_400 n_problems=400, Dynamic-L1-L3 n_problems≈675, Dynamic-L4 n_problems=225 (floor-limited both pre/post). |
 | **StableMut@K** / pairwise Kendall τ, N=4 instantiations | up to 7 (varies per instantiation-pair; fewer for pairs involving a partially-run instantiation) | Claude Sonnet, Claude Haiku, Qwen 32B/7B/1.5B, Gemini Flash-Lite, Gemini Pro Preview (partial — complete for instantiations 1-4, still missing data) | GPT-5 / GPT-5-mini — single instantiation only; structurally cannot enter a *cross*-instantiation comparison regardless of any filter. |
 | **RQ5 Dynamic↔ULT**, canonical | 7 | Claude Sonnet, Claude Haiku, Gemini Flash-Lite, Gemini Pro Preview, Qwen 32B/7B/1.5B | GPT-5 / GPT-5-mini — no ULT data (same gate as Comparison A/B). |
 | RQ5 Dynamic↔ULT, cross-family | 11 | the 7 above + DeepSeek-Coder-6.7B, CodeLlama-13B, StarCoder2-15B, Mistral-7B-v0.3 | same GPT-5/mini exclusion; the 4 additions are NOT canonical models — never mixed into Comparison A/B or StableMut@K. |
 | **RQ5 Dynamic/ULT↔BigCodeBench**, canonical | 3 | Qwen 32B, Qwen 7B, Qwen 1.5B | all 6 API models (both Claudes, both Geminis, both GPTs) — none has a published BigCodeBench Pass@1 score at all (checked via a leaderboard harvest, not merely "not looked up yet"). |
-| RQ5 Dynamic/ULT↔BigCodeBench, cross-family | 7 | 3 Qwen + DeepSeek-6.7B, CodeLlama-13B, StarCoder2-15B, Mistral-7B | same 6 API models excluded. **Caveat inside this n=7**: 2 of the 7 points are individually thin on the Dynamic/ULT side — CodeLlama-13B (ULT n_defined=8) and Mistral-7B (Dynamic n_defined=5, ULT n_defined=1) — the correlation still reports n=7, but two of those seven Mut@K values are themselves shaky point estimates. |
+| RQ5 Dynamic/ULT↔BigCodeBench, cross-family | 7 | 3 Qwen + DeepSeek-6.7B, CodeLlama-13B, StarCoder2-15B, Mistral-7B | same 6 API models excluded. **Caveat inside this n_models=7**: 2 of the 7 points are individually thin on the Dynamic/ULT side — CodeLlama-13B (ULT n_defined=8) and Mistral-7B (Dynamic n_defined=5, ULT n_defined=1) — the correlation still reports n_models=7, but two of those seven Mut@K values are themselves shaky point estimates. |
 
 **Read this table before asking "why doesn't model X appear in table Y" —
 every exclusion above has one of exactly five causes: (1) no data
@@ -569,7 +595,7 @@ detectable change at all** on the dynamic benchmark's hardest tier.
 
 **Evidence**: seen-ULT baseline-pass rate goes from whatever it was
 pre-fine-tune to **100%** post-fine-tune (+99.1pp, CI [97.3, 100.0],
-n=112), matching a **100% verbatim-match rate** — the model is not writing
+n_problems=112), matching a **100% verbatim-match rate** — the model is not writing
 better tests, it is reproducing the exact ground-truth test text it was
 trained on. PLT (never trained on, but leaked/similar-in-spirit content)
 still gains +22.5pp raw, +13.8pp (CI [7.7, 20.1]) after subtracting a
@@ -612,7 +638,7 @@ demonstrates the mechanism of contamination-induced inflation concretely,
 using this project's own controlled fine-tune rather than an assumed prior
 result), and that its value is entirely in the CONTRAST with Dynamic-L1-L3
 and Dynamic-L4, not in the seen-ULT number standing alone. A more
-substantive attack: n=1 model, n=1 fine-tune run — no replication across
+substantive attack: n_models=1, one fine-tune run — no replication across
 model sizes or fine-tuning method (LoRA specifically, at one hyperparameter
 setting) exists in this project, so "does this generalise beyond
 Qwen-1.5B-LoRA" is genuinely untested here.
@@ -723,7 +749,7 @@ metric, restricted to the same 7 models for a fair comparison — is
 baseline-pass bar do **not** then agree on which of them writes the
 *better* mutation-killing tests. Confirmed externally too: the cross-family
 extension's Dynamic/ULT↔BigCodeBench correlation using `coverage_adjusted`
-survives adding 4 architecturally diverse models (τ 1.000→0.905, n=7,
+survives adding 4 architecturally diverse models (τ 1.000→0.905, n_models=7,
 p=0.0034) while the same correlation using raw conditional Mut@K collapses
 (τ 1.000→0.429/0.238, no longer significant) — independent, external
 confirmation that the surviving signal is about executability, not
@@ -754,9 +780,9 @@ definitions tried.
 
 **Evidence** (`analysis/RQ5_CROSS_DEFINITION_AUDIT.md` §5,
 `analysis/COMPARISON_PROVENANCE.md`): raw, unfiltered Comparison A
-(n=5) says ULT scores slightly higher (`effect_r=+0.200`, p=0.81);
-thin-cell-filtered (n=3) flips to Dynamic-L4 higher (`effect_r=-1.000`,
-p=0.25); the definition-matched/coverage-adjusted co-primary (n=5) *also*
+(n_models=5) says ULT scores slightly higher (`effect_r=+0.200`, p=0.81);
+thin-cell-filtered (n_models=3) flips to Dynamic-L4 higher (`effect_r=-1.000`,
+p=0.25); the definition-matched/coverage-adjusted co-primary (n_models=5) *also*
 says Dynamic-L4 higher (`effect_r=-0.600`, p=0.31) — agreeing with the
 thin-filtered reading, not the raw-unfiltered one. None of the three
 readings is statistically significant. **The sign has now flipped twice
@@ -847,12 +873,12 @@ whether more DATA or more ANALYSIS would be needed to support them.
   GPT-5-mini's ULT batches, and Gemini Pro Preview's Dynamic-L4 crawl) are
   needed before this comparison has any chance of resolving.
 - **"This finding generalises beyond a 1.5B LoRA fine-tune"** — Comparison
-  C (finding #1) is n=1 model, one fine-tuning method, one hyperparameter
+  C (finding #1) is n_models=1, one fine-tuning method, one hyperparameter
   setting. Nothing in this project tests whether a larger model, a
   different PEFT method, or full fine-tuning would show the same pattern.
 - **"The cross-family BigCodeBench correlation is fully independent
   evidence"** — 2 of its 7 points (CodeLlama-13B, Mistral-7B) are
-  individually thin-cell (§3's table) — the n=7 correlation is real, but
+  individually thin-cell (§3's table) — the n_models=7 correlation is real, but
   two of its inputs are shaky point estimates, not seven equally solid
   ones.
 - **"Gemini 3.1 Pro Preview's true Dynamic-pooled score"** — see the
@@ -884,7 +910,7 @@ present-with-n_defined=0, in `analysis/comparison_a_coverage.csv`). Its ULT
 Dynamic-L4 gap. Effects, traced explicitly:
 
 1. **Comparison A**: excluded entirely (§3's table) — cannot be, and isn't.
-2. **RQ5 Dynamic↔ULT correlation (canonical n=7, cross-family n=11)**: this
+2. **RQ5 Dynamic↔ULT correlation (canonical n_models=7, cross-family n_models=11)**: this
    model **is included**, but its `dynamic_mutk_pooled` value (0.974 — the
    *highest* of all 9 canonical models,
    `analysis/RQ5_PROVENANCE.md`) is computed from L1-L3 only. Every other
@@ -904,7 +930,7 @@ Dynamic-L4 gap. Effects, traced explicitly:
 5. **Cross-family BigCodeBench correlations**: unaffected directly (those
    use `ult_mutk`/`dynamic_mutk_pooled`, inheriting the same pooled-score
    caveat as point 2 above, but this model isn't part of the cross-family
-   n=7/n=11 identification — it's canonical, already counted separately).
+   n_models=7/n_models=11 identification — it's canonical, already counted separately).
 
 **The practical rule**: any time this project reports a "pooled Dynamic"
 number for Gemini 3.1 Pro Preview, read it as "L1-L3 pooled," not "L1-L4
@@ -923,9 +949,9 @@ new data landing.
 
 | # | What broke | How it was found | What it invalidated | How it was fixed | What prevents recurrence |
 |---|---|---|---|---|---|
-| 1 | **n-gram / prompt-echo artifact.** `no_repeat_ngram_size=4` (an HF generation-config setting, added 2026-07-07) bans repeated 4-grams over the *full* prompt+response sequence. The system prompt contains the literal instruction text `"from under_test import <function_name>"`; any fine-tuned checkpoint that correctly followed this instruction had that exact line corrupted on generation, because reproducing it tripped the n-gram ban. | Investigated an apparent fine-tuning "collapse" — confirmed mechanistically at n=50 (0/50 clean import lines with the setting enabled vs 50/50 clean with it disabled, independent of repetition_penalty, under both greedy and sampling). | Fabricated the entire recorded collapse in 3 of 6 supplementary fine-tuning conditions (`bp_own` both sizes, `bp_gpt5` both sizes was "most of it"). | Dropped `no_repeat_ngram_size` entirely from `eval_checkpoints.py`; old result CSVs quarantined in place (never edited — append-only convention), `analysis/README_QUARANTINE.md` explains why. | The full resolved generation config (including inherited defaults and their source) is now logged into every row — an unlogged setting like this one is exactly the failure mode CLAUDE.md's "Hard rules" section now calls out by name. |
+| 1 | **n-gram / prompt-echo artifact.** `no_repeat_ngram_size=4` (an HF generation-config setting, added 2026-07-07) bans repeated 4-grams over the *full* prompt+response sequence. The system prompt contains the literal instruction text `"from under_test import <function_name>"`; any fine-tuned checkpoint that correctly followed this instruction had that exact line corrupted on generation, because reproducing it tripped the n-gram ban. | Investigated an apparent fine-tuning "collapse" — confirmed mechanistically at n_problems=50 (0/50 clean import lines with the setting enabled vs 50/50 clean with it disabled, independent of repetition_penalty, under both greedy and sampling). | Fabricated the entire recorded collapse in 3 of 6 supplementary fine-tuning conditions (`bp_own` both sizes, `bp_gpt5` both sizes was "most of it"). | Dropped `no_repeat_ngram_size` entirely from `eval_checkpoints.py`; old result CSVs quarantined in place (never edited — append-only convention), `analysis/README_QUARANTINE.md` explains why. | The full resolved generation config (including inherited defaults and their source) is now logged into every row — an unlogged setting like this one is exactly the failure mode CLAUDE.md's "Hard rules" section now calls out by name. |
 | 2 | **Hardcoded validator totals.** `validate_cc.py` printed a literal `"Total: 60, Failed: 0"` string regardless of what actually ran; `validate.py` pointed `TEMPLATES_ROOT` at a stale path and silently validated **zero** templates while still printing as if it had run. | Code review of the validation scripts themselves (not caught by any test, since the scripts "passed" trivially). | Any claim that "60/60 templates pass validation" made before this fix could not be trusted — the number was printed unconditionally, not computed. | `validate_cc.py` now computes `total = sum(len(v) for v in by_tier.values())`; `validate.py`'s path resolution fixed to be relative to the script, not a stale absolute path. | `scripts/archive_diversity_audit.py` records the genuinely-computed post-fix result ("60/60 templates land inside their declared per-template stability band") as the citable figure. |
-| 3 | **Pooled-tier-composition gap.** RQ5's initial Dynamic↔ULT correlation pooled all four Dynamic tiers (L1-L4) together before comparing against ULT's CC≥8-only band — an apples-to-a-narrower-slice-of-apples comparison that was never flagged as a choice until diagnosed. | Post-hoc diagnosis of a surprisingly low τ=0.143 result (`analysis/RQ5_DIAGNOSTICS.md`). | The initial framing implied pooling was a neutral default; tier-matching (Dynamic-L4 only) was found to not simply weaken the correlation but **flip its sign** (τ=0.143 → τ=-0.200, n=5) — meaning the pooled number's sign itself was composition-dependent, not a robust read. | Diagnosed and reported explicitly, not silently "fixed" (there is no single correct pooling choice) — both the pooled and L4-matched readings are now reported side by side with the tier-discrimination gradient (finding #3) as the explanation for why they differ. A related, proactively-applied fix: Comparison C's Dynamic control arm tier composition was pre-registered (`docs(comparison-c)` commit) *before* any POST data existed, specifically to avoid this same gap recurring post-hoc. | Every pooled-vs-tier-matched number in `RQ5_INTERPRETATION.md`/`RQ5_DIAGNOSTICS.md` is now labelled with which composition it uses. |
+| 3 | **Pooled-tier-composition gap.** RQ5's initial Dynamic↔ULT correlation pooled all four Dynamic tiers (L1-L4) together before comparing against ULT's CC≥8-only band — an apples-to-a-narrower-slice-of-apples comparison that was never flagged as a choice until diagnosed. | Post-hoc diagnosis of a surprisingly low τ=0.143 result (`analysis/RQ5_DIAGNOSTICS.md`). | The initial framing implied pooling was a neutral default; tier-matching (Dynamic-L4 only) was found to not simply weaken the correlation but **flip its sign** (τ=0.143 → τ=-0.200, n_models=5) — meaning the pooled number's sign itself was composition-dependent, not a robust read. | Diagnosed and reported explicitly, not silently "fixed" (there is no single correct pooling choice) — both the pooled and L4-matched readings are now reported side by side with the tier-discrimination gradient (finding #3) as the explanation for why they differ. A related, proactively-applied fix: Comparison C's Dynamic control arm tier composition was pre-registered (`docs(comparison-c)` commit) *before* any POST data existed, specifically to avoid this same gap recurring post-hoc. | Every pooled-vs-tier-matched number in `RQ5_INTERPRETATION.md`/`RQ5_DIAGNOSTICS.md` is now labelled with which composition it uses. |
 | 4 | **Loader had no deduplication logic at all.** `src/Analysis/loader.py::load_records()` loaded every `.jsonl` file in a results directory unconditionally — stale, superseded partial-tier retry files sitting next to their complete replacements were double-counted. | A 2026-07-26 integrity audit (`scripts/audit_result_integrity.py`) found 559 duplicate `(model_label, benchmark, instantiation_id, template_id, instance_seed, tier, K, prompting_condition)` keys; 117 of them were **content-conflicting** (two different recorded outcomes for the same key, both in API models), traced to bug #6 below. | Any StableMut@K or Kendall-τ figure computed before this fix silently double-counted ~560 problems. Comparison A/B were unaffected (A filters to L4, none of the stale files touched it; B reads ULT/PLT directly, which had zero duplicate keys). | Deduped on the natural key, keeping the newest row by `timestamp`. | `tests/test_analysis_loader.py` regression-tests the dedup logic directly. |
 | 5 | **Canonical-model leaks, twice.** (a) A fine-tuned adapter's `model_label` leaked into Comparison B, appearing as a spurious 8th "canonical" model. (b) The same bug class, independently, in `analyze_stability.py` — two different adapter labels leaked into StableMut@K and pairwise Kendall τ once their own multi-instantiation data existed, inflating `n_models` for several instantiation-pairs from 7 to 9. | (a) noticed as an unexplained extra row in `comparison_b_paired.csv`. (b) noticed via the same "n_models" count looking wrong once traced back through why an earlier 8-vs-9-vs-7 discrepancy existed in a frozen snapshot table. | (a) inflated Comparison B's reported model count. (b) inflated `n_models` for 3 of the 6 N=4 stability pairs and moved the mean pairwise τ point estimate (0.675 → 0.635) purely from removing the leaked adapters, no new data. | Both fixed by filtering to `CANONICAL_MODELS` (`scripts/coverage_matrix.py`) immediately after `load_records()`. | `tests/test_canonical_models_boundary.py` covers all three consuming scripts (`build_comparison_tables.py`, `analyze_stability.py`, and StableMut@K itself) in one regression test. |
 | 6 | **Tier-resume race.** `src/eval/test_gen_runner.py::_find_resume_file` matched an in-progress/retry job to its output file using only `(model_label, benchmark, prompting_condition, instantiation_id)` — not tier. A later L1L2 retry job (job 9468234, 2026-07-23) resumed into an already-running L3L4 job's own output file, and vice versa (2026-07-24), producing duplicate — sometimes content-conflicting — rows for the same (template_id, instance_seed). | Found via real job logs while investigating unexplained duplicate rows (feeds directly into bug #4's 117 content-conflicting keys). | No rows were *lost* (a separate coverage-matrix check confirmed every in-scope cell complete), but the affected rows' recorded outcomes were ambiguous between two different job runs until the loader's timestamp-based dedup resolved it. | `_find_resume_file` now keys on `_tier_signature()` (e.g. `L1L2` vs `L3L4`) in addition to the existing fields. | `tests/test_gen_runner_resume.py` regression-tests the tier-keyed matcher directly; CLAUDE.md additionally documents the operational rule (never submit two configs for the same model/instantiation with overlapping runtimes unless tiers differ or this fix is confirmed present). |

@@ -377,24 +377,24 @@ adopt as a co-primary (§3a).
 What changes under this reconciliation, and what doesn't, for every result
 in the project built from Mut@K:
 
-**Comparison A (Dynamic-L4 vs ULT), raw n=5.** Unaffected numerically —
+**Comparison A (Dynamic-L4 vs ULT), raw n_models=5.** Unaffected numerically —
 `coverage_adjusted` was already being computed and reported as a
 robustness row before this reconciliation; only ITS JUSTIFICATION changes
 (no longer "matches the ULT paper," now "algebraically proven zero-fill
 reading of the paper's prose, NOT of its code"). What's genuinely new:
 raw-unfiltered effect_r=+0.200 (p=0.81), thin-cell-filtered raw
-effect_r=**-1.000** (n=3, p=0.25), definition-matched/coverage-adjusted
+effect_r=**-1.000** (n_models=3, p=0.25), definition-matched/coverage-adjusted
 effect_r=**-0.600** (p=0.31) — **the sign now disagrees between the
 raw-unfiltered reading and BOTH other readings** (thin-filtered and
 definition-matched agree with each other, not with the unfiltered
 headline). See §5 for the verdict this implies.
 
-**Comparison B (ULT vs PLT), raw n=7.** Also numerically unaffected by
+**Comparison B (ULT vs PLT), raw n_models=7.** Also numerically unaffected by
 this reconciliation itself (same "already computed, now proven and
 labelled" situation) — but newly extended here with a thin-cell audit and
 a co-primary row that didn't exist before 2026-08-03 (Comparison A had
 one; Comparison B didn't). Result: raw effect_r=+0.714 (p=0.109),
-thin-filtered raw effect_r=+0.867 (n=5, p=0.125), definition-matched
+thin-filtered raw effect_r=+0.867 (n_models=5, p=0.125), definition-matched
 effect_r=**+0.929 (p=0.031, the only one of any of these six numbers —
 across both comparisons — that clears p<0.05)**. All three Comparison B
 readings agree in sign (PLT scores higher than ULT, the expected

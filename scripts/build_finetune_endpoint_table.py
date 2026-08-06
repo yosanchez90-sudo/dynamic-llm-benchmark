@@ -1,4 +1,4 @@
-"""Build the Phase-M final endpoint table (epoch 30, n=150) from the corrected
+"""Build the Phase-M final endpoint table (epoch 30, n_problems=150) from the corrected
 data/results/finetune_rebuild/epoch_perf_*.csv files.
 
 Reports, per (model, condition, split), the greedy baseline_pass rate and the
@@ -149,7 +149,7 @@ def main() -> None:
             f"{r[h]:22}" if h in ("model", "condition", "split") else f"{r[h]:>12}"
             for h in fieldnames
         ))
-    provenance = f"""# Fine-tune endpoint table (epoch 30, n=150) — raw table
+    provenance = f"""# Fine-tune endpoint table (epoch 30, n_problems=150) — raw table
 
 {stamp_block("scripts/build_finetune_endpoint_table.py")}
 This is the regenerable raw-table companion to the hand-written

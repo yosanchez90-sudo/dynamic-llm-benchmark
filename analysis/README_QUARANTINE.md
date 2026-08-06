@@ -89,7 +89,7 @@ generations of the evaluation script — not a contradiction, a timing gap.
 `scripts/diagnose_collapse_v100.py` ("Phase-1b Step 5", the hardware
 control) ran the "healthy control" (`bp_own`) and "primary suspect"
 (`bp_gpt5`) checkpoints back-to-back and **both arms came back
-`exec_rate=0.0, n=10`** (`logs/diagnose-collapse-v100-9369140.out`). This
+`exec_rate=0.0, n_problems=10`** (`logs/diagnose-collapse-v100-9369140.out`). This
 was not a true A/B toggle — `gen_cfg` in that script hardcodes
 `no_repeat_ngram_size=4` for both checkpoints (`scripts/diagnose_collapse_v100.py:77`)
 — so both arms were run under the identical buggy config, on two different

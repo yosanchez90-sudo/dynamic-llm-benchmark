@@ -79,7 +79,7 @@ filtering immediately after `load_records()`; a regression test
 consuming scripts. **Post-fix N=4 mean pairwise tau: 0.635** (all-pairs/N=5: 0.661)
 — see current `analysis/STABILITY.md` for the live per-pair table. The qualitative
 conclusion (moderate-to-high rank agreement, most pairs individually significant at
-n=7) is unchanged; the point estimate moved again, by a similar margin to the
+n_models=7) is unchanged; the point estimate moved again, by a similar margin to the
 2026-07-25 fix. **Anyone citing a Dynamic reliability figure should treat it as
 current-as-of-commit, not a fixed constant** — `scripts/analyze_rq5_diagnostics.py`'s
 attenuation correction now recomputes this live (`src.Analysis.stability.mean_pairwise_tau_scoped`)

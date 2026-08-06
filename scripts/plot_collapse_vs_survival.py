@@ -60,11 +60,11 @@ def _panel(ax, df, col_a, col_b, corr_row, is_n3: bool, thin_col: str | None):
         n = int(corr_row["n"])
         tau = corr_row["kendall_tau"]
         p = corr_row["kendall_p_perm"]
-        title = f"n={n}  Kendall τ={tau:.3f}  p={p:.4f}"
+        title = f"n_models={n}  Kendall τ={tau:.3f}  p={p:.4f}"
         ax.set_title(title, fontsize=9.5)
     if is_n3:
         ax.text(0.03, 0.03,
-                f"n=3: uninformative by construction\n(only 6 possible orderings;\nmin two-sided perm. p={MIN_P_AT_N3:.3f})",
+                f"n_models=3: uninformative by construction\n(only 6 possible orderings;\nmin two-sided perm. p={MIN_P_AT_N3:.3f})",
                 transform=ax.transAxes, fontsize=7.5, color="#d62728", ha="left", va="bottom",
                 bbox=dict(boxstyle="round,pad=0.3", fc="#fff0f0", ec="#d62728", alpha=0.9, linewidth=0.6))
 

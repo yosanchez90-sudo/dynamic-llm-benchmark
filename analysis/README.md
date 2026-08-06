@@ -38,7 +38,7 @@ tripped the n-gram repeat ban, forcing a wrong token in its place
 etc.), which broke the Python syntax and failed the exec gate on nearly
 every problem.
 
-Confirmed at n=50: 0/50 clean import lines with `no_repeat_ngram_size=4`
+Confirmed at n_problems=50: 0/50 clean import lines with `no_repeat_ngram_size=4`
 enabled vs 50/50 with it disabled, reproduced under both greedy and
 sampling decoding, independent of `repetition_penalty`. This single setting
 explains the entire recorded collapse in `bp_gpt5` (both sizes) and the

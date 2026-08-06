@@ -75,7 +75,7 @@ daily quota.
 ## Wall-clock sanity check (real measured data, not guessed)
 
 Gemini Pro Preview's own real logged `generation_latency_seconds`
-(n=545 existing rows): mean 31.0s/problem (p25=14.8s, median=20.0s,
+(n_problems=545 existing rows): mean 31.0s/problem (p25=14.8s, median=20.0s,
 p75=37.3s). 240 sequential generation calls ≈ 2.1 hours; with mutation
 scoring layered on top (parallelized across 4 workers, using this
 project's existing 1.6x wall-clock convention for scoring overhead —

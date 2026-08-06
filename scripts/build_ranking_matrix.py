@@ -307,10 +307,10 @@ Kendall tau primary (permutation p, Holm-adjusted p); Spearman rho shown alongsi
         for pair_name, *_ in pairs:
             r = corr_df[(corr_df["metric"] == metric) & (corr_df["pair"] == pair_name)]
             if len(r) == 0 or r.iloc[0]["kendall_tau"] is None or pd.isna(r.iloc[0]["kendall_tau"]):
-                cells.append(f"n={int(r.iloc[0]['n']) if len(r) else 0} (too few)")
+                cells.append(f"n_models={int(r.iloc[0]['n']) if len(r) else 0} (too few)")
                 continue
             r = r.iloc[0]
-            cells.append(f"τ={_fmt(r['kendall_tau'])} ρ={_fmt(r['spearman_rho'])} n={int(r['n'])} p={_fmt(r['kendall_p_perm'], '.4f')} (Holm p={_fmt(r['kendall_p_holm'], '.4f')})")
+            cells.append(f"τ={_fmt(r['kendall_tau'])} ρ={_fmt(r['spearman_rho'])} n_models={int(r['n'])} p={_fmt(r['kendall_p_perm'], '.4f')} (Holm p={_fmt(r['kendall_p_holm'], '.4f')})")
         md_parts.append(f"| {METRIC_LABELS[metric]} | " + " | ".join(cells) + " |\n")
 
     n_sig_raw = int((corr_df["kendall_p_perm"] < 0.05).sum())

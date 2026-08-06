@@ -108,7 +108,7 @@ backfill/retry batches) or **as the L4-equivalent** (for ULT/PLT, whose
 CC≥8 problems occupy the same band as Dynamic's L4 — consistent with the
 H4/RQ3 closure's finding that L4 is the CC band closest to ULT/PLT, §4 of
 `analysis/H4_DESIGN_MEMO.md`). Reported as a **p25 / mean / p75 band**
-(not just a mean) over n=70-75 real rows per (model, tier) cell, so the
+(not just a mean) over n_problems=70-75 real rows per (model, tier) cell, so the
 "high" estimate reflects real observed variance, not a hand-picked margin:
 
 | Model | Tier | n (real) | p25 out tok | mean out tok | p75 out tok |

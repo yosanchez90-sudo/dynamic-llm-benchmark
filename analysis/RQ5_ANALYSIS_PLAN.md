@@ -136,7 +136,7 @@ the leaderboard harvest found published numbers for all three. It did
 extension was proposed and approved separately (`analysis/
 RQ5_CROSS_FAMILY_PROPOSAL.md`, approved 2026-07-28) in direct response to
 the supervisor's own "bottom-up" follow-up ask, specifically to break the
-all-Qwen size-sweep confound the harvest's n=3 result left unresolved. It
+all-Qwen size-sweep confound the harvest's n_models=3 result left unresolved. It
 is a genuine post-hoc addition to this research program, not something
 pre-registered here in advance, even though it answers the same research
 question. Executed and reported in full in `analysis/RQ5_INTERPRETATION.md`

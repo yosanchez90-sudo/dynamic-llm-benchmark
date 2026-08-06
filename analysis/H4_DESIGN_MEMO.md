@@ -56,8 +56,8 @@ measure used for both Dynamic and ULT/PLT):
 ULT's recomputed quartiles are **[8, 10, 12, 16, 82]** (min/Q1/median/Q3/max);
 PLT (excl. ULT overlap) is **[8, 10, 12, 16, 1729]** — identical up to Q3,
 diverging only in an extreme max outlier. Comparison B's own CC-quartile
-bands (`analysis/comparison_b_matched_cc.csv`): CC8-9 (n=19 ULT records),
-CC10-11 (n=119), CC12-15 (n=108), CC16+ (n=93).
+bands (`analysis/comparison_b_matched_cc.csv`): CC8-9 (n_problems=19 ULT records),
+CC10-11 (n_problems=119), CC12-15 (n_problems=108), CC16+ (n_problems=93).
 
 **The overlap**: Dynamic's L1-L3 (CC 1-7) has **zero** representation in
 ULT/PLT at all — both are filtered to CC≥8 by construction (ULT's own

@@ -165,7 +165,7 @@ def main() -> None:
         res = compute_correlations(sub[col_a].to_numpy(), sub[col_b].to_numpy())
         d = {"pair": pair_name, "scope": scope, "metric_a": col_a, "metric_b": col_b, **vars(res)}
         corr_rows.append(d)
-        print(f"\n=== {pair_name} [{scope}] (n={res.n}) ===")
+        print(f"\n=== {pair_name} [{scope}] (n_models={res.n}) ===")
         print(f"  Pearson r  = {res.pearson_r:.3f}  p_perm={res.pearson_p_perm:.4f}")
         print(f"  Spearman rho = {res.spearman_rho:.3f}  p_perm={res.spearman_p_perm:.4f}")
         print(f"  Kendall tau  = {res.kendall_tau:.3f}  CI [{res.kendall_tau_ci_lo:.3f}, {res.kendall_tau_ci_hi:.3f}]  p_perm={res.kendall_p_perm:.4f}")

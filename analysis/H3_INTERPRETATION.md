@@ -64,8 +64,8 @@ was measured over the tiers these two models do have.
 
 ## Pooled estimand — reported with its stated confound, not as the headline
 
-All-tier pooled: ρ=-0.384 (n=4,235 rows, p<0.001). L2-L4 pooled: ρ=-0.325
-(n=3,058, p<0.001). Both are directionally consistent with every
+All-tier pooled: ρ=-0.384 (n_problems=4,235 rows, p<0.001). L2-L4 pooled: ρ=-0.325
+(n_problems=3,058, p<0.001). Both are directionally consistent with every
 per-model result, which is reassuring, but per the pre-registered caveat
 this number conflates the within-model tier effect with between-model
 differences in how many rows each model contributes per tier — it is

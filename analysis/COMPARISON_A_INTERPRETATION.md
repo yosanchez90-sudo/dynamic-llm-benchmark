@@ -63,8 +63,8 @@ of this comparison at the model roster this project already has:
    `analysis/OPEN_ITEMS.md`). These two models would very likely NOT be
    thin-cell-excluded once their ULT data lands (their Dynamic-L4 side
    already clears n_defined≥20 comfortably), so adding them would grow
-   Comparison A from n=5 (or the thin-filtered n=3) toward n=7 without
-   introducing a new thinness problem — a meaningfully larger n at the
+   Comparison A from n_models=5 (or the thin-filtered n_models=3) toward n_models=7 without
+   introducing a new thinness problem — a meaningfully larger n_models at the
    *same* statistical power tier this comparison currently sits in.
 2. **Gemini 3.1 Pro Preview's Dynamic-L4 data.** Currently absent entirely
    (0 rows of any kind at L4 — see
@@ -81,7 +81,7 @@ of this comparison at the model roster this project already has:
    currently clear the CC≥8 baseline gate at all (3.5% and 0.3% pass rates).
 
 **Even with all of the above, this comparison would still cap out around
-n=9** (the full canonical roster) — a paired Wilcoxon at n=9 has real but
+n_models=9** (the full canonical roster) — a paired Wilcoxon at n_models=9 has real but
 still modest power (PROJECT_BRIEF.md §3.1 already anticipates this: "with
 ≤9 models this test has very limited power; report the effect size... as
 primary, p-values support"). The realistic bar for "conclusive" here is not
