@@ -17,8 +17,8 @@ Two framings, both reported (not either/or):
    with the approved design and cross-referencing against the six supplementary
    Dynamic-trained runs.
 2. **Stratified core_400 ULT, by seen-in-training** (new, this document): split
-   core_400's 400 ULT problems into seen (n=112, has a verified training pair) vs
-   unseen (n=288, does not) using the frozen manifest above. A problem's
+   core_400's 400 ULT problems into seen (n_problems=112, has a verified training pair) vs
+   unseen (n_problems=288, does not) using the frozen manifest above. A problem's
    seen/unseen status is fixed at manifest-generation time and must not be
    recomputed from a re-run of the repair pipeline mid-experiment.
 
@@ -79,7 +79,7 @@ the interpretability check the design above was missing.
 
 ## Secondary estimand: four-level contamination gradient
 
-seen-ULT (n=112) → unseen-ULT (n=288) → PLT core_400 excl. ULT overlap (n=400) →
+seen-ULT (n_problems=112) → unseen-ULT (n_problems=288) → PLT core_400 excl. ULT overlap (n_problems=400) →
 Dynamic-L4 (fresh instantiation, no static leakage, CC-matched per the tier
 amendment above — flagged floor-limited there; L1-L3 pooled reported alongside as
 a separate, non-CC-matched robustness point rather than a fifth gradient step).
@@ -101,7 +101,7 @@ ULT-vs-Dynamic level.
 
 ## Confounder audit (`analysis/comparison_c_confounder_audit.csv`, 2026-07-26)
 
-Seen (n=112) vs unseen (n=288) core_400 ULT problems, Mann-Whitney U (normal
+Seen (n_problems=112) vs unseen (n_problems=288) core_400 ULT problems, Mann-Whitney U (normal
 approx.), two-sided:
 
 | Metric | seen mean | unseen mean | z | p |
@@ -109,7 +109,7 @@ approx.), two-sided:
 | CC | 14.82 | 14.97 | 0.30 | 0.761 |
 | code length (chars) | 1,224 | 1,533 | −2.41 | **0.016** |
 | PRE exec_rate (Qwen-1.5B base) | 0.571 | 0.684 | −1.75 | 0.080 |
-| PRE mutation_score (n=1 seen / n=7 unseen — see below) | 0.886 | 0.338 | 1.53 | 0.127 |
+| PRE mutation_score (n_problems=1 seen / n_problems=7 unseen — see below) | 0.886 | 0.338 | 1.53 | 0.127 |
 
 Band distribution (seen / unseen): CC8-9 5/15, CC10-11 38/97, CC12-15 32/97,
 CC16+ 37/79 — proportionally similar across bands, consistent with the
@@ -136,13 +136,13 @@ has `baseline_passed=True` for only **1/112 (0.9%)** of the seen subset and
 essentially none of core_400 ULT pre-fine-tune — a base 1.5B model struggling at
 CC≥8 (consistent with the same model's near-zero L4 Dynamic mutation-score
 coverage noted in this session's Part-1 status check). This is *why* the primary
-metric recommendation above is baseline_pass_rate, not Mut@K: an n=1 PRE cell
+metric recommendation above is baseline_pass_rate, not Mut@K: an n_problems=1 PRE cell
 makes any Mut@K-based gain estimate for seen-ULT close to undefined, regardless of
 how POST turns out.
 
 ## Power
 
-Seen-cell (n=112), worst-case SE for a proportion-style metric (baseline_pass_rate)
+Seen-cell (n_problems=112), worst-case SE for a proportion-style metric (baseline_pass_rate)
 is `sqrt(0.25/112) ≈ 0.047` — adequate to detect contamination-scale effects: the
 six supplementary runs' seen/unseen memorization gaps were 50-70 percentage
 points (`analysis/FINETUNE_ENDPOINT_PROVENANCE.md`), many multiples of this SE.

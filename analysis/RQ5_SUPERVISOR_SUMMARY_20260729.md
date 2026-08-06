@@ -21,12 +21,12 @@ primary metric (Mut@K, mutation-kill rate) and the pre-registered primary
 statistic (Kendall's tau, a rank-agreement measure — chosen over Pearson
 correlation specifically because a linear correlation coefficient can look
 strong even when models don't actually rank consistently, which turned out
-to be exactly the risk here). GPT-5/GPT-5-mini are **not** in this n=7 --
+to be exactly the risk here). GPT-5/GPT-5-mini are **not** in this n_models=7 --
 they have no ULT data yet (still-unsubmitted supervisor-gated batch, see
 § GPT lane in the prior session) — correcting an earlier draft of this
 summary that miscounted them in.
 
-**Kendall τ = 0.143 (n=7).** Near zero. The two benchmarks do **not** rank
+**Kendall τ = 0.143 (n_models=7).** Near zero. The two benchmarks do **not** rank
 models consistently on the metric as pre-registered. This is reported
 as-is — it is not the flattering answer, and we are not softening it.
 
@@ -62,7 +62,7 @@ Re-scoring with baseline pass rate folded back in (Mut@K × pass rate)
 **recovers τ = 0.905** — a near-complete reversal. But we went one step
 further and decomposed *why*:
 
-| Signal | τ (n=7) |
+| Signal | τ (n_models=7) |
 |---|---|
 | Baseline pass rate alone (can the model produce a PASSING suite at all?) | **0.810** |
 | Mut@K alone, conditional on passing (is the passing suite a *good* one?) | **0.143** |
@@ -82,7 +82,7 @@ instantiations (τ=1.000 vs 0.635 for raw Mut@K, N=4 scope) — same
 underlying reason (pass rate is a big, stable difference between models;
 fine-grained mutation-quality differences are noisier), not a separate
 finding. **One qualification on that τ=1.000**: it's built from 7 models
-with an UNEVEN number of repeat instantiations, not a clean uniform n=7 --
+with an UNEVEN number of repeat instantiations, not a clean uniform n_models=7 --
 Qwen (all 3 sizes) and Claude (both models) have 5 each, Gemini (both
 models) has 4 (one quota-blocked, one simply not run at 5) — so treat the
 exact value as illustrative of "much more reliable," not a precision claim
@@ -94,7 +94,7 @@ benchmarks even point the same direction" check) has its effect
 *direction* flip depending on whether you apply this same conditioning —
 raw says ULT scores slightly higher (effect_r=+0.20), coverage-adjusted
 says our benchmark scores higher (effect_r=-0.60). Neither is statistically
-significant at n=5 (or n=3 once thin per-model cells are also excluded —
+significant at n_models=5 (or n_models=3 once thin per-model cells are also excluded —
 see below), but the sign itself is not robust to how you handle
 conditioning, which is exactly the kind of thing that should change how
 confidently anyone states Comparison A's direction in the write-up.
@@ -103,15 +103,15 @@ confidently anyone states Comparison A's direction in the write-up.
 result rest on a shaky per-model average.** Qwen-7B's Dynamic-L4 Mut@K is
 the mean of exactly **1** baseline-passing problem; Qwen-32B's is the mean
 of **13**. Excluding both (same n_defined<20 thin-cell rule applied
-throughout) drops Comparison A to **n=3** and flips the sign again
-(effect_r: +0.20 unfiltered → -1.00 thin-filtered, though n=3 is far too
+throughout) drops Comparison A to **n_models=3** and flips the sign again
+(effect_r: +0.20 unfiltered → -1.00 thin-filtered, though n_models=3 is far too
 small to treat either number as a settled result on its own).
 `analysis/COMPARISON_PROVENANCE.md` has the full audit.
 
 ## 3. Is this a Qwen-family artifact? Cross-family extension — DONE, and it's the cleanest result of the whole analysis
 
 The one place we did see a strong, clean correlation was against
-BigCodeBench (a public leaderboard) — but that comparison was **n=3, all
+BigCodeBench (a public leaderboard) — but that comparison was **n_models=3, all
 three points the same model family (Qwen) at three sizes.** A perfect
 rank match across a 1.5B→7B→32B sweep within one family is close to the
 least surprising result available (bigger checkpoints are better at
@@ -120,8 +120,8 @@ everything), so it's not independent evidence of validity.
 To break that confound, we ran **4 additional open-source models from 4
 different families** (DeepSeek-Coder-6.7B, CodeLlama-13B, StarCoder2-15B,
 Mistral-7B-v0.3) on both benchmarks. **All 4 now complete** (300/300 Dynamic
-+ 400/400 ULT each), expanding Dynamic↔ULT from n=7→n=11 and
-Dynamic/ULT↔BigCodeBench from n=3 (all-Qwen)→n=7 (4 families).
++ 400/400 ULT each), expanding Dynamic↔ULT from n_models=7→n_models=11 and
+Dynamic/ULT↔BigCodeBench from n_models=3 (all-Qwen)→n_models=7 (4 families).
 
 **This is the result that actually answers the question**, and it's a
 clean story:
@@ -134,7 +134,7 @@ clean story:
 | Dynamic↔BigCodeBench | coverage-adjusted | 3 → 7 | 1.000 → **0.905** (p=0.0034 — holds) |
 | ULT↔BigCodeBench | coverage-adjusted | 3 → 7 | 1.000 → **0.714** (p=0.032 — holds, weaker) |
 
-**The "perfect" n=3 BigCodeBench correlation was exactly the within-family
+**The "perfect" n_models=3 BigCodeBench correlation was exactly the within-family
 size-scaling artifact we suspected** — the raw metric's correlation with an
 external public benchmark falls apart the moment genuine architectural
 diversity is added (1.000→0.429, no longer distinguishable from chance).
@@ -185,7 +185,7 @@ ceiling).
    between-instantiation noise — the benchmark can't reliably rank them
    against each other from this data at all.
 3. **This is not a Qwen-family artifact — confirmed, not just suspected.**
-   The n=3 "perfect" public-benchmark correlation collapses once 4 real
+   The n_models=3 "perfect" public-benchmark correlation collapses once 4 real
    families are added (exactly as predicted); the coverage-adjusted score's
    correlation survives the same test, both internally (our two benchmarks)
    and externally (against BigCodeBench).
@@ -200,7 +200,7 @@ ceiling).
    "not in the way we predicted, on either reading," not a qualified yes.
 5. **A separate, standalone result, not a footnote**: Comparison A's effect
    direction is not robust — it flips under coverage-adjustment, and flips
-   again (with the sample shrinking to n=3) once thin per-model cells are
+   again (with the sample shrinking to n_models=3) once thin per-model cells are
    excluded. Whatever direction gets reported for Comparison A should carry
    this caveat explicitly.
 

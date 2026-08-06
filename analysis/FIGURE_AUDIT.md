@@ -89,15 +89,15 @@ at L2 and 19.9 at L4), driven by an unusually high between-model SD at L3
 is discussed in the text, not just read off visually.
 
 **(c) `collapse_vs_survival.pdf`** — 2×2 panels (raw Mut@K / coverage-
-adjusted × canonical-only-n=3 / canonical+cross-family-n=7), Dynamic↔
+adjusted × canonical-only-n_models=3 / canonical+cross-family-n_models=7), Dynamic↔
 BigCodeBench (Complete-split). **Correction to the prompt that requested
-this figure**: the "minimum achievable p" at n=3 is **not** 0.167 —
+this figure**: the "minimum achievable p" at n_models=3 is **not** 0.167 —
 verified directly against this project's own permutation test
 (`src/Analysis/correlation.py::_permutation_p`, which is two-sided,
 `abs(stat) >= abs(observed)`), where only 2 of the 3!=6 possible
 permutations of a 3-element vector (the identity and the full reversal)
 can match a perfect observed correlation, giving a floor of 2/6 ≈ **0.333**
-— matching every n=3 permutation p-value already recorded elsewhere in
+— matching every n_models=3 permutation p-value already recorded elsewhere in
 this project (e.g. `analysis/RQ5_PROVENANCE.md`'s 0.331-0.341 figures).
 0.167 (1/6) would be the floor for a one-sided test only, which this
 project's own statistical convention does not use. The figure and its
@@ -128,11 +128,11 @@ Nothing deleted or moved — this is a proposed reading only.
 | Figure | Classification | Reasoning |
 |---|---|---|
 | `comparison_c_onset_curve.pdf` | **THESIS** | The causal contamination-simulation headline (Comparison C / H2) — the two-timescale finding (generic gain vs memorisation climb) is a top-3 result in the project. |
-| `rq5_correlation.pdf` | **THESIS** | The pre-registered primary RQ5/H6 result (n=7 canonical) — must appear regardless of how it reads (a null-leaning result is still the answer to the pre-registered question). |
-| `rq5_cross_family_correlation.pdf` | **THESIS for its Dynamic↔ULT panels; redundant-for-BigCodeBench** | Its Dynamic↔ULT canonical-vs-cross-family panels (n=7→n=11) are unique — nothing else shows this. Its Dynamic↔BigCodeBench panels substantially overlap with the new `collapse_vs_survival.pdf`, below. |
+| `rq5_correlation.pdf` | **THESIS** | The pre-registered primary RQ5/H6 result (n_models=7 canonical) — must appear regardless of how it reads (a null-leaning result is still the answer to the pre-registered question). |
+| `rq5_cross_family_correlation.pdf` | **THESIS for its Dynamic↔ULT panels; redundant-for-BigCodeBench** | Its Dynamic↔ULT canonical-vs-cross-family panels (n_models=7→n_models=11) are unique — nothing else shows this. Its Dynamic↔BigCodeBench panels substantially overlap with the new `collapse_vs_survival.pdf`, below. |
 | `ranking_matrix_heatmap.pdf` (new) | **THESIS** | Directly visualises the supervisor's own requested reframe; the single figure a reader should look at first for "does the conditional-Mut@K anomaly generalise." |
 | `noise_floor.pdf` (new) | **THESIS** | Answers "which metrics can resolve model differences at all," a distinct question from cross-benchmark agreement — supports the ranking-matrix heatmap rather than duplicating it. |
-| `collapse_vs_survival.pdf` (new) | **THESIS (preferred over `rq5_cross_family_correlation.pdf`'s BigCodeBench panels for this specific point)** | Sharper, more focused version of the "does the correlation survive family diversity" argument, with the n=3-uninformativeness caveat made explicit and correctly quantified (0.333, not 0.167) — cite this in the main text; keep the fuller 8-panel figure available for a reader who wants the Dynamic↔ULT panels too. |
+| `collapse_vs_survival.pdf` (new) | **THESIS (preferred over `rq5_cross_family_correlation.pdf`'s BigCodeBench panels for this specific point)** | Sharper, more focused version of the "does the correlation survive family diversity" argument, with the n_models=3-uninformativeness caveat made explicit and correctly quantified (0.333, not 0.167) — cite this in the main text; keep the fuller 8-panel figure available for a reader who wants the Dynamic↔ULT panels too. |
 | `epoch_perf_qwen{1_5b,7b}_bp_comparison.pdf/png` | **APPENDIX** | Correct, bug-fixed supplementary-study material (seen-vs-unseen by condition) — real supporting evidence for the memorisation-stability side-study, not part of the canonical Comparison A/B/C narrative. |
 | `epoch_perf_finetune_*.pdf` (6 files) | **DIAGNOSTIC ARTIFACT — do not publish** | Superseded by the `_bp_comparison` figures above (dated 12 days later, explicitly written to fix two real bugs in these — stacked sampling-draw points at epoch 30, and indistinguishable condition colours — per `plot_epoch_perf_comparison.py`'s own module docstring). Keep for the record; do not cite in the write-up. |
 | `archive/epoch_perf_qwen1_5b_bp_gpt5.pdf` | **DIAGNOSTIC ARTIFACT — already self-archived** | Already sitting in `archive/`, i.e. previously reclassified by the project itself. No action needed beyond confirming this reading. |
@@ -159,7 +159,7 @@ archived GPT-5 draft.
 both metrics) cover materially the same ground as 4 of
 `rq5_cross_family_correlation.pdf`'s 8 panels. This is a **deliberate**
 redundancy, not an oversight: the new figure isolates just this one
-argument (with the corrected n=3-uninformativeness annotation the older
+argument (with the corrected n_models=3-uninformativeness annotation the older
 figure doesn't have), while the older figure keeps the fuller
 Dynamic↔ULT comparison the new one doesn't cover at all. Recommendation
 above is to lead with the focused figure in the main text and keep the

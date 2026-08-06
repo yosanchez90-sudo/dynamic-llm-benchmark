@@ -90,13 +90,13 @@ without the other, and both explicitly labelled low-power (n≤4).
 Checked directly against real data before writing this plan (not assumed):
 **7 of 9 canonical models have baseline-passing rows at all 4 tiers**
 (gpt-5, gpt-5-mini, claude-sonnet, claude-haiku, gemini-flash-lite, Qwen
-32B, Qwen 7B — though Qwen 32B's L4 n=13 and Qwen 7B's L4 n=1 are
+32B, Qwen 7B — though Qwen 32B's L4 n_defined=13 and Qwen 7B's L4 n_defined=1 are
 individually thin by this project's own `n_defined<20` convention).
 **2 of 9 have zero baseline-passing L4 rows**: Gemini 3.1 Pro Preview
-(L1 n=249, L2 n=102, L3 n=159, L4 n=0 — the already-documented Dynamic-L4
+(L1 n_defined=249, L2 n_defined=102, L3 n_defined=159, L4 n_defined=0 — the already-documented Dynamic-L4
 quota gap, `analysis/METRICS_AND_FINDINGS_EXPLAINED.md`'s "Gemini-Pro-has-
-no-L4" section) and Qwen 2.5-Coder-1.5B-Instruct (L1 n=12, L2 n=64, L3
-n=2, L4 n=0 — a genuine floor effect, this model cannot clear the CC≥8
+no-L4" section) and Qwen 2.5-Coder-1.5B-Instruct (L1 n_defined=12, L2 n_defined=64, L3
+n_defined=2, L4 n_defined=0 — a genuine floor effect, this model cannot clear the CC≥8
 baseline gate at all).
 
 **Decision**: compute each model's per-model correlation over whatever
@@ -109,7 +109,7 @@ only (2 tiers) — flagged as **too low-resolution to report a meaningful
 rank correlation** (Spearman across 2 distinct tier values is barely
 defined) rather than computed and quoted anyway; their row in that table
 reports "insufficient tier range" rather than a number. Qwen 1.5B's L3
-row (n=2) is separately thin at the row-count level regardless of tier
+row (n_defined=2) is separately thin at the row-count level regardless of tier
 range — flagged in the per-model output, not silently included as an
 equally reliable data point.
 
