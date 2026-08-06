@@ -74,6 +74,16 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   scope for the pass that found this) — if any of those ever need a
   genuine resume in the future, check for a same-shaped un-tagged legacy
   file first, or this same waste will repeat.
+  **RESOLVED 2026-08-06**: after the fix, the actual completion re-run
+  correctly resumed (skipped exactly 93/42/80/63 already-done problems per
+  config, matching the migrated files precisely) and Claude Sonnet/Haiku
+  inst5 are now both **fully complete, 300/300, all four tiers**. Real
+  cost: $0.8498 + $2.8448 (Sonnet L1L2/L3L4) + $0.3988 + $0.8226 (Haiku
+  L1L2/L3L4) = **$4.92 for the legitimate completion** (matching the
+  original estimate almost exactly), **+ $2.65 wasted on the cancelled
+  duplicate run = $7.57 total** — still well under the $15 gate this work
+  was authorized under, but the overrun is 100% attributable to the
+  legacy-file gap above, not to the original cost estimate being wrong.
 - **Library fallbacks must raise, not approximate.** Never write
   `try: import real_lib; HAVE_X = True; except ImportError: HAVE_X = False`
   and then silently substitute a cruder approximation when `HAVE_X` is
