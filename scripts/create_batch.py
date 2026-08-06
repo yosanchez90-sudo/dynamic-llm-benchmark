@@ -156,6 +156,21 @@ def main() -> None:
         print(f"      --results-file <path-to-results.jsonl>")
         return
 
+    # OpenAI rejects a batch mixing models at validation time ("Each batch
+    # must contain requests for a single model") -- writing a multi-model
+    # file is fine for --no-submit hand-off prep (harmless, common in this
+    # project's history), but submitting one for real always fails. Confirmed
+    # 2026-08-06: all three of that day's prepared multi-model batches were
+    # rejected this way (request_counts.completed=0/0, no charge, but a real
+    # wasted round-trip) before this check existed. Fail fast instead.
+    models_in_batch = {r["model_id"] for r in request_meta}
+    if len(models_in_batch) > 1:
+        raise ValueError(
+            f"--submit requires a single model per batch, but this batch mixes "
+            f"{sorted(models_in_batch)} across the given configs. Split into "
+            f"one create_batch.py invocation per model, or submit separately."
+        )
+
     # ── upload and submit ─────────────────────────────────────────────────────
     print("Uploading to OpenAI Files API…")
     with batch_input_path.open("rb") as fh:

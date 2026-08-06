@@ -133,3 +133,63 @@ requires: (1) the setup steps in §6 above, then (2) either
 for real — the explicit opt-in, safe-by-default as of this pass) or the
 manual upload/create flow in `SUPERVISOR_HANDOFF_SUBMIT_ALL.md` — only
 after the user's explicit go-ahead.
+
+## Addendum, 2026-08-06 — submission attempted, one real gap in this checklist found and fixed
+
+The user gave explicit go-ahead and loaded credits. Submission used the
+direct upload/create path (`SUPERVISOR_HANDOFF_SUBMIT_ALL.md`'s pattern,
+applied to the exact three audited files) rather than regenerating via
+`create_batch.py --submit`, specifically so the artifacts already
+drift-checked and dry-run-validated in this document were the literal
+bytes submitted, not a re-derived equivalent.
+
+**First attempt: all three batches rejected at validation.**
+`mismatched_model` — *"The model for this request does not match the rest
+of the batch. Each batch must contain requests for a single model."*
+**This document's checklist never checked for it** — every one of the
+three prepared files interleaves `gpt-5-2025-08-07` and
+`gpt-5-mini-2025-08-07` requests (by design, since `create_batch.py` was
+originally invoked with configs for both models together), and nothing in
+Part 1 or Part 2 above tested against a real submission attempt, only
+structural/content checks against the files as prepared. **No charge was
+incurred**: all three batches show `request_counts.completed=0/0` and
+`failed_at` within ~60 seconds of `created_at` — a pure validation-stage
+rejection, before any request was processed, consistent with the Batch
+FAQ's "charged for completed work" language.
+
+**Fix**: split each of the three files by `body.model` into six per-model
+files (`data/batches/batch_input_20260806T195356{a..f}__*.jsonl` /
+matching `batch_state_*.json`, `custom_id`s unchanged, `split_from`/
+`split_reason` fields added to each new state file for provenance).
+Verified each split file contains exactly one model before resubmitting.
+All six resubmitted successfully, reached `status=in_progress` within a
+minute with real completion counts already advancing — confirmed via
+`scripts/check_openai_batch_status.py`, not assumed.
+
+**Lesson for any future OpenAI batch prep in this project**: `create_batch.py`
+happily builds a single input file across multiple configs targeting
+different models — this is fine for a `--no-submit` hand-off artifact, but
+must be split per model before a real `--submit`. Neither `create_batch.py`
+nor this pre-flight checklist enforced that; worth adding a same-model
+assertion to `create_batch.py` itself if this project prepares another
+multi-model batch, rather than relying on a human (or a future pass) to
+remember it.
+
+Batch IDs (all `in_progress` as of this addendum, polled by
+`scripts/slurm/poll_openai_batches.slurm`, a self-chaining 30-minute-interval
+SLURM job — not busy-polled):
+
+| File | Model | Requests | Batch ID |
+|---|---|---|---|
+| `...195356a__backfill__gpt5` | gpt-5 | 1,200 | `batch_6a74e669a9f081909cddf145bec8800a` |
+| `...195356b__backfill__gpt5mini` | gpt-5-mini | 1,200 | `batch_6a74e66addf48190895d467f7dee3856` |
+| `...195356c__retry__gpt5` | gpt-5 | 6 | `batch_6a74e66b909c819089ebc5530e1b1b20` |
+| `...195356d__retry__gpt5mini` | gpt-5-mini | 1 | `batch_6a74e66c63d08190bcef696fe51a8beb` |
+| `...195356e__ultplt__gpt5` | gpt-5 | 800 | `batch_6a74e66d9f7c81908737794451e39950` |
+| `...195356f__ultplt__gpt5mini` | gpt-5-mini | 800 | `batch_6a74e66e9e308190866051856305191a` |
+
+The three original mixed-model files/batch_ids
+(`batch_6a74e5b32d3c81909c53569da2f908c6`,
+`batch_6a74e5b4811c819090c7930a8827d857`,
+`batch_6a74e5b6dffc8190885844814eb07582`) are dead — `status=failed`,
+kept in their original state files as a record, not polled or reused.
