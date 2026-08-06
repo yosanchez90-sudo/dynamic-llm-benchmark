@@ -51,6 +51,29 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   tier-disambiguated (e.g. two configs with identical `tiers`), sequence them
   with `sbatch --dependency=afterok:<jobid>` instead of submitting
   concurrently.
+  **Addendum, confirmed 2026-08-06**: the fix was never applied
+  retroactively to files that already existed when it landed — every
+  Claude Sonnet/Haiku Dynamic result file from 2026-07-14 (all
+  instantiations, not just inst5) has no `__tiers` tag in its filename at
+  all, so `_find_resume_file`'s glob (which requires a tier-tag match)
+  cannot find them. Currently harmless for instantiations 1-4 (already
+  100% complete, nothing to resume into), but confirmed actively harmful
+  for a genuinely partial one: re-running Claude Sonnet/Haiku's inst5
+  L1L2/L3L4 configs to complete a partial sample (135/300 and 143/300)
+  found *zero* matching resume file, restarted from scratch, and burned
+  222 real, fully-duplicate API calls (~$2.65, real logged `cost_usd`)
+  before this was caught and the run cancelled — confirmed via exact
+  `(template_id, instance_seed)` overlap with the pre-existing data, not
+  guessed. Fixed for inst5 by migrating the three affected legacy files
+  into the tagged naming convention (split-by-tier for Sonnet's single
+  combined file, straight rename for Haiku's already-tier-pure pair,
+  original un-tagged files moved to
+  `data/results/dynamic/migrated_20260806_pre_tier_signature_legacy_originals/`,
+  not deleted). **Not done for instantiations 1-4** (no active need, and
+  bulk-migrating every historical file across every model was out of
+  scope for the pass that found this) — if any of those ever need a
+  genuine resume in the future, check for a same-shaped un-tagged legacy
+  file first, or this same waste will repeat.
 - **Library fallbacks must raise, not approximate.** Never write
   `try: import real_lib; HAVE_X = True; except ImportError: HAVE_X = False`
   and then silently substitute a cruder approximation when `HAVE_X` is
