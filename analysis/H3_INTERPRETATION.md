@@ -14,12 +14,14 @@ survives Holm-Bonferroni correction within both per-model families.**
 All-tier (L1-L4): 9/9 models significant at Holm-adjusted p<0.05 (raw
 p=0.0001 for all 9; smallest Holm-adjusted p=0.0009, since the family-wise
 multiplier is the same for every model here — all 9 raw p-values are at
-the permutation floor). L2-L4 (ceiling-effect sensitivity check): 7/7
-computable models significant at Holm-adjusted p<0.05 (2 models —
-Gemini 3.1 Pro Preview and Qwen 1.5B — have insufficient tier range in
-this scope, see below). Effect sizes range from ρ=-0.194 (Gemini Pro
-Preview, all-tier — the weakest) to ρ=-0.552 (GPT-5-mini, L2-L4 — the
-strongest).
+the permutation floor). L2-L4 (ceiling-effect sensitivity check): **8/8**
+computable models significant at Holm-adjusted p<0.05 (**updated
+2026-08-07** — only **1 model, Qwen 1.5B**, has insufficient tier range in
+this scope; Gemini 3.1 Pro Preview's Dynamic-L4 gap has since partially
+closed via its daily crawl and it is now fully computable in both scopes,
+see "Incomplete tier coverage" below). Effect sizes range from ρ=-0.255
+(Gemini Pro Preview, L2-L4 — the weakest) to ρ=-0.529 (GPT-5-mini, L2-L4 —
+the strongest).
 
 **This is the most uniform, unambiguous per-model result in the entire
 project** — RQ5's cross-benchmark agreement is contested and conditioning-
@@ -31,41 +33,56 @@ question ("how does test-generation effectiveness vary across CC tiers")
 has a clean, consistent, well-powered answer: it declines monotonically,
 for every model tested.
 
-## All-tier vs L2-L4 — the ceiling effect doesn't explain the gradient away
+## All-tier vs L2-L4 — the ceiling effect doesn't explain the gradient away, but the magnitude picture is mixed (updated 2026-08-07)
 
 The pre-registered concern (`H3_ANALYSIS_PLAN.md`) was that L1's
 near-ceiling, near-zero-variance scores might be doing most of the work in
-the all-tier correlation. **This is not what happened**: dropping L1
-(the L2-L4 reading) does not weaken the effect for any model — if
-anything, several models show a *stronger* negative correlation once L1 is
-excluded (GPT-5: -0.413→-0.433; GPT-5-mini: -0.496→-0.552; Qwen 32B:
--0.438→-0.425, essentially unchanged). The one exception, Qwen 7B
-(-0.416→-0.266, weaker under L2-L4), still stays significant at both raw
-and Holm-adjusted p<0.05. **Conclusion: the tier gradient is not an
-artifact of L1's ceiling — it holds, and is if anything sharper, in the
-tier range where models are not already maxed out.**
+the all-tier correlation. **The core finding survives**: dropping L1 (the
+L2-L4 reading) does not weaken the effect below significance for any of
+the 8 computable models — every one stays significant at Holm-adjusted
+p<0.05 in both scopes. But at the current n_models=9 data (up from the
+smaller sample this section originally reported against), the *direction*
+of the magnitude change is genuinely mixed, not uniformly "holds or
+strengthens": **3 models get stronger** under L2-L4 (GPT-5: -0.406→-0.416;
+GPT-5-mini: -0.469→-0.529; Claude Sonnet: -0.390→-0.425), while **5 get
+somewhat weaker** (Claude Haiku: -0.452→-0.423; Gemini Pro Preview:
+-0.296→-0.255; Gemini Flash-Lite: -0.453→-0.422; Qwen 32B: -0.438→-0.425,
+essentially unchanged; Qwen 7B: -0.416→-0.266, the largest swing).
+**Conclusion, stated as it now reads rather than as it read on less data:
+the tier gradient is not an artifact of L1's ceiling in the sense that
+matters most — it remains real and significant for every model in both
+scopes — but L1's removal measurably softens the correlation for a
+majority of models rather than uniformly sharpening it. This is a genuine
+nuance the earlier, smaller-sample reading of this section did not show,
+not a reversal of the headline finding.**
 
 ## Incomplete tier coverage — handled as pre-specified, not a data quality problem
 
-Two models (Gemini 3.1 Pro Preview, Qwen 2.5-Coder-1.5B-Instruct) have no
-baseline-passing L4 rows at all (already-documented reasons: a quota-
-blocked Dynamic crawl for the former, a genuine floor effect for the
-latter — `analysis/METRICS_AND_FINDINGS_EXPLAINED.md`). Per the
-pre-registered plan, their all-tier correlation is reported over L1-L3
-only (flagged in the `tiers_present` column, not silently claimed as
-4-tier), and both are correctly excluded from the L2-L4 reading entirely
-("insufficient tier range" — only L2-L3, 2 distinct tiers, below the
-pre-specified minimum of 3) rather than a low-resolution number being
-computed and quoted anyway. Both models' all-tier correlations are still
-strong and significant (Gemini Pro Preview ρ=-0.194, p<0.001 — the
-weakest in the whole table but still real; Qwen 1.5B ρ=-0.477, p<0.001) —
-the missing L4 tier reduces available range, not the reliability of what
-was measured over the tiers these two models do have.
+**Corrected 2026-08-07**: this section previously named two models
+(Gemini 3.1 Pro Preview, Qwen 2.5-Coder-1.5B-Instruct) as having no
+baseline-passing L4 rows. Gemini's Dynamic-L4 gap has since partially
+closed via its daily self-chaining crawl (38/300 L4 rows landed so far,
+all baseline-passing, all from instantiation 1 —
+`analysis/COMPARISON_A_INTERPRETATION.md` item 2 has the full current
+count) — it is **no longer** an incomplete-tier-coverage case at all
+(`tiers_present=[L1,L2,L3,L4]` in the all-tier table and
+`[L2,L3,L4]` in the L2-L4 table, `H3_TIER_GRADIENT_PROVENANCE.md`). Only
+**Qwen 2.5-Coder-1.5B-Instruct** now has no baseline-passing L4 rows at
+all (a genuine floor effect, not a data-collection gap —
+`analysis/METRICS_AND_FINDINGS_EXPLAINED.md`). Per the pre-registered
+plan, its all-tier correlation is reported over L1-L3 only (flagged in the
+`tiers_present` column, not silently claimed as 4-tier), and it is
+correctly excluded from the L2-L4 reading entirely ("insufficient tier
+range" — only L2-L3, 2 distinct tiers, below the pre-specified minimum of
+3) rather than a low-resolution number being computed and quoted anyway.
+Its all-tier correlation is still strong and significant (ρ=-0.477,
+p<0.001) — the missing L4 tier reduces available range, not the
+reliability of what was measured over the tiers it does have.
 
 ## Pooled estimand — reported with its stated confound, not as the headline
 
-All-tier pooled: ρ=-0.384 (n_problems=4,235 rows, p<0.001). L2-L4 pooled: ρ=-0.325
-(n_problems=3,058, p<0.001). Both are directionally consistent with every
+All-tier pooled: ρ=-0.392 (n_problems=6,547 rows, p<0.001). L2-L4 pooled: ρ=-0.361
+(n_problems=4,925, p<0.001). Both are directionally consistent with every
 per-model result, which is reassuring, but per the pre-registered caveat
 this number conflates the within-model tier effect with between-model
 differences in how many rows each model contributes per tier — it is
@@ -79,9 +96,10 @@ not individual rows, and are not put through a significance test. Worth
 noting as an observation, not a finding: the **raw** tier-mean trend is
 uniformly negative and steep (-0.8 to -1.0 for all 9 models) — expected,
 tracking the row-level result — but the **coverage-adjusted** tier-mean
-trend is mixed: still negative for 6 models (Claude Sonnet/Haiku, Gemini
-Flash-Lite, both Qwen 32B/7B, Qwen 1.5B), but *positive* for GPT-5 (+0.2),
-GPT-5-mini (+0.2), and Gemini Pro Preview (+0.5). This is plausible — for
+trend is mixed: still negative for 6 models (Claude Sonnet -0.8, Claude
+Haiku -0.8, Gemini Flash-Lite -0.8, Qwen 32B -0.4, Qwen 7B -0.8, Qwen 1.5B
+-0.5), but *positive* for GPT-5 (+0.8), GPT-5-mini (+0.2), and Gemini Pro
+Preview (+0.2). This is plausible — for
 models whose `baseline_pass_rate` doesn't collapse sharply at higher
 tiers (the high-capability API models), folding coverage back in can
 offset the raw mutation-quality decline — but at n≤4 per model this is

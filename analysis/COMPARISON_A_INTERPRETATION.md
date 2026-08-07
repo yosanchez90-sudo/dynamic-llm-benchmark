@@ -76,11 +76,24 @@ so neither should be reported as "H1 is now significant."
    models now have full core_400 ULT/PLT coverage (400/400 each). This is
    exactly what grew Comparison A from n_models=5 to n_models=8 and is
    the direct cause of the resolved directional ambiguity above.
-2. **Gemini 3.1 Pro Preview's Dynamic-L4 data.** Still absent (0/75 at L4
-   across all instantiations as of this writing — see
-   `analysis/GEMINI_DAILY_CRAWL.md`), closing slowly via a daily-quota-
-   limited self-chaining crawl (see that doc for current status). Closing
-   this gap would add the 9th and final canonical model to Comparison A.
+2. ~~**Gemini 3.1 Pro Preview's Dynamic-L4 data.**~~ **Corrected 2026-08-07**
+   — this item previously said Gemini's L4 data was "still absent (0/75)"
+   and would be "the 9th and final canonical model" if it landed. Verified
+   directly against `analysis/comparison_a_paired.csv` and the raw data
+   (`scripts/check_gemini_pro_crawl_done.py`): that was wrong on both
+   counts. Gemini Pro Preview is **already** one of the 8 models in
+   Comparison A's table (`analysis/COMPARISON_PROVENANCE.md`'s own "8/9
+   models, missing: ['Qwen__Qwen2.5-Coder-1.5B-Instruct']" line says so
+   directly) — its daily crawl's L4-priority ordering means L4 rows landed
+   *first*, ahead of the L1-L3 gaps. Current real count: **38/300 L4 rows
+   landed** (all baseline-passing, all from instantiation 1 — instantiations
+   2-4 are still 0/75 each; job `9581675` is the crawl's next daily link,
+   intentionally `PD`/`BeginTime` per its 24h-quota-respecting design, not
+   stuck). So the open item here is **precision, not presence**: Gemini's
+   Dynamic-L4 mean is currently a smaller-sample point estimate (n=38) than
+   the other 7 non-Qwen-1.5B models (each in the hundreds); it will get
+   more precise, not newly included, as the crawl's remaining ~262 L4 rows
+   land over the next few days.
 3. **More baseline-passing problems for Qwen 32B and Qwen 7B specifically**
    on Dynamic-L4 — not new models, just more of the SAME models' existing
    runs, since their thin-cell exclusion is about too few passing rows
@@ -94,14 +107,20 @@ so neither should be reported as "H1 is now significant."
    their outlier ULT-favoring margin (~0.35) holds up or narrows with a
    larger sample.
 
-**Even with Gemini Pro Preview's L4 landing, this comparison caps out at
-n_models=9** (the full canonical roster) — a paired Wilcoxon at n_models=9
-has real but still modest power (PROJECT_BRIEF.md §3.1 already anticipates
-this: "with ≤9 models this test has very limited power; report the effect
-size... as primary, p-values support"). The realistic bar for "conclusive"
-here was always "all 9 canonical models present with no thin cells on
-either side," not "large n" in an absolute sense — items 2 and 3 above are
-what's left of that bar, not new goalposts.
+**This comparison caps out at n_models=8, not 9** — Qwen 1.5B is excluded by
+a genuine floor effect (0 baseline-passing Dynamic-L4 rows out of 375
+attempted, not a data-collection gap that more crawling would close; see
+item 3's framing above and `analysis/METRICS_AND_FINDINGS_EXPLAINED.md`),
+so reaching the full 9-model canonical roster is not simply a matter of
+waiting for more data the way Gemini's item 2 above is. A paired Wilcoxon
+even at the achievable n_models=8/9 has real but still modest power
+(PROJECT_BRIEF.md §3.1 already anticipates this: "with ≤9 models this test
+has very limited power; report the effect size... as primary, p-values
+support"). The realistic bar for "conclusive" here is "every model that CAN
+produce a baseline-passing Dynamic-L4 suite is present, with adequate
+sample size on both sides" — item 3 above (more Qwen 32B/7B data) is what's
+left of that bar; Qwen 1.5B's absence itself is not a gap expected to
+close.
 
 ## Contrast with Comparison B
 

@@ -16,49 +16,73 @@ where published, for both the canonical 9 and canonical+cross-family 13.
 
 **The single most informative number in that file** is its Table 2
 (cross-benchmark rank agreement, one row per metric, Holm-corrected as one
-12-test family): Dynamic↔ULT Kendall τ by metric is **exec_rate 0.429,
-baseline_pass_rate 0.810, conditional Mut@K 0.143, coverage-adjusted Mut@K
-0.905**. Three of the four metrics broadly agree with each other (0.4-0.9);
-**conditional Mut@K is the outlier, by a wide margin, among all four — not
-just relative to one alternative definition.** This reframes what Part 1
-below reports: the low τ=0.143 is not evidence that "Dynamic and ULT
-disagree" in some general sense — every other way of scoring the same
-underlying result rows agrees reasonably well. It is specific to the one
-metric that conditions its denominator on `baseline_passed`, which is also
-the only one of the four whose *n_defined* (how many problems actually
-enter the mean) varies enormously and idiosyncratically per model — from
-n_defined=0 (Qwen 1.5B, ULT) to n_defined=510 (Gemini Pro Preview, Dynamic
-pooled), a structural property no other metric in the table has.
+12-test family): Dynamic↔ULT Kendall τ by metric is **updated 2026-08-07,
+n_models=9: exec_rate 0.423, baseline_pass_rate 0.889, conditional Mut@K
+0.333, coverage-adjusted Mut@K 0.944**. Three of the four metrics broadly
+agree with each other (0.4-0.9, all higher than the earlier n=7 reading);
+**conditional Mut@K is still the outlier, by a wide margin, among all
+four — not just relative to one alternative definition**, even though its
+own absolute value has moved up considerably (0.143→0.333). This still
+reframes what Part 1 above reports: the comparatively low τ is not
+evidence that "Dynamic and ULT disagree" in some general sense — every
+other way of scoring the same underlying result rows agrees noticeably
+better. It is specific to the one metric that conditions its denominator
+on `baseline_passed`, which is also the only one of the four whose
+*n_defined* (how many problems actually enter the mean) varies enormously
+and idiosyncratically per model — **verified directly against the current
+data (not the earlier n_defined=0/510 figures this section previously
+cited, both now stale): from n_defined=7 (Qwen 7B, ULT) to n_defined=1331
+(GPT-5, Dynamic pooled)**, a structural property no other metric in the
+table has.
 
 **Why conditional Mut@K specifically behaves this way — three converging
 pieces of evidence, not one**: (1) *cross-benchmark agreement* (above) —
-the weakest of the four metrics, and the only one below the pre-registered
-validity-supporting zone. (2) *Reliability* (`RANKING_MATRIX.md` Table 4,
-mean pairwise Kendall tau across Dynamic instantiations): conditional
-Mut@K is also the least reliable of the four (0.635 vs 0.854 for
-exec_rate, 1.000 for baseline_pass_rate and coverage-adjusted) — it
-doesn't even rank models consistently against *itself* across
-re-instantiations as well as the others do. (3) *Resolving power*
-(`RANKING_MATRIX.md` Table 3, between-model spread vs within-model
-instantiation noise): conditional Mut@K's ratio (17.3) sits in the middle
-of the pack — not the worst (that's `exec_rate`, 10.4 — see the aside
-below) — so compressed resolving power alone does not explain its low
-cross-benchmark agreement or reliability; the conditioning-on-
-`baseline_passed` property is the better-supported explanation, converging
-with the conditioning/survivorship diagnosis in Part "Diagnosis" below.
+still the weakest of the four metrics, and the only one below the
+pre-registered validity-supporting zone. (2) *Reliability*
+(`RANKING_MATRIX.md` Table 4, mean pairwise Kendall tau across Dynamic
+instantiations): conditional Mut@K is also the least reliable of the four
+(N=4 scope: **0.667** vs **0.774** for exec_rate, 1.000 for
+baseline_pass_rate and coverage-adjusted — updated 2026-08-07, both
+figures moved from the earlier 0.635/0.854 reading) — it doesn't even rank
+models consistently against *itself* across re-instantiations as well as
+the others do. (3) *Resolving power* (`RANKING_MATRIX.md` Table 3,
+between-model spread vs within-model instantiation noise): **this is where
+the picture has genuinely changed, not just moved.** At n_models=9,
+conditional Mut@K's ratio is **20.6 — now the WORST of the four**, not
+"middle of the pack" as the earlier n=7 reading found (exec_rate 21.8,
+baseline_pass_rate 49.9, coverage-adjusted Mut@K 53.1). So compressed
+resolving power is now part of conditional Mut@K's own story too, not just
+a property that happens to afflict `exec_rate` instead — see the revised
+aside immediately below. The conditioning-on-`baseline_passed` property
+remains the best-supported explanation for the cross-benchmark-agreement
+and reliability findings (1 and 2), converging with the
+conditioning/survivorship diagnosis in Part "Diagnosis" below; resolving
+power is now a *contributing*, not merely a *ruled-out*, factor.
 
-**Aside, checked directly rather than assumed**: `exec_rate` was expected
-to be compressed the way pooled Mut@K is (most models clear the exec gate
-easily, so scores cluster near ceiling) — **confirmed**: it has the
-*worst* spread-to-noise ratio of the four metrics (10.4), even though its
-cross-benchmark agreement (τ=0.429) is still better than conditional
-Mut@K's. A metric can have middling resolving power and still out-agree a
-metric with somewhat better resolving power, because resolving power and
-cross-benchmark agreement are different properties — this table is what
-makes that visible instead of conflating them.
+**Aside, checked directly rather than assumed — revised 2026-08-07**: the
+earlier version of this aside used `exec_rate`'s poor resolving power
+(10.4, the worst of the four at n=7) as a deliberate counter-example
+proving that resolving power alone couldn't explain conditional Mut@K's
+weak cross-benchmark agreement — the reasoning was "a metric can have the
+worst resolving power and still out-agree a metric with better resolving
+power." **That specific counter-example no longer holds at n=9**: `exec_rate`
+is no longer the worst-resolving metric (21.8, second-worst) —
+**conditional Mut@K itself now is (20.6, worst)**. This does not overturn
+points (1)/(2) above — the conditioning-on-`baseline_passed` explanation is
+still the best-supported one, and `exec_rate`'s own agreement (τ=0.423)
+still exceeds conditional Mut@K's (τ=0.333) despite `exec_rate`'s
+still-poor resolving power, which is itself still informative (resolving
+power and cross-benchmark agreement remain different properties, not
+perfectly correlated with each other) — but the specific "conditional
+Mut@K's poor cross-benchmark agreement isn't just a resolving-power
+artifact" argument is weaker now that conditional Mut@K's own resolving
+power is the worst measured, not merely middling. Read plainly: at n=9,
+conditional Mut@K underperforms the other three metrics on *both* axes
+(agreement and resolving power) rather than trading off one for the other.
 
 **This does not change what this project's pre-registered primary is.**
-Conditional Mut@K — reported as τ=0.143 throughout Part 1 below — remains
+Conditional Mut@K — reported as τ=0.333 throughout Part 1 below (updated
+2026-08-07 from the original τ=0.143) — remains
 the pre-registered primary metric per `analysis/RQ5_ANALYSIS_PLAN.md` and
 is never retroactively swapped for a better-behaved alternative. What
 changes is the framing: the low cross-benchmark agreement is now presented
@@ -79,106 +103,150 @@ regardless of what any external paper does.
 
 **The primary (Spearman/Kendall, per the pre-registered plan) result is much
 weaker than the score-level (Pearson) result suggests, and does not land in
-the pre-registered validity-supporting zone.** n_models=7 (all models with both
-Dynamic and ULT core_400 data; GPT-5/GPT-5-mini have no ULT data yet):
+the pre-registered validity-supporting zone.** **Updated 2026-08-07**:
+n_models=9 (up from 7 — GPT-5/GPT-5-mini's ULT data landed, growing this
+from all models-with-ULT-data to the full canonical roster):
 
 | Statistic | Value | 95% bootstrap CI | Permutation p |
 |---|---|---|---|
-| Pearson r | 0.904 | [-0.681, 0.993] | 0.082 |
-| Spearman ρ | **0.143** | [-0.750, 1.000] | 0.779 |
-| Kendall τ | **0.143** | [-0.600, 1.000] | 0.769 |
+| Pearson r | 0.912 | [-0.478, 0.994] | 0.058 |
+| Spearman ρ | **0.350** | [-0.446, 1.000] | 0.355 |
+| Kendall τ | **0.333** | [-0.250, 1.000] | 0.254 |
+
+(Source: `analysis/RQ5_PROVENANCE.md`, regenerated `scripts/analyze_rq5.py`
+— re-check that file's timestamp before citing these exact numbers. The
+n=7 reading this table originally reported, Kendall τ=0.143, is preserved
+below as explicit historical record, not deleted — it is still the number
+several downstream sections' *qualitative reasoning* was built against, and
+those sections are being updated in turn, not silently orphaned.)
 
 The Pearson number alone would read as a strong, encouraging correlation.
-It isn't one — the CI includes strongly negative values, and the rank-based
+It still isn't fully one at n_models=9 — the CI still includes strongly
+negative values (Pearson CI [-0.478, 0.994]) — but the rank-based
 statistics (which the analysis plan named primary precisely because a
-linear read can be misleading with a skewed score distribution) are close
-to zero. **Why the two disagree**: `analysis/figures/rq5_correlation.png`
-shows the reason directly. Qwen 1.5B is a clear outlier on both axes (0.81
-Dynamic-pooled, 0.41 ULT) — its distance from the other six models drives
-the Pearson coefficient almost by itself. The other six models are bunched
-tightly on Dynamic-pooled (0.925-0.974, a 5pp band) while spread widely on
-ULT (0.756-0.901, a 15pp band), and **their rank order barely agrees between
-benchmarks at all**: ULT ranks them Qwen32B > Qwen7B > Gemini-Pro-Preview >
-Gemini-Flash-Lite > Haiku > Sonnet, while Dynamic-pooled ranks the same six
-Gemini-Pro-Preview > Haiku > Sonnet > Qwen32B > Flash-Lite > Qwen7B — almost
-the reverse for the two Qwen sizes.
+linear read can be misleading with a skewed score distribution) have moved
+meaningfully off zero with GPT-5/GPT-5-mini's data added (Kendall τ
+0.143→0.333, Spearman ρ 0.143→0.350), even though neither yet clears the
+pre-registered 0.4-0.8 validity-supporting band. **Why the readings still
+diverge, updated 2026-08-07**: `analysis/figures/rq5_correlation.png`
+(not yet regenerated for n=9 as of this writing) previously showed the
+n=7 picture directly; the same mechanism persists at n=9, verified against
+`analysis/RQ5_PROVENANCE.md`'s model ranking table. Qwen 1.5B remains a
+clear outlier on both axes (0.81 Dynamic-pooled, 0.41 ULT) — its distance
+from the other 8 models still drives the Pearson coefficient
+disproportionately. Among those other 8, Dynamic-pooled scores are tightly
+bunched (0.925-0.969, a 4.4pp band) while ULT scores spread widely
+(0.756-0.901, a 14.5pp band), and **rank order agrees better than it did at
+n=7 but is still far from clean**: sorted by Dynamic-pooled (descending),
+the order is Gemini-Pro-Preview > GPT-5 > GPT-5-mini > Claude-Haiku >
+Qwen32B > Claude-Sonnet > Gemini-Flash-Lite > Qwen7B; sorted by ULT
+(descending), the same 8 models order as Qwen32B > Qwen7B >
+Gemini-Pro-Preview > GPT-5 > GPT-5-mini > Gemini-Flash-Lite > Claude-Haiku
+> Claude-Sonnet. GPT-5, GPT-5-mini, and Gemini-Pro-Preview stay in roughly
+the same relative band on both benchmarks (reasonably concordant, and most
+of why τ moved up) — **the two Qwen models remain the dominant source of
+disagreement**, jumping from 7th/8th-of-8 on Dynamic to 1st/2nd-of-8 on
+ULT, essentially the same swap this section flagged at n=7, now diluted by
+two additional, more-concordant models rather than resolved.
 
 **Reading this against the pre-registered frame**: the interpretation frame
-recorded moderate-to-strong Spearman ρ as validity-supporting and near-zero
-as validity-undermining. 0.143 sits in the latter zone, not the former —
-but at n_models=7, this genuinely **cannot distinguish "no relationship" from
-"not enough power to detect one"** (CI spans nearly the entire [-1, 1]
-range). This is exactly the power limitation the plan pre-registered, not a
-post-hoc excuse: report the number honestly, do not claim validity is
-established, and do not claim it is refuted either.
+recorded moderate-to-strong Spearman ρ (0.4-0.8) as validity-supporting and
+near-zero as validity-undermining. 0.350 sits just below that band, not
+inside it — closer to the boundary than the original n=7 reading (0.143,
+squarely in the validity-undermining zone), but still not a validity-
+supporting result as pre-registered. At n_models=9, the permutation p
+(0.355 Spearman, 0.254 Kendall) and CI (Kendall [-0.25, 1.00]) still mean
+this **cannot distinguish "a real, moderate relationship" from "not enough
+power to detect one cleanly"** — the CI has narrowed from n=7's
+near-full-range span but still spans nearly two-thirds of [-1, 1]. This is
+exactly the power limitation the plan pre-registered, not a post-hoc
+excuse: report the number honestly, do not claim validity is established,
+and do not claim it is refuted either.
 
 ## Diagnosis (post-hoc, `analysis/RQ5_DIAGNOSTICS.md` has the full tables)
 
-Four candidate explanations for τ=0.143, checked in turn. **The pooled
+Four candidate explanations for τ=0.333 (updated 2026-08-07 from 0.143),
+checked in turn. **The pooled
 result above remains the pre-registered primary and is not superseded by
-anything below** — this is a diagnosis of why it came out low, not a
-higher, more flattering number to report instead.
+anything below** — this is a diagnosis of why it came out comparatively
+low, not a higher, more flattering number to report instead.
 
 **(a) Difficulty composition.** Pooling L1-L4 compares a mixed-difficulty
 benchmark against ULT's CC>=8-only band. Tier-matching (Dynamic-L4 only,
-Comparison A's own convention) does not simply weaken the correlation — it
-**flips its sign** (Pearson r=-0.873, Kendall τ=-0.200, n_models=5). At n_models=5 with a
-CI spanning almost the full [-1,1] range this is not a confident finding on
-its own, but it rules out the easy story ("pooling just adds noise that
-tier-matching would fix") — the CC-matched comparison looks, if anything,
-slightly worse than the pooled one, not better. The discrimination audit
-explains part of why pooling is misleading regardless of sign: L1 has a
-0.017 range across all 9 models (everyone at ceiling) while L4 has a 0.366
-range and ULT a 0.494 range — pooling a near-zero-variance tier in with the
-genuinely discriminating ones dilutes whatever signal the hard tiers carry,
-in either direction.
+Comparison A's own convention) does not simply weaken the correlation.
+**Updated 2026-08-07, n_models=8** (up from 5, now that Gemini Pro
+Preview's partial L4 landing makes it computable here too): Pearson r
+flips to negative (r=-0.476, CI [-0.89, 0.97]) but Kendall τ — the
+pre-registered primary statistic — **collapses to exactly τ=0.000** (CI
+[-0.57, 0.91], perm p=1.0000, the least-informative possible permutation
+reading), not the negative τ=-0.200 the earlier n=5 reading showed. Read
+precisely: this is not "tier-matching makes Dynamic and ULT actively
+disagree" (that would need a negative rank correlation) — it is
+"tier-matching removes whatever positive rank signal pooling was
+contributing, leaving literally none," a distinction the smaller-sample
+negative τ obscured. Either reading still rules out the easy story
+("pooling just adds noise that tier-matching would fix") — the CC-matched
+comparison's rank agreement (τ=0.000) is no better than the pooled one
+(τ=0.333), if anything worse. The discrimination audit explains part of
+why pooling is misleading regardless of sign: L1 has a 0.017 range across
+all 9 models (everyone at ceiling) while L4 has a 0.371 range and ULT a
+0.494 range — pooling a near-zero-variance tier in with the genuinely
+discriminating ones dilutes whatever signal the hard tiers carry, in
+either direction.
 
-**(b) Conditioning/survivorship — the largest single factor found, but now
-decomposed further (2026-07-28).** Mut@K is only defined where
-`baseline_passed=True`, so each model's mean is taken over a
-different-sized, self-selected subset (pooled baseline_pass_rate ranges
-from 0.02 for Qwen 1.5B to 0.90 for GPT-5 — a 45x spread in how much of the
-benchmark even contributes to the average). Re-scoring with a
-coverage-adjusted metric (Mut@K × baseline_pass_rate, which folds the
-selection back in rather than conditioning it away) **recovers Kendall
-τ=0.905, Spearman ρ=0.964 (permutation p=0.0034)** — a near-total reversal
-from the raw pooled result. This is the strongest single piece of evidence
-in this diagnosis, but decomposing the product (`analysis/RQ5_DIAGNOSTICS.md`
-sec 3b) sharpens what it actually shows: **baseline_pass_rate ALONE already
-gives τ=0.810** — nearly all of the recovered agreement is models agreeing
-on who can produce a baseline-passing suite at all (PASSES against the real
-function — a stricter, later gate than mere exec/collection, which this
-project's scorer tracks separately as `exec_ok`), not on mutation-killing
-quality. Conditioned Mut@K alone (the pre-registered primary metric,
-restricted to the same n_models=7/same models for a fair comparison) is τ=0.143 —
-identical to the full-pool result, meaning models that clear the
-baseline-pass bar do **not** then agree on which suites are the *better*
-mutation killers. So: most of the apparent Dynamic/ULT disagreement is not
-that the two benchmarks disagree about model *capability* broadly — it's
-specifically that they disagree about *baseline pass rate* very little and
-about *mutation-quality-conditional-on-passing* almost completely. Mut@K
-and coverage-adjusted-Mut@K are different
-estimands measuring different things (respectively: "how good are the
-tests that already passed" vs "how good is the model overall, including
-whether it clears the gate"); this result says the cross-benchmark
-agreement lives almost entirely in the "clears the gate" component, not the
-"how good once it does" component — a more precise and less flattering
-statement than "most of the disagreement is conditioning" on its own. The
-coverage-adjusted score is also markedly MORE reliable across Dynamic
-instantiations than raw Mut@K (N=4 mean pairwise Kendall τ=1.000 vs 0.635,
-`analysis/RQ5_DIAGNOSTICS.md` sec 3c) — verified not a small-n artifact, and
-the same underlying fact as the validity finding: baseline_pass_rate is
-apparently both the thing that varies enormously and consistently BETWEEN
-models and the thing that stays comparatively stable WITHIN a model across
-instantiations.
+**(b) Conditioning/survivorship — the largest single factor found, and
+still the largest at n_models=9 (updated 2026-08-07).** Mut@K is only
+defined where `baseline_passed=True`, so each model's mean is taken over a
+different-sized, self-selected subset (pooled baseline_pass_rate still
+ranges roughly 45x between the extremes — Qwen 1.5B lowest, GPT-5 highest
+— see `analysis/RQ5_PROVENANCE.md`'s model ranking table for exact current
+values). Re-scoring with a coverage-adjusted metric (Mut@K × baseline_pass_rate,
+which folds the selection back in rather than conditioning it away)
+**recovers Kendall τ=0.944, Spearman ρ=0.983 (permutation p=0.0002)** — up
+from 0.905/0.964/0.0034 at n=7, and still a near-total reversal from the
+raw pooled result. This is the strongest single piece of evidence in this
+diagnosis, but decomposing the product (`analysis/RQ5_DIAGNOSTICS.md` sec
+3b) sharpens what it actually shows: **baseline_pass_rate ALONE already
+gives τ=0.889** (up from 0.810) — nearly all of the recovered agreement is
+models agreeing on who can produce a baseline-passing suite at all (PASSES
+against the real function — a stricter, later gate than mere
+exec/collection, which this project's scorer tracks separately as
+`exec_ok`), not on mutation-killing quality. Conditioned Mut@K alone (the
+pre-registered primary metric, same n_models=9/same models for a fair
+comparison) is τ=0.333 — identical to the full-pool result, meaning models
+that clear the baseline-pass bar still do **not** then agree nearly as
+well on which suites are the *better* mutation killers, even though this
+gap narrowed somewhat from n=7 (baseline_pass_rate-alone minus
+conditional-Mut@K-alone: 0.810-0.143=0.667 at n=7, 0.889-0.333=0.556 at
+n=9). So: most of the apparent Dynamic/ULT disagreement is still not that
+the two benchmarks disagree about model *capability* broadly — it's still
+specifically that they disagree about *baseline pass rate* comparatively
+little and about *mutation-quality-conditional-on-passing* substantially
+more, though less totally than the n=7 reading suggested. Mut@K and
+coverage-adjusted-Mut@K are different estimands measuring different things
+(respectively: "how good are the tests that already passed" vs "how good
+is the model overall, including whether it clears the gate"); this result
+still says the cross-benchmark agreement lives disproportionately in the
+"clears the gate" component, not the "how good once it does" component —
+a more precise and less flattering statement than "most of the
+disagreement is conditioning" on its own. The coverage-adjusted score is
+also markedly MORE reliable across Dynamic instantiations than raw Mut@K
+(N=4 mean pairwise Kendall τ=1.000 vs 0.667, updated from 0.635 —
+`analysis/RQ5_DIAGNOSTICS.md` sec 3c, `analysis/STABILITY_INTERPRETATION.md`'s
+own correction history has the full movement) — verified not a small-n
+artifact, and the same underlying fact as the validity finding:
+baseline_pass_rate is apparently both the thing that varies enormously and
+consistently BETWEEN models and the thing that stays comparatively stable
+WITHIN a model across instantiations.
 
 **(c) Reliability ceiling — a minor factor.** Disattenuating the observed
-τ=0.143 by Dynamic's own RQ4.1 self-consistency (mean pairwise Kendall tau,
-computed live rather than a frozen constant — see
-`analysis/RQ5_DIAGNOSTICS.md` sec 4 for the current figure and why it's
-computed live, not hard-coded) gives a disattenuated τ barely moved from
-the raw observed value. Dynamic's own noisiness is not why the
-cross-benchmark number is low.
+τ (now 0.333, up from the 0.143 this section originally disattenuated) by
+Dynamic's own RQ4.1 self-consistency (mean pairwise Kendall tau, computed
+live rather than a frozen constant — see `analysis/RQ5_DIAGNOSTICS.md`
+sec 4 for the current figure and why it's computed live, not hard-coded)
+gives a disattenuated τ that still moves only modestly from the raw
+observed value. Dynamic's own noisiness is not the main reason the
+cross-benchmark number is comparatively low.
 
 **(d) Genuine construct difference — what's left over.** After (a) and (c)
 are largely ruled out as the main drivers and (b) is shown to recover most
@@ -196,11 +264,18 @@ are not as disconnected as that number alone implies.
 Also carried over from the per-tier check: Qwen 32B/7B score much higher on
 ULT (0.90/0.89) than their Dynamic-L4 performance predicts (0.55/0.54,
 already a documented stability outlier), while the API models show the
-opposite asymmetry. n_models=5 is too small to treat this as confirmed, but it's
-the kind of pattern a contamination story would produce (open-weight models
-plausibly saw ULT-adjacent web content a leakage-free Dynamic instantiation
-can't replicate) — recorded as a lead for RQ1 cross-referencing, not a
-finding established here.
+opposite asymmetry. **This is no longer just an n_models=5 lead** — at the
+current n_models=8 tier-matched comparison, `analysis/COMPARISON_A_INTERPRETATION.md`
+independently confirms the same asymmetry with a proper paired-Wilcoxon
+rank-biserial effect size (6 of 8 models favor Dynamic-L4; only the two
+Qwen models favor ULT, by a large enough margin to dominate the raw column
+mean without dominating the rank-based vote) — still not proof of a
+contamination mechanism specifically, but corroborated by a second,
+independent statistical reading rather than resting on this section's
+n=5 observation alone. It is the kind of pattern a contamination story
+would produce (open-weight models plausibly saw ULT-adjacent web content a
+leakage-free Dynamic instantiation can't replicate) — recorded as a lead
+for RQ1 cross-referencing, not a finding established here.
 
 ## Write-up stub — Discussion chapter (expand from here, not a final draft)
 
@@ -213,29 +288,32 @@ mutation-operator catalogue, docstring-synonym variation) — validity is
 designed in, not discovered after the fact. The **bottom-up** argument (this
 RQ5/H6 analysis) is empirical: does the benchmark's ranking of models agree
 with independent measures of related capability? The answer here is mixed
-and instructive rather than simply confirmatory. Cross-provider rank
-agreement with ULT (n_models=7, spanning distinct architectures and providers) is
-close to zero on the pre-registered primary metric (Kendall τ=0.143), and
-that finding is reported as-is, not smoothed over. A post-hoc diagnosis,
-however, complicates a simple "distinct capabilities" reading — with a
-sharper edge than it first appeared: most of the gap is attributable to how
-Mut@K conditions on baseline-pass rather than to Dynamic and ULT
-disagreeing about model capability outright, and a coverage-adjusted
-re-scoring that folds the baseline-pass rate back in recovers τ=0.905. But
+and instructive rather than simply confirmatory. **Updated 2026-08-07**:
+cross-provider rank agreement with ULT (n_models=9, spanning distinct
+architectures and providers) has moved off near-zero but still falls short
+of the pre-registered validity-supporting band on the pre-registered
+primary metric (Kendall τ=0.143→0.333), and that finding is reported as-is,
+not smoothed over. A post-hoc diagnosis, however, complicates a simple
+"distinct capabilities" reading — with a sharper edge than it first
+appeared: most of the gap is attributable to how Mut@K conditions on
+baseline-pass rather than to Dynamic and ULT disagreeing about model
+capability outright, and a coverage-adjusted re-scoring that folds the
+baseline-pass rate back in recovers τ=0.944 (up from 0.905). But
 decomposing that recovered agreement shows it is almost entirely a
 *baseline-pass-rate* story, not a mutation-quality one: baseline_pass_rate
-alone already correlates at τ=0.810 across benchmarks, while Mut@K
-conditional on passing (the actual pre-registered metric) stays at τ=0.143
-even within that same matched comparison. Disattenuating for Dynamic's own
-measurement reliability moves the raw number only slightly (see
-`analysis/RQ5_DIAGNOSTICS.md` sec 4 for the current, live-computed figure),
-while the coverage-adjusted score's own (much higher, and independently
-verified) reliability leaves ITS disattenuated figure essentially
-unchanged — reliability is not the limiting factor for either reading. **A
-further check against the pre-registered interpretation frame itself
-(`analysis/RQ5_ANALYSIS_PLAN.md`, Spearman ρ 0.4–0.8 = validity-supporting,
-near-perfect = redundant) sharpens this further: τ=0.905 sits at or above
-the "redundant" line, not inside the validity-supporting zone.** So the
+alone already correlates at τ=0.889 (up from 0.810) across benchmarks,
+while Mut@K conditional on passing (the actual pre-registered metric)
+stays substantially lower at τ=0.333 even within that same matched
+comparison. Disattenuating for Dynamic's own measurement reliability moves
+the raw number only modestly (see `analysis/RQ5_DIAGNOSTICS.md` sec 4 for
+the current, live-computed figure), while the coverage-adjusted score's own
+(much higher, and independently verified) reliability leaves ITS
+disattenuated figure essentially unchanged — reliability is not the
+limiting factor for either reading. **A further check against the
+pre-registered interpretation frame itself (`analysis/RQ5_ANALYSIS_PLAN.md`,
+Spearman ρ 0.4–0.8 = validity-supporting, near-perfect = redundant)
+sharpens this further: τ=0.944 sits at or above the "redundant" line, not
+inside the validity-supporting zone.** So the
 honest statement is two-sided, more specific, and less comfortable than a
 first pass suggests: the metric as pre-registered and specified does rank
 models inconsistently across benchmarks on mutation-quality-conditional-
@@ -279,43 +357,52 @@ explicitly.** A perfect rank match across a 1.5B→7B→32B sweep within one
 model family is close to the least surprising result available: bigger
 Qwen-Coder checkpoints are better at essentially everything, so of course
 they rank the same way on Dynamic, ULT, and BigCodeBench. This is NOT the
-same kind of evidence as the n_models=7 Dynamic↔ULT result above, which spans
-multiple providers/architectures and is the test that can actually fail
-(and did show near-zero rank agreement). The permutation p-value confirms
+same kind of evidence as the n_models=9 Dynamic↔ULT result above (updated
+2026-08-07, was n_models=7), which spans multiple providers/architectures
+and is the test that can actually fail (and did show weak, though no
+longer near-zero, rank agreement). The permutation p-value confirms
 this isn't statistically distinguishable from chance either (p=0.331 even
 at "perfect" τ=1.0 — n_models=3 has only 6 possible orderings, so a perfect match
 isn't rare enough to be significant). **Do not report the n_models=3 numbers as
 "BigCodeBench validates this benchmark"** — report them as "consistent
 with, but not independent evidence for, cross-benchmark validity," and
-lead with the cross-provider n_models=7 Dynamic↔ULT result as the analysis that
+lead with the cross-provider n_models=9 Dynamic↔ULT result as the analysis that
 actually stress-tests the claim.
 
-## Cross-family extension — final results (2026-07-29)
+## Cross-family extension — final results (2026-07-29, canonical-side numbers updated 2026-08-07)
 
 All 4 candidates landed complete (300/300 Dynamic, 400/400 ULT each):
 DeepSeek-Coder-6.7B-Instruct, CodeLlama-13B-Instruct,
 StarCoder2-15B-Instruct-v0.1, Mistral-7B-Instruct-v0.3. Full script:
 `scripts/analyze_rq5_cross_family.py`; raw tables:
-`analysis/RQ5_CROSS_FAMILY_PROVENANCE.md`.
+`analysis/RQ5_CROSS_FAMILY_PROVENANCE.md`. None of the 4 cross-family
+candidates gained any new data in the 2026-08-07 landing (that landing was
+GPT-5/GPT-5-mini/Claude inst5, all canonical models) — so the
+**canonical-only** side of each row below moved (more canonical models),
+while the specific increment each cross-family model *adds* did not.
 
 **Dynamic↔ULT** (breaks nothing new about the family confound — both sides
-are our own benchmarks — but adds statistical power, n_models=7→n_models=11):
+are our own benchmarks — but adds statistical power, n_models=9→n_models=13,
+was 7→11 before the 2026-08-07 landing):
 
 | | n | Kendall τ |
 |---|---|---|
-| raw Mut@K, canonical-only | 7 | 0.143 |
-| raw Mut@K, +cross-family | 11 | 0.345 (CI [-0.18, 0.76], p=0.16 — still not significant) |
-| coverage-adjusted, canonical-only | 7 | 0.905 |
-| coverage-adjusted, +cross-family | 11 | **0.855** (CI [0.61, 1.00], p=0.0001) |
+| raw Mut@K, canonical-only | 9 | 0.333 |
+| raw Mut@K, +cross-family | 13 | **0.385** (CI [-0.09, 0.78], p=0.074, Holm p=0.594 — still not significant) |
+| coverage-adjusted, canonical-only | 9 | 0.944 |
+| coverage-adjusted, +cross-family | 13 | **0.897** (CI [0.73, 1.00], p=0.0001, Holm p=0.0012) |
 
 The coverage-adjusted finding **holds up well** with genuine family
-diversity added — a small, expected drop (0.905→0.855), still strongly
-significant. The raw metric's rank agreement actually improves somewhat
-(0.143→0.345) but stays statistically indistinguishable from no
-relationship.
+diversity added — a small, expected drop (0.944→0.897), still strongly
+significant. The raw metric's rank agreement is similar with or without
+the cross-family models (0.333→0.385) and stays statistically
+indistinguishable from no relationship either way.
 
 **Dynamic/ULT↔BigCodeBench — this is the result that actually breaks the
-size-sweep confound**, n_models=3 (all-Qwen)→n_models=7 (4 families):
+size-sweep confound**, n_models=3 (all-Qwen)→n_models=7 (4 families) — **these
+rows are unaffected by the 2026-08-07 landing** (none of GPT-5/GPT-5-mini/
+Claude have a published BigCodeBench score, so this pair's n stays exactly
+where it was):
 
 | Pair | Metric | n | Kendall τ |
 |---|---|---|---|
@@ -345,14 +432,17 @@ generic code-gen leaderboard, there would be no reason to run a separate
 test-generation benchmark at all"). Neither of this analysis's two headline
 numbers lands in the validity-supporting zone:
 
-- The pre-registered primary (conditional Mut@K, τ=0.143, and its
-  cross-family echo τ=0.345) sits in the near-zero, validity-undermining
-  zone — reported as-is throughout this document, not re-litigated here.
-- The coverage-adjusted score (τ=0.905 canonical, 0.855 cross-family
-  internal, 0.905/0.714 cross-family external) sits at or above the
+- The pre-registered primary (conditional Mut@K, τ=0.333, updated
+  2026-08-07 from 0.143, and its cross-family echo τ=0.385) still falls
+  short of the 0.4-0.8 validity-supporting band — closer to it than the
+  original n=7 reading, but reported as still short, not re-litigated as
+  a win.
+- The coverage-adjusted score (τ=0.944 canonical, updated from 0.905;
+  0.897 cross-family internal, updated from 0.855; 0.905/0.714 cross-family
+  external, unaffected by this landing) sits at or above the
   near-perfect end — by the pre-registered frame's own logic, **this is
   the "redundant" zone, not the "validity-supporting" one.** Presenting
-  0.905 as an unqualified win misreads the frame that was written down
+  0.944 as an unqualified win misreads the frame that was written down
   specifically to prevent exactly that reading. Taken at face value, a
   benchmark whose coverage-adjusted score predicts a generic code-gen
   leaderboard this well is not adding much test-generation-specific
@@ -370,8 +460,10 @@ IS informative, is the diagnosis itself (secs above, `RQ5_DIAGNOSTICS.md`):
 this benchmark's headline metric decomposes cleanly into a baseline-pass-
 rate component that is highly redundant with generic coding ability
 (consistent with "redundant") and a mutation-quality-conditional-on-passing
-component that shows no measurable cross-benchmark signal at all
-(consistent with "undermines validity", though sec 2b's noise-floor audit
+component whose cross-benchmark signal, even after the 2026-08-07 landing
+moved it off near-zero (τ=0.333), is still not statistically distinguishable
+from no relationship (raw p=0.254) and still sits below the pre-registered
+validity-supporting band (consistent with "undermines validity", though sec 2b's noise-floor audit
 shows part of that near-zero reading is a resolving-power artifact among
 closely-scored models, not necessarily genuine disagreement for every
 pair). Neither component, nor their product, is the "related but distinct,
@@ -473,38 +565,42 @@ genuine capability-limitation finding for this model on this benchmark, by
 the same evidence standard already applied to Qwen 1.5B, not a
 template-drift or extraction artifact.
 
-## Cross-definition reconciliation (added 2026-08-03)
+## Cross-definition reconciliation (added 2026-08-03, cited figures refreshed 2026-08-07)
 
-Every "coverage-adjusted" number in this document (τ=0.905 canonical,
-0.855 cross-family, 0.905/0.714 vs BigCodeBench) is **numerically
-unchanged** by this note — it was already being computed correctly. What
-changes is the justification: a 2026-07-30 note (`src/eval/test_gen_scorer.py`,
-`analysis/RQ5_CROSS_DEFINITION_AUDIT.md`) had concluded, from an
-LLM-summarized reading of the ULT/PLT paper, that coverage-adjusted Mut@K
-"matches the ULT paper's own methodology." Re-verified 2026-08-03 against
-raw (non-summarized) paper text AND the paper's own published code
-(`github.com/huangd1999/UnLeakedTestBench`): the paper's PROSE does read
-that way, but its own CODE (`Ray/main.py::mutation_statistic()`, the
-function its CLI actually invokes) computes a baseline-pass-CONDITIONED
-mean — the same estimand as this project's pre-registered primary
-(conditional Mut@K, τ=0.143/0.345), not the zero-filled one its prose
+Every "coverage-adjusted" number in this document (τ=0.944 canonical
+[updated 2026-08-07 from 0.905], 0.897 cross-family [from 0.855], 0.905/0.714
+vs BigCodeBench [unaffected by the 2026-08-07 landing]) is **numerically
+unchanged by this reconciliation note itself** — the note is about which
+methodology a metric matches, not a data update, and data landing since
+2026-08-03 is a separate, later event from what this section documents.
+What this note changes is the justification: a 2026-07-30 note
+(`src/eval/test_gen_scorer.py`, `analysis/RQ5_CROSS_DEFINITION_AUDIT.md`)
+had concluded, from an LLM-summarized reading of the ULT/PLT paper, that
+coverage-adjusted Mut@K "matches the ULT paper's own methodology."
+Re-verified 2026-08-03 against raw (non-summarized) paper text AND the
+paper's own published code (`github.com/huangd1999/UnLeakedTestBench`):
+the paper's PROSE does read that way, but its own CODE
+(`Ray/main.py::mutation_statistic()`, the function its CLI actually
+invokes) computes a baseline-pass-CONDITIONED mean — the same estimand as
+this project's pre-registered primary (conditional Mut@K, τ=0.333/0.385,
+updated 2026-08-07 from 0.143/0.345), not the zero-filled one its prose
 describes. Full evidence and the algebraic proof that coverage-adjusted
 exactly equals the zero-filled/prose-matched reading:
 `analysis/RQ5_CROSS_DEFINITION_AUDIT.md`.
 
 **This sharpens rather than undermines the "redundant zone" reading
 above**: the metric that happens to match ULT's own achieved
-implementation (conditional Mut@K) is the one with near-zero cross-
+implementation (conditional Mut@K) is the one with the weakest cross-
 benchmark agreement; the metric with the strong, "redundant"-zone
 agreement (coverage-adjusted) matches only the paper's stated formula, not
-its code. Neither fact changes which zone τ=0.905 or τ=0.143 fall into —
+its code. Neither fact changes which zone τ=0.944 or τ=0.333 fall into —
 both were already read against the pre-registered plan's zones above,
 unaffected by this reconciliation — but "coverage-adjusted is the
 literature-matching score, so redundancy is the literature's problem too"
 would be an overreach this note forecloses: coverage-adjusted matches the
 literature's STATED method, not its ACHIEVED one.
 
-## Holm-Bonferroni correction (added 2026-08-04)
+## Holm-Bonferroni correction (added 2026-08-04, p-values updated 2026-08-07)
 
 PROJECT_BRIEF.md §3.1 requires Holm-Bonferroni correction "within each RQ
 family" — never applied anywhere in this project until now
@@ -513,19 +609,26 @@ Kendall-tau tests this document narrates (3 benchmark pairs × 2 scopes ×
 2 metric versions — Hard-split pairs excluded as a secondary check, not
 part of this headline family; `scripts/analyze_rq5_cross_family.py`,
 `analysis/RQ5_CROSS_FAMILY_PROVENANCE.md` has the full table): **4/12
-significant at raw p<0.05, 3/12 after Holm correction.** The one that
-drops out is the weakest of the four — ULT↔public, cross-family,
-coverage-adjusted (τ=0.714, raw p=0.032, Holm-adjusted p=0.285). **The
-three results this write-up leans on hardest survive**: Dynamic↔ULT
-coverage-adjusted (both canonical and cross-family scopes, Holm-adjusted
-p=0.037 and p=0.001) and Dynamic↔public coverage-adjusted cross-family
-(Holm-adjusted p=0.037). Every raw-Mut@K correlation was already
+significant at raw p<0.05, 3/12 after Holm correction — same counts as
+before the 2026-08-07 data landing**, though the individual Holm-adjusted
+p-values shifted (Holm's stepwise procedure depends on the rank-ordering
+of all 12 p-values, so even the 8 BigCodeBench-side rows whose own raw p
+didn't move can still get a different adjusted p when the other 4 rows'
+raw p-values change). The one that drops out is still the weakest of the
+four — ULT↔public, cross-family, coverage-adjusted (τ=0.714, raw p=0.032,
+Holm-adjusted p=0.285, unchanged since none of the newly-landed models have
+published BigCodeBench scores). **The three results this write-up leans on
+hardest survive, with materially tighter Holm-adjusted p-values now**:
+Dynamic↔ULT coverage-adjusted (canonical scope: Holm-adjusted p=0.037→**0.0022**;
+cross-family scope: Holm-adjusted p=0.001→**0.0012**, essentially unchanged)
+and Dynamic↔public coverage-adjusted cross-family (Holm-adjusted
+p=0.037→**0.034**). Every raw-Mut@K correlation was already
 non-significant uncorrected and stays that way. **Practical effect on
 this document's conclusions: none of the qualitative claims above change**
 — the coverage-adjusted score's cross-benchmark agreement was never
 claimed to hold for the ULT↔public pair specifically as strongly as for
 the other two pairs (the "Bottom-line construct-validity statement"
-already treats τ=0.905/0.855 as the headline evidence, with the
+already treats τ=0.944/0.897 as the headline evidence, with the
 BigCodeBench comparisons as corroborating, not load-bearing, evidence) —
 but the ULT↔public cross-family number should not be quoted as
 independently significant going forward without this caveat.
@@ -533,12 +636,16 @@ independently significant going forward without this caveat.
 ## What this means going forward
 
 Superseded by the cross-family extension above (completed 2026-07-29,
-n_models=11 Dynamic↔ULT / n_models=7 Dynamic-ULT↔BigCodeBench) — the "genuinely larger N"
-this section originally called for has now landed, and it changed the
-read: the raw pre-registered metric's apparent cross-benchmark agreement
-(both internal and external) does not survive it, while the coverage-
-adjusted score's does. One caution carried over unchanged: with n_models=7-11,
-individual points still matter — a future 5th or 6th cross-family model
-landing differently could move these numbers meaningfully, so treat this
-as strong current evidence, not a permanently closed question. The same
+canonical side updated 2026-08-07: n_models=13 Dynamic↔ULT / n_models=7
+Dynamic-ULT↔BigCodeBench, was n_models=11/7) — the "genuinely larger N"
+this section originally called for has now landed twice (the cross-family
+harvest, then the 2026-08-07 canonical-model completion), and both moved
+the read the same direction: the raw pre-registered metric's apparent
+cross-benchmark agreement (both internal and external) does not survive
+scrutiny at either scope, while the coverage-adjusted score's does. One
+caution carried over unchanged: with n_models=7-13, individual points still
+matter — a future 5th or 6th cross-family model landing (or Gemini Pro
+Preview's Dynamic-L4 sample size growing further, `analysis/GEMINI_DAILY_CRAWL.md`)
+could still move these numbers meaningfully, so treat this as strong
+current evidence, not a permanently closed question. The same
 bootstrap/permutation reporting standard applies to any future extension.
