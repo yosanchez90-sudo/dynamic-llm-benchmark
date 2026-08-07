@@ -15,6 +15,26 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   an unlogged inherited default (e.g. from a base model's generation_config.json) can
   silently differ between runs and change results without any code or YAML diff to show it.
 - Pin model versions exactly (e.g. `claude-opus-4-7`, HF revision SHA). Never use `-latest` tags.
+- **`scripts/process_batch.py`'s `cost_usd` never applied OpenAI's 50% Batch
+  API discount** (found 2026-08-07) — `compute_cost()` (`src/pricing.py`)
+  only knows the standard real-time rate; every row this script has ever
+  scored (100% of them are batch-derived, that's the script's whole job)
+  logged exactly 2x the real billed cost. Confirmed by exact arithmetic
+  match (a real row's `cost_usd=0.0314625` reproduces precisely from
+  `154*1.25 + 3127*10.00` over 1e6 — the *standard*, not batch, rate) and
+  cross-checked against this pass's own independent cost estimate
+  (`analysis/OPENAI_COST_AND_BILLING.md`'s $39-60 band, computed from
+  exact token counts and the batch rate directly, never from logged
+  `cost_usd`): halving the logged total landed within $1.68 of the
+  estimate's midpoint. Fixed going forward (`process_batch.py` now
+  multiplies by 0.5); **not corrected retroactively** in the ~4,600
+  already-written GPT-5/-mini rows (logged sum $127.51, real ~$63.76) —
+  same policy as the gpt-5.4 pricing-table bug found earlier this pass:
+  `cost_usd` is a logged-at-the-time field, not silently rewritten.
+  Anything that sums `cost_usd` across these rows (e.g.
+  `scripts/estimate_cost.py`'s "prefer real logged cost over a token
+  proxy" path) is reading a number 2x too high until/unless those rows
+  are ever migrated.
 - HuggingFace cache lives on scratch, not home (set HF_HOME accordingly).
 - Documentation and manifest files under `data/` are force-added (`git add -f`) —
   the blanket `/data/` gitignore (generated batches/checkpoints/results) does not

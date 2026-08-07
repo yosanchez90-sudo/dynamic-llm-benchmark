@@ -311,3 +311,55 @@ live instructions to re-execute).
   that decision point, and per the user's explicit instruction this pass
   stops there regardless: no batch is submitted and no money is spent
   until the user has topped up credits and given an explicit go-ahead.
+
+## Addendum, 2026-08-07 — real submission complete, cost reconciled, a second pricing bug found
+
+All six batches (inst5-retained GPT decision, `analysis/OPENAI_PREFLIGHT_GO_NOGO.md`'s
+addendum) completed on OpenAI's side and were scored via
+`scripts/process_batch.py`. Coverage confirmed complete: gpt-5 and
+gpt-5-mini both now show 75/75 on every (tier, instantiation) cell across
+all 5 Dynamic instantiations, and exactly 400/400 on both ULT and PLT
+core_400 — the GPT lane is fully closed.
+
+**Reconciling actual billed cost against the $39.01/$51.47/$59.72
+low/mid/high estimate found a second real pricing bug**, distinct from
+the gpt-5.4 mislabeling already fixed: summing this pass's 4,007 new
+rows' logged `cost_usd` gave **$106.30** — roughly 2x the high estimate.
+Investigation traced this to `process_batch.py` never applying OpenAI's
+50% Batch API discount when computing `cost_usd` (confirmed by exact
+arithmetic: a real row's `cost_usd=$0.0314625` reproduces precisely from
+`154*1.25 + 3127*10.00` over 1e6, the *standard* rate, not the batch
+rate) — full writeup and fix in `CLAUDE.md`. Halving the logged total
+gives **$53.15 real cost for this pass's 4,007 requests** — within the
+original estimate band, $1.68 above the $51.47 midpoint. This is a strong
+independent cross-check that both the estimate methodology (exact
+tiktoken input + real output-token band + corrected batch pricing) and
+the batch-discount fix are correct: two independently-derived numbers
+converge to within 3%.
+
+Fixed going forward in `process_batch.py`; **not corrected retroactively**
+in already-written rows (same policy as the gpt-5.4 bug — `cost_usd` is
+logged-at-the-time, not silently rewritten). Scoped project-wide: every
+GPT-5/-mini row ever scored by this script (4,600 total, including the
+original inst1 batches from July) has this same overstatement — logged
+sum $127.51, real estimated ~$63.76. Anything that sums `cost_usd` across
+these rows (e.g. `scripts/estimate_cost.py`'s "prefer real logged cost"
+path) reads 2x too high until/unless those rows are migrated — not done
+in this pass, out of scope, no active need since this reconciliation
+already used exact recomputation rather than the logged field.
+
+**A real OOM event was also flagged** (`sacct -j 9582472` showed
+`State=OUT_OF_MEMORY`, `MaxRSS≈16GB`, hitting the SLURM job's 16G
+request) during the ULT/PLT gpt-5 scoring job — but the job finished
+cleanly with the full expected 800/800 records, 0 rows with
+`baseline_passed=True` and missing mutant data, and no anomalous `notes`
+beyond already-documented normal failure modes (exec-gate collection
+errors). Traced to `test_gen_scorer.py::_evaluate_mutant`'s existing
+subprocess-failure handling (a `subprocess.run()` call that gets
+SIGKILL'd by the OOM killer returns a non-zero/negative `returncode`
+without raising, which the harness already classifies as "dropped" or
+"killed" rather than crashing) — the harness's own prior hardening
+against exactly this class of failure (documented in
+`test_gen_scorer.py`'s own comments, referencing 4 earlier SLURM jobs
+that hit a related `TimeoutExpired` crash) absorbed it gracefully.
+Disclosed for the record, not treated as a data-integrity problem.

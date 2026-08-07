@@ -43,6 +43,22 @@ from src.eval.test_gen_scorer import (  # noqa: E402
 from src.logging_utils import append_jsonl  # noqa: E402
 from src.pricing import compute_cost  # noqa: E402
 
+# Every row this script scores comes from the OpenAI Batch API by
+# construction (that's the whole point of this script) -- OpenAI bills
+# Batch API usage at exactly 50% of the standard rate in src/pricing.py's
+# PRICING table (confirmed directly against OpenAI's pricing page/model
+# pages, analysis/OPENAI_COST_AND_BILLING.md). compute_cost() has no
+# batch-awareness of its own (same function is also called for live/
+# real-time API models elsewhere), so this script must apply the discount
+# itself. Found 2026-08-07: it never did -- every cost_usd this script has
+# ever written (including every pre-existing GPT-5/-mini row from the
+# original inst1 batches) is exactly 2x the real billed amount. Not
+# corrected retroactively in already-written rows, same policy as the
+# gpt-5.4 pricing-table bug found earlier this pass (cost_usd is a
+# logged-at-the-time field) -- see CLAUDE.md / OPENAI_COST_AND_BILLING.md
+# for the disclosure.
+_BATCH_DISCOUNT = 0.5
+
 
 # ── poll until done ──────────────────────────────────────────────────────────
 
@@ -183,6 +199,8 @@ def process_results(
         usage        = resp_body.get("usage", {})
         input_tokens = usage.get("prompt_tokens", 0)
         output_tokens= usage.get("completion_tokens", 0)
+        standard_rate_cost = compute_cost(req["model_id"], input_tokens, output_tokens)
+        cost_usd = standard_rate_cost * _BATCH_DISCOUNT if standard_rate_cost is not None else None
 
         # ── reconstruct problem ───────────────────────────────────────────
         prob = problem_map.get(custom_id)
@@ -238,11 +256,7 @@ def process_results(
                 "top_p": None,
                 "seed": None,
             },
-            cost_usd                         = compute_cost(
-                                                  req["model_id"],
-                                                  input_tokens,
-                                                  output_tokens,
-                                               ),
+            cost_usd                         = cost_usd,
             timestamp                        = datetime.now(timezone.utc).isoformat(),
             runtime_info                     = {
                 "api_response_id":   resp_body.get("id"),
