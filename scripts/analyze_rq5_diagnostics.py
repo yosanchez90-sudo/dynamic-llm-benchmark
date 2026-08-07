@@ -2,8 +2,11 @@
 API work; every number here comes from data already on disk).
 scripts/analyze_rq5.py's pooled-Mut@K result remains the pre-registered
 PRIMARY result (analysis/RQ5_ANALYSIS_PLAN.md) — this script exists to
-DIAGNOSE why Dynamic(pooled)<->ULT rank agreement came out low (Kendall
-tau=0.143 at n=7), not to replace or flatter that result.
+DIAGNOSE why Dynamic(pooled)<->ULT rank agreement came out low in the
+original n=7 measurement (Kendall tau=0.143), not to replace or flatter
+that result. The current reading moves as data lands — see this script's
+own generated analysis/RQ5_DIAGNOSTICS.md for the live number, computed
+fresh on every run, not this docstring.
 
 Diagnostics, in order:
   1. Tier-matched (Dynamic-L4-only, matching Comparison A's CC>=8
@@ -120,6 +123,19 @@ def main() -> None:
 
     df = pd.DataFrame(rows)
 
+    # Pre-registered PRIMARY reading (pooled, unfiltered Dynamic Mut@K vs ULT) --
+    # computed once, live, here, so every prose reference below (including the
+    # preamble) cites the SAME number the tables show, instead of a hardcoded
+    # literal that silently goes stale as new data lands (see CLAUDE.md's
+    # library-fallback/hardcoded-summary discipline).
+    _primary_sub = df.dropna(subset=["dyn_pooled_mutk", "ult_mutk"])
+    _primary_res = (
+        compute_correlations(_primary_sub["dyn_pooled_mutk"].to_numpy(), _primary_sub["ult_mutk"].to_numpy())
+        if len(_primary_sub) >= 3 else None
+    )
+    _primary_tau_str = f"{_primary_res.kendall_tau:.3f}" if _primary_res is not None else "n/a"
+    _primary_n_str = str(_primary_res.n) if _primary_res is not None else "n/a"
+
     out = ["# RQ5 diagnostics (post-hoc, zero-compute)", "",
            f"Generated: {datetime.now(timezone.utc).isoformat()}",
            f"Git commit: {_git_commit()}",
@@ -127,7 +143,7 @@ def main() -> None:
            "Pooled Dynamic Mut@K vs ULT remains the pre-registered PRIMARY result",
            "(analysis/RQ5_ANALYSIS_PLAN.md, analysis/RQ5_PROVENANCE.md) -- everything",
            "below is post-hoc diagnostic of that result's low rank agreement (Kendall",
-           "tau=0.143, n=7), not a replacement for it.", ""]
+           f"tau={_primary_tau_str}, n={_primary_n_str}), not a replacement for it.", ""]
 
     # --- 1. Tier-matched vs pooled vs per-tier -------------------------------
     out += ["## 1. Tier-matched (L4-only) vs pooled vs per-tier", ""]
@@ -290,12 +306,13 @@ def main() -> None:
                      for m in max_chain if pooled_sorted[pooled_sorted['model_short']==m]['model_label'].iloc[0] in sd_by_model]
         out.append(f"Their pooled spread is {chain_spread:.3f}; their own individual SDs are "
                    f"{', '.join(chain_sds)} -- the spread is smaller than every one of these "
-                   f"models' own measurement noise. **Rewriting the tau=0.143 interpretation "
-                   f"accordingly: at least part of the low rank agreement is not that Dynamic "
-                   f"and ULT disagree about these models' quality, it's that pooled Mut@K lacks "
-                   f"the resolving power to rank them AT ALL, on this data alone -- \"the "
-                   f"benchmarks disagree\" and \"this benchmark can't resolve close scores\" are "
-                   f"different claims, and the tau=0.143 headline conflates them.**")
+                   f"models' own measurement noise. **Rewriting the tau={_primary_tau_str} "
+                   f"interpretation accordingly: at least part of the low rank agreement is not "
+                   f"that Dynamic and ULT disagree about these models' quality, it's that pooled "
+                   f"Mut@K lacks the resolving power to rank them AT ALL, on this data alone -- "
+                   f"\"the benchmarks disagree\" and \"this benchmark can't resolve close scores\" "
+                   f"are different claims, and the tau={_primary_tau_str} headline conflates "
+                   f"them.**")
     out.append("")
 
     # --- 3. Conditioning / survivorship audit --------------------------------
@@ -386,10 +403,11 @@ def main() -> None:
     out.append("")
 
     # --- 3b. Decomposing the coverage-adjusted agreement ---------------------
+    _adj_tau_str = f"{res_adj.kendall_tau:.3f}" if res_adj is not None else "n/a"
     out += ["## 3b. Decomposing the coverage-adjusted agreement", "",
             "coverage_adjusted = Mut@K x baseline_pass_rate is a PRODUCT of two signals --",
-            "how much of its tau=0.905 agreement is just baseline pass rate (can the model",
-            "produce a suite that PASSES against the original function, a stricter and",
+            f"how much of its tau={_adj_tau_str} agreement is just baseline pass rate (can the",
+            "model produce a suite that PASSES against the original function, a stricter and",
             "later gate than mere exec/collection -- src/eval/test_gen_scorer.py's",
             "exec_ok and baseline_passed are distinct checks, not the same thing) vs",
             "actual mutation-killing quality? Same n, same models (dropna on the",
@@ -437,6 +455,21 @@ def main() -> None:
     pairwise_adj = pairwise_kendall_tau(dynamic, coverage_adjust=True)
     tau_n4_raw = mean_pairwise_tau_scoped(pairwise_raw, N4_INSTANTIATIONS)
     tau_n4_adj = mean_pairwise_tau_scoped(pairwise_adj, N4_INSTANTIATIONS)
+    # Per-pair n_models/p_value for the N4-scoped adjusted table, computed live
+    # so the "not a degenerate small-n artifact" claim below cites the actual
+    # current n rather than a number frozen from an earlier, smaller data landing
+    # (the exact bug class this section already warns about for RANKING_MATRIX.md's
+    # reliability figure -- a hard-coded n here would go stale the same way).
+    _adj_n4_pairs = pairwise_adj[
+        pairwise_adj["instantiation_a"].isin(N4_INSTANTIATIONS)
+        & pairwise_adj["instantiation_b"].isin(N4_INSTANTIATIONS)
+    ].dropna(subset=["tau"])
+    _adj_n4_nmodels = sorted(_adj_n4_pairs["n_models"].unique().tolist())
+    _adj_n4_nmodels_str = (
+        str(_adj_n4_nmodels[0]) if len(_adj_n4_nmodels) == 1
+        else f"{min(_adj_n4_nmodels)}-{max(_adj_n4_nmodels)}"
+    )
+    _adj_n4_max_p = float(_adj_n4_pairs["p_value"].max()) if len(_adj_n4_pairs) else None
     out += ["| Score | N=4 mean pairwise Kendall tau |",
             "|---|---|",
             f"| raw Mut@K | {tau_n4_raw:.3f} |" if tau_n4_raw is not None else "| raw Mut@K | n/a |",
@@ -455,15 +488,16 @@ def main() -> None:
                        f"it as a companion metric, not just a post-hoc robustness check. A perfect "
                        f"or near-perfect adjusted figure is worth a sanity check before taking as an "
                        f"unqualified win, though: verified this is not a degenerate small-n artifact "
-                       f"(n_models=7 per pair, every pair individually significant at p<0.02, not just "
-                       f"the mean) -- it is the SAME mechanism as sec 3b, not a separate finding. "
-                       f"**Qualification: \"n=7\" is models, not a uniform amount of repeat "
-                       f"measurement per model** -- instantiation counts vary: {n_inst_summary}. "
-                       f"A model with only 4 scorable instantiations (or with some instantiations "
-                       f"partially landed, see analysis/STABILITY.md) contributes a noisier "
-                       f"per-model SD to this figure than one with a full 5, so treat the exact "
-                       f"tau value as somewhat more uncertain than a clean n=7 label implies. "
-                       f"baseline_pass_rate apparently varies enormously and consistently BETWEEN "
+                       f"(n_models={_adj_n4_nmodels_str} per pair, every pair individually significant "
+                       f"at p={_adj_n4_max_p:.2e}" + (" (largest/least-significant p across pairs)" if _adj_n4_max_p is not None else "")
+                       + f", not just the mean) -- it is the SAME mechanism as sec 3b, not a separate "
+                       f"finding. **Qualification: \"n={_adj_n4_nmodels_str}\" is models, not a uniform "
+                       f"amount of repeat measurement per model** -- instantiation counts vary: "
+                       f"{n_inst_summary}. A model with only 4 scorable instantiations (or with some "
+                       f"instantiations partially landed, see analysis/STABILITY.md) contributes a "
+                       f"noisier per-model SD to this figure than one with a full 5, so treat the exact "
+                       f"tau value as somewhat more uncertain than a clean n={_adj_n4_nmodels_str} label "
+                       f"implies. baseline_pass_rate apparently varies enormously and consistently BETWEEN "
                        f"models (a 45x spread, sec 3 above) while staying comparatively stable WITHIN "
                        f"a model across instantiations, so a score dominated by that spread ranks "
                        f"models the same way every time almost by construction -- the same reason it's "
@@ -554,9 +588,10 @@ def main() -> None:
                    f"(n_models={res_pooled_thick.n}, excluded: {pooled_excluded or 'none'}).")
         out.append(f"- **Mistral is unquotable on this pair once cross-family models are in "
                    f"scope** (ULT n_defined=1, analysis/RQ5_CROSS_FAMILY_PROVENANCE.md) -- not "
-                   f"applicable to this canonical-only n=7 table (Mistral isn't one of the 9 "
-                   f"canonical models), flagged here so the rule is visible in one place; see "
-                   f"the cross-family provenance doc for its own thin-cell flags.")
+                   f"applicable to this canonical-only n={res_pooled.n} table (Mistral isn't one "
+                   f"of the {len(CANONICAL_MODELS)} canonical models), flagged here so the rule is "
+                   f"visible in one place; see the cross-family provenance doc for its own "
+                   f"thin-cell flags.")
     else:
         out.append(f"- Excluding thin cells leaves n_models={len(pooled_thick)} (<3) -- cannot compute "
                    f"a correlation. Excluded: {pooled_excluded or 'none'}.")
