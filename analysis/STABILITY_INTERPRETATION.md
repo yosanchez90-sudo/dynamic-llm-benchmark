@@ -85,25 +85,59 @@ current-as-of-commit, not a fixed constant** — `scripts/analyze_rq5_diagnostic
 attenuation correction now recomputes this live (`src.Analysis.stability.mean_pairwise_tau_scoped`)
 rather than hard-coding either the 0.675 or the 0.635 figure, for exactly this reason.
 
+**2026-08-07 — DATA-LANDING change, not a bug: GPT-5/-mini's full N=5
+Dynamic backfill and Claude Sonnet/Haiku's completed inst5 landed
+together.** Third movement of this point estimate, and the first driven
+by real new data reaching the pipeline rather than a bug fix. Before:
+GPT-5/GPT-5-mini were "effectively single-instantiation" (only inst1,
+294-299/300 problems) and **structurally could not enter any pairwise-tau
+comparison at all** — every N=4 pair topped out at n_models=7. After: both
+now have full inst1-5 Dynamic coverage, so every N=4 pair reaches the full
+n_models=9, and the inst5-involving pairs jump from n_models=5 (Qwen×3 +
+Claude×2 only) to n_models=7 (+ GPT×2) — Claude's own inst5 also moved
+from partial (135/300, 143/300) to fully complete (300/300 each) in the
+same landing. **N=4 mean pairwise tau: 0.635 → 0.667. All-pairs mean:
+0.661 → 0.619** (down, even though N=4 went up — the newly-full inst5
+pairs bring their own, somewhat weaker, agreement pattern; see the live
+per-pair table in `analysis/STABILITY.md`). **Significance picture changed
+substantially**: N=4 set now 6/6 significant at raw p<0.05 (was 3/6),
+1/6 surviving Holm correction (was 0/6, pair 1-2 specifically,
+Holm p=0.0015); all-pairs set now 7/10 raw-significant (was 3/10), 2/10
+surviving Holm correction (was 0/10 — pairs 1-2 and 3-5). **This is the
+first time any individual pairwise Kendall tau result in this project has
+survived Holm-Bonferroni correction** — a real, disclosed strengthening,
+not just a point-estimate wobble. Still report the mean pairwise tau as
+the primary stability claim per the recommendation below; the two
+surviving pairs are additional, real evidence, not a reason to lead with
+individual-pair significance now that some exists.
+
 ## Data completeness (check against `analysis/STABILITY.md`'s Generated/Git-commit
 stamp before trusting this as current)
 
-N=4 (`PROJECT_BRIEF.md` §11) is the target scope.
+N=4 (`PROJECT_BRIEF.md` §11) is the target scope; N=5 is the design
+target, now reached by 6 of 9 canonical models (updated 2026-08-07).
 
-- **Complete for N=4:** Claude Sonnet 4.6, Claude Haiku 4.5, Qwen 2.5-Coder 1.5B/7B/32B.
-- **Partial for N=4:** Gemini 3.1 Pro Preview (655/1200 problems still missing as of
-  2026-07-28, unchanged since 2026-07-26 — blocked on a 250-requests/day quota, see
-  `PROJECT_BRIEF.md` §11), Gemini 3.1 Flash-Lite (complete for inst1-4, inst5
-  deliberately out of scope).
-- **Effectively single-instantiation, not multi-instantiation N=4 scope:** GPT-5,
-  GPT-5-mini — both have a complete single Dynamic pass (inst1, all 4 tiers,
-  294-299/300 problems) but no inst2+ data, so they structurally cannot enter any
-  pairwise-tau comparison regardless of the canonical-model filter above; this is a
-  supervisor-credit/cost constraint (`PROJECT_BRIEF.md` §11), not a bug.
+- **Complete for N=5 (design target, not just N=4):** Claude Sonnet 4.6,
+  Claude Haiku 4.5 (inst5 completed 2026-08-06, was previously partial —
+  135/300 and 143/300), Qwen 2.5-Coder 1.5B/7B/32B, **GPT-5, GPT-5-mini**
+  (landed 2026-08-07 — see next bullet for what this changes).
+- **Partial for N=4:** Gemini 3.1 Pro Preview (still missing most of its
+  L4 tier — see `analysis/GEMINI_DAILY_CRAWL.md` for current, actively-
+  changing status), Gemini 3.1 Flash-Lite (complete for inst1-4, inst5
+  deliberately out of scope for either Gemini model).
+- ~~**Effectively single-instantiation, not multi-instantiation N=4
+  scope:** GPT-5, GPT-5-mini~~ **No longer true as of 2026-08-07.** Both
+  now have full inst1-5 Dynamic coverage (300/300 every tier×instantiation
+  cell) and enter every pairwise-tau comparison for the first time —
+  this is the direct cause of the tau movement documented in "Correction
+  history" above. The previous supervisor-credit/cost constraint that kept
+  them single-instantiation is resolved (self-funded batch submission,
+  `analysis/OPENAI_COST_AND_BILLING.md`), not merely re-described.
 
-Re-run `scripts/analyze_stability.py` once Gemini Pro Preview closes out, and update
-this file's completeness section before treating any stability figure as final for
-the dissertation.
+Re-run `scripts/analyze_stability.py` once Gemini Pro Preview's L4 closes
+out, and update this file's completeness section before treating any
+stability figure as final for the dissertation — Gemini Pro Preview is
+now the only canonical model not at N=4-or-better.
 
 ## StableMut@K — is each model's OWN score stable across instantiations?
 
@@ -151,26 +185,36 @@ Full table: `analysis/stability_stablemut_by_tier.csv`. Two patterns worth calli
 ## Kendall tau — do models RANK the same way across instantiations?
 
 See `analysis/STABILITY.md` for the current live N=4 and all-pairs per-pair table
-and means. **Updated 2026-08-04, after adding Holm-Bonferroni correction
-(PROJECT_BRIEF.md Sec 3.1, previously never applied anywhere in this
-project — see `analysis/HYPOTHESIS_COVERAGE_AUDIT.md`): as of the current
-snapshot, 3 of 6 N=4 pairs (and 3 of 10 all-pairs) are significant at raw
-p<0.05 — but 0 of 6 (and 0 of 10) remain significant once each set is
-Holm-Bonferroni-corrected within its own family** (`analysis/STABILITY.md`'s
-own generated table has the full raw-vs-adjusted-p breakdown, corrected as
-two separate families — N=4's 6 pairs and all-pairs' 10 pairs — not one
-pooled 16-test correction). This revises the previous, uncorrected framing
-below ("four to five of six... typically significant") downward
-substantially: **individual pairwise Kendall tau tests should not be
-described as significant in isolation** — the mean pairwise tau point
-estimate (0.635 N=4 / 0.661 all-pairs) remains the primary, more robust
-stability claim (see "Recommendation for the write-up" below, already the
-project's stated preference before this correction was added), and this
-correction sharpens why: none of the individual pairs backing that mean
-would survive a family-wise correction on their own. This is a real,
-disclosed weakening of the write-up's language, not a cosmetic addition —
-treat any future citation of "most pairs are significant" as superseded by
-this section until re-verified against a fresh `STABILITY.md` run.
+and means. **Updated 2026-08-07** after GPT-5/-mini's full N=5 landing and
+Claude Sonnet/Haiku's inst5 completion (see "Correction history" above for
+the full mechanism): **6 of 6 N=4 pairs (and 7 of 10 all-pairs) are now
+significant at raw p<0.05 — 1 of 6 (and 2 of 10) remain significant once
+each set is Holm-Bonferroni-corrected within its own family**
+(`analysis/STABILITY.md`'s own generated table has the full
+raw-vs-adjusted-p breakdown, corrected as two separate families — N=4's 6
+pairs and all-pairs' 10 pairs — not one pooled 16-test correction). This
+is a real strengthening from the 2026-08-04 reading immediately below
+(historical, preserved as the record of what the correction looked like
+before this data landed): pair 1-2 now survives Holm correction in both
+the N=4 and all-pairs families (Holm p=0.0015 and 0.0024 respectively),
+and pair 3-5 also survives in the all-pairs family (Holm p=0.0250). **This
+is still not a reason to describe pairwise Kendall tau as broadly
+significant** — 1/6 and 2/10 are still small minorities of their own
+families — but it is no longer accurate to say *none* survive, the way it
+was as of the 2026-08-04 reading. The mean pairwise tau point estimate
+(0.667 N=4 / 0.619 all-pairs) remains the primary, more robust stability
+claim (see "Recommendation for the write-up" below); the two surviving
+pairs are additional corroborating evidence, not a reason to lead with
+individual-pair significance.
+
+**2026-08-04 reading (historical, preserved for the correction-history
+record — see above for the current numbers):** as of that snapshot, 3 of
+6 N=4 pairs (and 3 of 10 all-pairs) were significant at raw p<0.05, and 0
+of 6 (and 0 of 10) survived Holm-Bonferroni correction. This revised the
+previous, uncorrected framing further below ("four to five of six...
+typically significant") downward substantially at the time — that framing
+is now doubly superseded, first by the 2026-08-04 correction and again by
+the 2026-08-07 data landing above.
 
 ### Why score-level stability (0.82-0.97) reads higher than rank-level tau (~0.6-0.7)
 
@@ -189,9 +233,10 @@ than have that folded into one mean.
 ## Recommendation for the write-up
 
 Report both: StableMut@K (the primary, low-variance stability claim, per model and per
-tier) and the N=4 mean pairwise tau (currently 0.635 — check `analysis/STABILITY.md`
-for the number as of your actual commit, this has already moved twice from bugfixes
-alone) with the full 6-pair breakdown, not just the mean, as the ranking-stability
+tier) and the N=4 mean pairwise tau (currently 0.667 — check `analysis/STABILITY.md`
+for the number as of your actual commit, this has now moved three times, twice from
+bugfixes and once from real data landing — see "Correction history" above) with the
+full 6-pair breakdown, not just the mean, as the ranking-stability
 claim. Flag Qwen 1.5B and Qwen-32B-at-L4 as the two genuine outliers worth a sentence
 each, rather than smoothing them into the aggregate. Note the data-completeness
 caveats above explicitly if this is written up before Gemini Pro Preview closes out.
