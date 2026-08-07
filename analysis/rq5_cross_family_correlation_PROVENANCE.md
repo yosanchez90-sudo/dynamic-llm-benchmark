@@ -1,7 +1,7 @@
 # RQ5 cross-family correlation scatter figure(s) — provenance
 
-Generated: 2026-08-05T20:33:11.822547+00:00
-Git commit: d07d7c8
+Generated: 2026-08-07T15:20:16.957433+00:00
+Git commit: 21d80e1
 Script: scripts/plot_rq5_cross_family_correlation.py
 
 Sources: analysis/rq5_cross_family_model_ranking.csv, analysis/rq5_cross_family_correlations.csv.
