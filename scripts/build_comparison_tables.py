@@ -233,6 +233,24 @@ def main() -> None:
     def _fmt(x, spec=".3f"):
         return format(x, spec) if x is not None else "n/a"
 
+    # --- Multiple-comparisons correction: deliberately NOT applied here -----
+    # PROJECT_BRIEF.md Sec 3.1's official RQ1 family is {H1, H2} — H1 is
+    # exactly ONE test (this file's Comparison A raw/pre-registered-primary
+    # Wilcoxon p-value; the thin-cell-filtered and definition-matched rows
+    # are robustness/sensitivity variants of that SAME question, not separate
+    # pre-registered hypotheses), H2 (Comparison C's DiD) reports an effect
+    # size + bootstrap CI and never computes a p-value. A family of one
+    # correctable p-value makes Holm-Bonferroni a mathematical no-op for H1 --
+    # see analysis/COMPARISON_A_INTERPRETATION.md's own "Multiple-comparisons
+    # correction for RQ1" section for the full reasoning, verified rather
+    # than assumed. Comparison B is not one of PROJECT_BRIEF's six official
+    # hypotheses at all (it's an informal/exploratory observational check,
+    # per this script's own module docstring) and was never a candidate for
+    # this correction either way. An earlier version of this script (2026-08-07)
+    # briefly bundled Comparison A's 3 conditionings + Comparison B's 3
+    # conditionings into a fabricated "6-test H1 family" before this was
+    # caught and reverted -- noted here so the mistake isn't quietly repeated.
+
     a_direction_msg = (
         "All three share the same sign -- a directional read is at least "
         "internally consistent across conditionings, though still not "
@@ -271,8 +289,13 @@ CC bands: data/raw/ult_plt/subsample_manifest.json (tag=core_400).
 Missing (no scorable data on one or both sides — NOT zero-filled, simply
 absent from comparison_a_paired.csv): {a_missing or "none"}
 
-**Interpretation lives in `analysis/COMPARISON_A_INTERPRETATION.md`** — headline:
-no directional claim survives at the current n under any Mut@K definition tried.
+**Interpretation lives in `analysis/COMPARISON_A_INTERPRETATION.md`** — see
+that file's "Multiple-comparisons correction for RQ1" section before
+quoting any p-value here as "significant": H1's own pre-registered family
+is exactly one test (this comparison's raw/unfiltered Wilcoxon), for which
+Holm-Bonferroni is a stated no-op; the thin-filtered/definition-matched
+rows below are robustness variants of that same question, not separate
+corrected hypotheses.
 
 ## Comparison B (ULT vs PLT) — {len(b_paired)}/{len(CANONICAL_MODELS)} models
 Missing: {b_missing or "none"}
@@ -408,6 +431,26 @@ definition-matched/coverage-adjusted={_fmt(b_wilcoxon_adj.effect_r)}. {b_directi
 `analysis/RQ5_CROSS_DEFINITION_AUDIT.md` "Consequence audit" for the
 narrative verdict on both comparisons together (this block reports the raw
 numbers; that doc reports the reasoned conclusion).
+
+## Multiple-comparisons correction — not applied in this file, by design
+
+Several rows above clear raw p<0.05 (both comparisons' thin-cell-filtered
+and definition-matched readings, and Comparison B's raw-unfiltered
+reading). **None of these are Holm-Bonferroni corrected against each
+other** — see `analysis/COMPARISON_A_INTERPRETATION.md`'s "Multiple-
+comparisons correction for RQ1" section for why: PROJECT_BRIEF.md's §3.1
+RQ1 family is exactly {{H1, H2}}, where H1 is Comparison A's single raw/
+pre-registered-primary Wilcoxon test (the thin-filtered and definition-
+matched rows are robustness variants of that same question, not separate
+pre-registered hypotheses) and H2 (Comparison C's DiD) never computes a
+p-value — a correctable family of size one, for which Holm-Bonferroni is
+a stated no-op, not a silent omission. Comparison B is not one of
+PROJECT_BRIEF's six official hypotheses at all (an informal/exploratory
+observational check, per this script's own module docstring), so it was
+never a candidate for this correction either. Read every p-value in this
+file as an uncorrected, single-test significance level — informative on
+its own terms, but not "significant after multiple-comparisons
+correction" in the sense RQ4/H5 and RQ5/H6 use that phrase.
 
 ## Cross-definition note (added 2026-07-30, revised 2026-08-03 -- see analysis/RQ5_CROSS_DEFINITION_AUDIT.md)
 

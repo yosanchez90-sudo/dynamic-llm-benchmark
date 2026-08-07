@@ -6,102 +6,122 @@ this refers to — re-run that script freely after more data lands; it will
 not touch this file. Full algebraic/evidentiary detail behind the
 definition-matched reading used below: `analysis/RQ5_CROSS_DEFINITION_AUDIT.md`.
 
-## Headline
+## Headline (revised 2026-08-07 — GPT-5/-mini and Claude Sonnet/Haiku inst5
+data landed, growing this comparison from n_models=5 to n_models=8)
 
-**No directional claim survives at the current sample size, under any
-definition of Mut@K tried.** This is the honest summary, not "the effect is
-small but positive" or "ULT probably scores higher" — three independent,
-individually-justified ways of computing this comparison disagree on which
-side (Dynamic-L4 or ULT) scores a given model higher, and none is
-statistically significant. Any statement elsewhere in this project's
-documents that reports a Comparison A direction should carry this caveat
-explicitly, or should be corrected if it doesn't.
+**Directional ambiguity resolved: all three conditionings' rank-based
+effect sizes now agree Dynamic-L4 is favored — but H1 itself, the
+pre-registered raw/unfiltered test, still is not statistically
+significant.** This is a real change from the earlier "the sign flips
+twice" finding — previously the raw-unfiltered reading uniquely favored
+ULT while the other two favored Dynamic-L4; now all three agree. **The
+new models are also why a naive "compare the two column means" read would
+mislead here**: on `dynamic_l4` vs `ult`'s raw column averages, ULT looks
+higher (0.8477 vs 0.7966) — but that average is dominated by two outliers
+(both Qwen models, which score ~0.35 higher on ULT than on Dynamic-L4;
+every other model favors Dynamic-L4 by a much smaller margin). The paired
+Wilcoxon test's rank-biserial effect size is exactly the statistic
+designed to not be dominated by a couple of large-magnitude outliers — and
+by that measure, **6 of the 8 models individually favor Dynamic-L4**;
+only the two Qwen models favor ULT, by a large margin. `effect_r` is
+signed so that a negative value means Dynamic-L4 is favored (verified
+directly against `analysis/comparison_a_paired.csv`'s per-model rows, not
+inferred from the column means) — all three rows below are negative.
 
 ## The three readings
 
-| Reading | n | mean(dynamic_l4) | mean(ult) | effect_r | p |
+| Reading | n | mean(dynamic_l4) | mean(ult) | effect_r (negative = Dynamic-L4 favored) | p |
 |---|---|---|---|---|---|
-| Raw Mut@K, unfiltered (pre-registered primary) | 5 | 0.7333 | 0.8346 | **+0.200** (ULT higher) | 0.8125 |
-| Raw Mut@K, thin-cell-filtered (n_defined≥20 both sides) | 3 | 0.8598 | 0.7928 | **-1.000** (Dynamic-L4 higher) | 0.2500 |
-| Definition-matched / coverage-adjusted (co-primary) | 5 | 0.1875 | 0.1041 | **-0.600** (Dynamic-L4 higher) | 0.3125 |
+| Raw Mut@K, unfiltered (pre-registered primary, **H1**) | 8 | 0.7966 | 0.8477 | **-0.167** | 0.7422 |
+| Raw Mut@K, thin-cell-filtered (n_defined≥20 both sides) | 6 | 0.8810 | 0.8311 | **-1.000** | 0.0312 |
+| Definition-matched / coverage-adjusted (co-primary) | 8 | 0.4313 | 0.2804 | **-0.833** | 0.0391 |
 
 (Source: `analysis/COMPARISON_PROVENANCE.md`, generated
 `scripts/build_comparison_tables.py` — re-check that file's timestamp before
-citing these exact numbers, since they update whenever new data lands.)
+citing these exact numbers, since they update whenever new data lands.
+Only Qwen 2.5-Coder-1.5B-Instruct is still missing from this table — a
+genuine floor effect (0 baseline-passing Dynamic-L4 rows out of 375
+attempted), not a data-availability gap; see item 3 below.)
 
-**The sign flips twice, not once.** The raw-unfiltered reading says ULT
-scores higher; excluding the two models whose Dynamic-L4 mean rests on
-fewer than 20 baseline-passing problems (Qwen 32B: n_defined=13, Qwen 7B:
-n_defined=1) flips it to Dynamic-L4 higher; the definition-matched
-co-primary — a completely independent construction (zero-filled mean over
-ALL attempted problems, not a filtered subset of the same conditional
-mean) — agrees with the thin-filtered reading, not the raw-unfiltered one.
-Two of three readings agree with each other and disagree with the
-headline-looking unfiltered number; none clears conventional significance
-at any n.
+**The thin-cell-filtered row's effect_r=-1.000 is not a coincidence of the
+description above — it's the same mechanism made visible.** Thin-cell
+filtering excludes exactly the two Qwen models (their Dynamic-L4 side has
+n_defined=13 and n_defined=1, both <20) — the same two models that are the
+lone ULT-favoring outliers. Removing them leaves all 6 remaining models
+agreeing (Dynamic-L4 favored by every one of them), hence the perfect
+rank-biserial score. This is a real, verified pattern in the data, not an
+artifact of the filtering choice — the raw-unfiltered row already shows
+the same 6-vs-2 majority, just with a rank-biserial magnitude damped by
+the outliers' own high ranks (largest |diff| gets the top rank).
 
-**Why this is reported as a null, not as "weak evidence for Dynamic-L4
-being harder"**: if only the thin-filtered and coverage-adjusted readings
-existed, a directional claim (Dynamic-L4 > ULT) might look tempting even
-without significance. But the raw-unfiltered reading — the pre-registered
-primary, the one with no post-hoc filtering applied — points the other
-way. A finding that depends on which of three defensible conditionings you
-pick is not a finding about which benchmark scores higher; it is a finding
-about the limits of this data.
+**Why H1 itself still doesn't clear significance, even with a 6-vs-2
+model-level majority**: H1 is specifically the raw, unfiltered,
+pre-registered Wilcoxon test — no thin-cell exclusion, no definition
+change — and at n=8 pairs, a rank-biserial effect size of -0.167 driven by
+a 6-vs-2 split with two large opposing outliers simply isn't a strong
+enough signal to clear conventional significance (p=0.7422, barely moved
+from the earlier n=5 reading's p=0.8125). The thin-filtered and
+definition-matched readings both do clear raw p<0.05 — real, additional
+evidence that the direction is genuine and not an artifact of one
+conditioning choice — but neither is part of H1's own pre-registered,
+correctable family (see "Multiple-comparisons correction for RQ1" below),
+so neither should be reported as "H1 is now significant."
 
 ## What would be needed to make this conclusive
 
-Two separate gaps, either of which alone would likely resolve some of the
-instability above; both together would give the strongest possible version
-of this comparison at the model roster this project already has:
+**Item 1 below is now resolved** (GPT-5/-mini's ULT/PLT data landed
+2026-08-07); items 2-3 remain open:
 
-1. **GPT-5 and GPT-5-mini's ULT/PLT data.** Both models have complete
-   Dynamic-L4 data (n_total=70 and 74 respectively, both with high
-   baseline-pass rates — 95.7% and 83.8%) but zero ULT/PLT data at all
-   (supervisor-credit-gated batch, prepared but unsubmitted — see
-   `analysis/SUPERVISOR_HANDOFF_ULT_PLT_20260713.md` and
-   `analysis/OPEN_ITEMS.md`). These two models would very likely NOT be
-   thin-cell-excluded once their ULT data lands (their Dynamic-L4 side
-   already clears n_defined≥20 comfortably), so adding them would grow
-   Comparison A from n_models=5 (or the thin-filtered n_models=3) toward n_models=7 without
-   introducing a new thinness problem — a meaningfully larger n_models at the
-   *same* statistical power tier this comparison currently sits in.
-2. **Gemini 3.1 Pro Preview's Dynamic-L4 data.** Currently absent entirely
-   (0 rows of any kind at L4 — see
-   `analysis/METRICS_AND_FINDINGS_EXPLAINED.md`'s "Gemini-Pro-has-no-L4"
-   section), blocked on a 250-requests/day API quota with a partial crawl
-   (545/1200 problems as of last check). Closing this gap adds a 6th
-   (potentially 8th, combined with item 1) canonical model to Comparison A.
+1. ~~**GPT-5 and GPT-5-mini's ULT/PLT data.**~~ **Landed 2026-08-07** — both
+   models now have full core_400 ULT/PLT coverage (400/400 each). This is
+   exactly what grew Comparison A from n_models=5 to n_models=8 and is
+   the direct cause of the resolved directional ambiguity above.
+2. **Gemini 3.1 Pro Preview's Dynamic-L4 data.** Still absent (0/75 at L4
+   across all instantiations as of this writing — see
+   `analysis/GEMINI_DAILY_CRAWL.md`), closing slowly via a daily-quota-
+   limited self-chaining crawl (see that doc for current status). Closing
+   this gap would add the 9th and final canonical model to Comparison A.
 3. **More baseline-passing problems for Qwen 32B and Qwen 7B specifically**
    on Dynamic-L4 — not new models, just more of the SAME models' existing
    runs, since their thin-cell exclusion is about too few passing rows
    (13 and 1 respectively out of 375 attempted), not missing data outright.
    Additional dynamic instantiations (beyond the current N=4) would grow
    these counts directly, though slowly given how rarely these two models
-   currently clear the CC≥8 baseline gate at all (3.5% and 0.3% pass rates).
+   currently clear the CC≥8 baseline gate at all (3.5% and 0.3% pass
+   rates). **These same two models are also the entire reason H1's raw
+   effect size is weak** (§ above) — more of their own baseline-passing
+   data wouldn't just reduce thinness, it would directly test whether
+   their outlier ULT-favoring margin (~0.35) holds up or narrows with a
+   larger sample.
 
-**Even with all of the above, this comparison would still cap out around
-n_models=9** (the full canonical roster) — a paired Wilcoxon at n_models=9 has real but
-still modest power (PROJECT_BRIEF.md §3.1 already anticipates this: "with
-≤9 models this test has very limited power; report the effect size... as
-primary, p-values support"). The realistic bar for "conclusive" here is not
-"large n" in an absolute sense — it's "all 9 canonical models present with
-no thin cells on either side," which would at least remove the two
-disclosed sources of instability found so far (missing models, and
-thin per-model estimates) rather than adding statistical power beyond what
-9 paired observations can ever provide.
+**Even with Gemini Pro Preview's L4 landing, this comparison caps out at
+n_models=9** (the full canonical roster) — a paired Wilcoxon at n_models=9
+has real but still modest power (PROJECT_BRIEF.md §3.1 already anticipates
+this: "with ≤9 models this test has very limited power; report the effect
+size... as primary, p-values support"). The realistic bar for "conclusive"
+here was always "all 9 canonical models present with no thin cells on
+either side," not "large n" in an absolute sense — items 2 and 3 above are
+what's left of that bar, not new goalposts.
 
 ## Contrast with Comparison B
 
 The same three conditionings applied to ULT vs PLT (`analysis/
-COMPARISON_PROVENANCE.md`) agree on sign in all three readings (PLT scores
-higher — the contamination-consistent direction) and the definition-matched
-reading is the only one of either comparison to clear p<0.05 (p=0.0312).
-This is not a comment on Comparison A's methodology being weaker than
-Comparison B's — both use the identical machinery — it is a genuine
-difference in what the underlying data supports: Comparison B has more
-models available (7 vs 5) and a real, consistent effect to detect; 
-Comparison A currently has neither.
+COMPARISON_PROVENANCE.md`) now run at the full n_models=9 (up from 7) and
+agree on sign in all three readings (PLT scores higher — the
+contamination-consistent direction, and here effect_r's sign does track
+the simple column-mean comparison, unlike Comparison A above, because
+PLT's 7-of-9 model-level majority isn't dominated by large-margin
+outliers the way Comparison A's 6-of-8 majority is). **All three
+readings now clear raw p<0.05** (raw-unfiltered p=0.0391, thin-filtered
+p=0.0312, definition-matched p=0.0078) — the most consistent, striking
+result either comparison has produced. This is not a comment on
+Comparison A's methodology being weaker than Comparison B's — both use
+the identical machinery — it is a genuine difference in what the
+underlying data supports. **It is also not a Holm-Bonferroni-corrected
+"significant" result**: Comparison B is not one of PROJECT_BRIEF's six
+official hypotheses at all (see "Multiple-comparisons correction for RQ1"
+below) — report it as a strong, consistent, uncorrected observational
+signal, not as a confirmed hypothesis test.
 
 ## Multiple-comparisons correction for RQ1 (H1 + H2) — a stated no-op, not a silent omission
 
@@ -113,7 +133,9 @@ Wilcoxon test above); **H2 is Comparison C's difference-in-differences**
 bootstrap CI and **never computes a p-value** — consistent with
 PROJECT_BRIEF.md §3.1's own stated philosophy ("effect sizes with CIs are
 primary; p-values support"), but it means RQ1's family contains exactly
-**one** correctable p-value (H1's raw p=0.8125 above), not two. Applying
+**one** correctable p-value (H1's raw p=0.7422 above, updated 2026-08-07
+from the earlier n=5 reading's p=0.8125 — still not significant, and the
+family is still size one either way), not two. Applying
 Holm-Bonferroni to a family of one p-value is a mathematical no-op (the
 Holm multiplier for the only member of a size-1 family is 1, so the
 adjusted p-value equals the raw one). This is stated here explicitly,

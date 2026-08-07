@@ -1,21 +1,26 @@
 # Comparison A/B generation provenance
 
-Generated: 2026-08-05T20:27:18.410491+00:00
-Git commit: d07d7c8
+Generated: 2026-08-07T15:38:03.244482+00:00
+Git commit: 21d80e1
 
 Sources: data/results/dynamic/*.jsonl (tier=L4 only for Comparison A),
 data/results/ult/*.jsonl, data/results/plt/*.jsonl.
 CC bands: data/raw/ult_plt/subsample_manifest.json (tag=core_400).
 
-## Comparison A (Dynamic-L4 vs ULT) — 5/9 models
+## Comparison A (Dynamic-L4 vs ULT) — 8/9 models
 Missing (no scorable data on one or both sides — NOT zero-filled, simply
-absent from comparison_a_paired.csv): ['Qwen__Qwen2.5-Coder-1.5B-Instruct', 'gemini-3.1-pro-preview', 'gpt-5-2025-08-07', 'gpt-5-mini-2025-08-07']
+absent from comparison_a_paired.csv): ['Qwen__Qwen2.5-Coder-1.5B-Instruct']
 
-**Interpretation lives in `analysis/COMPARISON_A_INTERPRETATION.md`** — headline:
-no directional claim survives at the current n under any Mut@K definition tried.
+**Interpretation lives in `analysis/COMPARISON_A_INTERPRETATION.md`** — see
+that file's "Multiple-comparisons correction for RQ1" section before
+quoting any p-value here as "significant": H1's own pre-registered family
+is exactly one test (this comparison's raw/unfiltered Wilcoxon), for which
+Holm-Bonferroni is a stated no-op; the thin-filtered/definition-matched
+rows below are robustness variants of that same question, not separate
+corrected hypotheses.
 
-## Comparison B (ULT vs PLT) — 7/9 models
-Missing: ['gpt-5-2025-08-07', 'gpt-5-mini-2025-08-07']
+## Comparison B (ULT vs PLT) — 9/9 models
+Missing: none
 
 Pairing unit and CC-band methodology: see src/Analysis/comparison.py's
 module docstring.
@@ -30,15 +35,15 @@ subset of problems, not a shared denominator. Full per-model n_total/
 n_defined/baseline_pass_rate for both sides: `analysis/comparison_a_coverage.csv`.
 
                       model_label  n_total_dynamic_l4  n_defined_dynamic_l4  baseline_pass_rate_dynamic_l4  n_total_ult  n_defined_ult  baseline_pass_rate_ult
-Qwen__Qwen2.5-Coder-1.5B-Instruct               375.0                   0.0                       0.000000        400.0            8.0                0.020000
- Qwen__Qwen2.5-Coder-32B-Instruct               375.0                  13.0                       0.034667        400.0           31.0                0.077500
-  Qwen__Qwen2.5-Coder-7B-Instruct               375.0                   1.0                       0.002667        400.0            7.0                0.017500
-        claude-haiku-4-5-20251001               300.0                  77.0                       0.256667        400.0           35.0                0.087500
-                claude-sonnet-4-6               300.0                  97.0                       0.323333        400.0           78.0                0.195000
-            gemini-3.1-flash-lite               300.0                 145.0                       0.483333        400.0          106.0                0.265000
-           gemini-3.1-pro-preview                 NaN                   NaN                            NaN        101.0           74.0                0.732673
-                 gpt-5-2025-08-07                70.0                  67.0                       0.957143          NaN            NaN                     NaN
-            gpt-5-mini-2025-08-07                74.0                  62.0                       0.837838          NaN            NaN                     NaN
+Qwen__Qwen2.5-Coder-1.5B-Instruct                 375                     0                       0.000000          400              8                0.020000
+ Qwen__Qwen2.5-Coder-32B-Instruct                 375                    13                       0.034667          400             31                0.077500
+  Qwen__Qwen2.5-Coder-7B-Instruct                 375                     1                       0.002667          400              7                0.017500
+        claude-haiku-4-5-20251001                 375                    98                       0.261333          400             35                0.087500
+                claude-sonnet-4-6                 375                   123                       0.328000          400             78                0.195000
+            gemini-3.1-flash-lite                 300                   145                       0.483333          400            106                0.265000
+           gemini-3.1-pro-preview                  38                    38                       1.000000          101             74                0.732673
+                 gpt-5-2025-08-07                 375                   361                       0.962667          400            279                0.697500
+            gpt-5-mini-2025-08-07                 375                   306                       0.816000          400            219                0.547500
 
 **Co-primary definition-matched row** (labelled "coverage-adjusted" in prior
 versions of this file -- 2026-08-03: PROVEN algebraically and code-verified
@@ -53,10 +58,10 @@ this table: 5.55e-17 (floating-point noise only --
 
 | | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
 |---|---|---|---|---|---|
-| raw Mut@K (pre-registered primary) | 5 | 0.7333 | 0.8346 | 0.200 | 0.8125 |
-| definition-matched / coverage-adjusted (co-primary) | 5 | 0.1875 | 0.1041 | -0.600 | 0.3125 |
+| raw Mut@K (pre-registered primary) | 8 | 0.7966 | 0.8477 | -0.167 | 0.7422 |
+| definition-matched / coverage-adjusted (co-primary) | 8 | 0.4313 | 0.2804 | -0.833 | 0.0391 |
 
-**Does the conclusion change?** Effect direction FLIPS between raw and definition-matched (sign of effect_r differs) -- treat Comparison A's direction as conditioning-sensitive, not robust.
+**Does the conclusion change?** Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read (which side is higher, and that n_models=8 is too small at either p-value to call this a real effect) does not flip.
 
 ## Comparison A thin-cell audit (added 2026-07-30, extended 2026-08-03)
 
@@ -69,20 +74,23 @@ both sides:
                      model_label  n_defined_dynamic_l4  n_defined_ult
 Qwen__Qwen2.5-Coder-32B-Instruct                    13             31
  Qwen__Qwen2.5-Coder-7B-Instruct                     1              7
-       claude-haiku-4-5-20251001                    77             35
-               claude-sonnet-4-6                    97             78
+       claude-haiku-4-5-20251001                    98             35
+               claude-sonnet-4-6                   123             78
            gemini-3.1-flash-lite                   145            106
+          gemini-3.1-pro-preview                    38             74
+                gpt-5-2025-08-07                   361            279
+           gpt-5-mini-2025-08-07                   306            219
 
-**Thin model(s) excluded from the 3-model thick-only
+**Thin model(s) excluded from the 6-model thick-only
 result below**: ['Qwen__Qwen2.5-Coder-32B-Instruct', 'Qwen__Qwen2.5-Coder-7B-Instruct'].
 
 | | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
 |---|---|---|---|---|---|
-| raw Mut@K, unfiltered (primary) | 5 | 0.7333 | 0.8346 | 0.200 | 0.8125 |
-| raw Mut@K, thin cells (n_defined<20) excluded | 3 | 0.8598 | 0.7928 | -1.000 | 0.2500 |
+| raw Mut@K, unfiltered (primary) | 8 | 0.7966 | 0.8477 | -0.167 | 0.7422 |
+| raw Mut@K, thin cells (n_defined<20) excluded | 6 | 0.8810 | 0.8311 | -1.000 | 0.0312 |
 
-**Does the 5-model result survive thin-cell filtering?**
-NO in the sense that it shrinks to n=3 once thin cells are excluded -- 2 of the original 5 model(s) were resting on a point estimate averaged over fewer than 20 baseline-passing problems, not a stable per-model mean.
+**Does the 8-model result survive thin-cell filtering?**
+NO in the sense that it shrinks to n_models=6 once thin cells are excluded -- 2 of the original 8 model(s) were resting on a point estimate averaged over fewer than 20 baseline-passing problems, not a stable per-model mean.
 
 **Does thin-cell filtering even apply to the definition-matched/coverage-
 adjusted co-primary?** The pre-registered primary's thinness comes from
@@ -92,7 +100,7 @@ ITS precision is governed by n_total, not n_defined -- a model with
 n_defined=1 but n_total=375 (e.g. Qwen 7B, dynamic_l4) still gives a
 well-estimated near-zero definition-matched score, not a shaky one. Checked
 directly against the same THIN_N_DEFINED=20 threshold applied to n_total
-instead: 0 models -- every model's n_total is >>20 on both sides (min n_total this table: dynamic_l4=70, ult=101), so no model is excluded from the co-primary row above on thinness grounds.
+instead: 0 models -- every model's n_total is >>20 on both sides (min n_total this table: dynamic_l4=38, ult=101), so no model is excluded from the co-primary row above on thinness grounds.
 
 ## Comparison B conditioning/survivorship + co-primary + thin-cell audit (added 2026-08-03)
 
@@ -108,17 +116,19 @@ Qwen__Qwen2.5-Coder-1.5B-Instruct          400              8                0.0
                 claude-sonnet-4-6          400             78                0.195000          400            107                0.267500
             gemini-3.1-flash-lite          400            106                0.265000          400            169                0.422500
            gemini-3.1-pro-preview          101             74                0.732673          116             82                0.706897
+                 gpt-5-2025-08-07          400            279                0.697500          400            291                0.727500
+            gpt-5-mini-2025-08-07          400            219                0.547500          400            236                0.590000
 
 **Co-primary definition-matched row** (max |coverage_adjusted -
-independently-recomputed def-b|: 5.55e-17, floating-point noise
+independently-recomputed def-b|: 1.11e-16, floating-point noise
 only -- `analysis/comparison_b_coverage_adjusted.csv`):
 
 | | n_pairs | mean_a (ult) | mean_b (plt) | effect_r | p |
 |---|---|---|---|---|---|
-| raw Mut@K (pre-registered primary) | 7 | 0.7811 | 0.8346 | 0.714 | 0.1094 |
-| definition-matched / coverage-adjusted (co-primary) | 7 | 0.1685 | 0.2287 | 0.929 | 0.0312 |
+| raw Mut@K (pre-registered primary) | 9 | 0.7987 | 0.8468 | 0.778 | 0.0391 |
+| definition-matched / coverage-adjusted (co-primary) | 9 | 0.2502 | 0.3081 | 0.956 | 0.0078 |
 
-**Does the conclusion change?** Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read does not flip at n=7.
+**Does the conclusion change?** Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read does not flip at n_models=9.
 
 **Thin-cell audit** (n_defined<20 on either side flagged thin):
 
@@ -130,30 +140,52 @@ Qwen__Qwen2.5-Coder-1.5B-Instruct              8             30
                 claude-sonnet-4-6             78            107
             gemini-3.1-flash-lite            106            169
            gemini-3.1-pro-preview             74             82
+                 gpt-5-2025-08-07            279            291
+            gpt-5-mini-2025-08-07            219            236
 
-**Thin model(s) excluded from the 5-model thick-only
+**Thin model(s) excluded from the 7-model thick-only
 result below**: ['Qwen__Qwen2.5-Coder-1.5B-Instruct', 'Qwen__Qwen2.5-Coder-7B-Instruct'].
 
 | | n_pairs | mean_a (ult) | mean_b (plt) | effect_r | p |
 |---|---|---|---|---|---|
-| raw Mut@K, unfiltered (primary) | 7 | 0.7811 | 0.8346 | 0.714 | 0.1094 |
-| raw Mut@K, thin cells (n_defined<20) excluded | 5 | 0.8335 | 0.8775 | 0.867 | 0.1250 |
+| raw Mut@K, unfiltered (primary) | 9 | 0.7987 | 0.8468 | 0.778 | 0.0391 |
+| raw Mut@K, thin cells (n_defined<20) excluded | 7 | 0.8411 | 0.8810 | 0.929 | 0.0312 |
 
-**Does the 7-model result survive thin-cell filtering?**
-NO in the sense that it shrinks to n=5 once thin cells are excluded -- 2 of the original 7 model(s) were resting on a point estimate averaged over fewer than 20 baseline-passing problems.
+**Does the 9-model result survive thin-cell filtering?**
+NO in the sense that it shrinks to n_models=7 once thin cells are excluded -- 2 of the original 9 model(s) were resting on a point estimate averaged over fewer than 20 baseline-passing problems.
 
 ## Directional-stability verdict across ALL conditionings tried (added 2026-08-03)
 
 Comparison A's effect_r sign, across every conditioning computed in this
-file: raw-unfiltered=0.200, raw-thin-cell-filtered=-1.000,
-definition-matched/coverage-adjusted=-0.600. The sign FLIPS depending on which conditioning is applied -- raw/thin/definition-matched do not agree on which side (dynamic_l4 or ult) scores higher. This is the second flip on top of the raw-vs-coverage-adjusted flip already noted above (first flip found 2026-07-30). Given this, the honest conclusion is that Comparison A supports no directional claim at the current n (<=5 models, p>0.05 in every conditioning) -- not "the effect is X, but weak," but "this data cannot currently establish which of Dynamic-L4 or ULT scores a model higher, under any of the definitions tried."
+file: raw-unfiltered=-0.167, raw-thin-cell-filtered=-1.000,
+definition-matched/coverage-adjusted=-0.833. All three share the same sign -- a directional read is at least internally consistent across conditionings, though still not significant at any of the tiny n's involved (see p-values above).
 
-Comparison B's effect_r sign: raw-unfiltered=0.714,
-raw-thin-cell-filtered=0.867,
-definition-matched/coverage-adjusted=0.929. All three share the same sign -- a directional read is at least internally consistent across conditionings. See
+Comparison B's effect_r sign: raw-unfiltered=0.778,
+raw-thin-cell-filtered=0.929,
+definition-matched/coverage-adjusted=0.956. All three share the same sign -- a directional read is at least internally consistent across conditionings. See
 `analysis/RQ5_CROSS_DEFINITION_AUDIT.md` "Consequence audit" for the
 narrative verdict on both comparisons together (this block reports the raw
 numbers; that doc reports the reasoned conclusion).
+
+## Multiple-comparisons correction — not applied in this file, by design
+
+Several rows above clear raw p<0.05 (both comparisons' thin-cell-filtered
+and definition-matched readings, and Comparison B's raw-unfiltered
+reading). **None of these are Holm-Bonferroni corrected against each
+other** — see `analysis/COMPARISON_A_INTERPRETATION.md`'s "Multiple-
+comparisons correction for RQ1" section for why: PROJECT_BRIEF.md's §3.1
+RQ1 family is exactly {H1, H2}, where H1 is Comparison A's single raw/
+pre-registered-primary Wilcoxon test (the thin-filtered and definition-
+matched rows are robustness variants of that same question, not separate
+pre-registered hypotheses) and H2 (Comparison C's DiD) never computes a
+p-value — a correctable family of size one, for which Holm-Bonferroni is
+a stated no-op, not a silent omission. Comparison B is not one of
+PROJECT_BRIEF's six official hypotheses at all (an informal/exploratory
+observational check, per this script's own module docstring), so it was
+never a candidate for this correction either. Read every p-value in this
+file as an uncorrected, single-test significance level — informative on
+its own terms, but not "significant after multiple-comparisons
+correction" in the sense RQ4/H5 and RQ5/H6 use that phrase.
 
 ## Cross-definition note (added 2026-07-30, revised 2026-08-03 -- see analysis/RQ5_CROSS_DEFINITION_AUDIT.md)
 
