@@ -70,7 +70,18 @@ class GeminiModel(Model):
         usage = response.usage_metadata
         input_tokens = usage.prompt_token_count
         output_tokens = usage.candidates_token_count
-        cost = compute_cost(self.model_id, input_tokens, output_tokens)
+        # Thinking-enabled Gemini models (e.g. gemini-3.1-pro-preview) bill
+        # internal reasoning tokens separately from the visible response, at
+        # the same output-token rate (ai.google.dev/gemini-api/docs/pricing)
+        # -- the SDK exposes this as usage_metadata.thoughts_token_count,
+        # which candidates_token_count does NOT include. Found 2026-08-08:
+        # real AI Studio billing (£34.53 over Jul11-Aug7) ran ~4x this
+        # project's own logged cost_usd sum for the same window -- this is
+        # why. Cost must count thinking tokens even though the logged
+        # `output_tokens` field (kept as "visible response tokens" for
+        # comparability with the non-thinking providers) does not.
+        thoughts_tokens = usage.thoughts_token_count or 0
+        cost = compute_cost(self.model_id, input_tokens, output_tokens + thoughts_tokens)
 
         return ModelOutput(
             prompt=canonical_prompt,
@@ -104,6 +115,11 @@ class GeminiModel(Model):
                 # invisible in the logged data.
                 "model_version": getattr(response, "model_version", None),
                 "model_status": getattr(response, "model_status", None),
+                # Preserved for audit even though it's already folded into
+                # cost_usd above -- lets a future reconciliation pass verify
+                # the fix against real per-row thinking-token counts instead
+                # of just the account-level total.
+                "thoughts_token_count": thoughts_tokens,
             },
             provider=self.provider,
             cost_usd=cost,

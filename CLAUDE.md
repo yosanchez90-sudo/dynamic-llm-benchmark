@@ -35,6 +35,31 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   `scripts/estimate_cost.py`'s "prefer real logged cost over a token
   proxy" path) is reading a number 2x too high until/unless those rows
   are ever migrated.
+- **`src/models/gemini_model.py`'s `cost_usd` never counted Gemini's
+  "thinking" tokens** (found 2026-08-08) — `gemini-3.1-pro-preview` is a
+  thinking-enabled model; the SDK's `usage_metadata.thoughts_token_count`
+  (internal reasoning tokens, billed separately from the visible response
+  at the same output-token rate, per ai.google.dev/gemini-api/docs/pricing)
+  was never read; only `candidates_token_count` (the visible response) fed
+  `compute_cost()`. Found by reconciling this project's own logged
+  `cost_usd` sum across every Gemini row (dynamic+ULT+PLT, both models:
+  $11.88 real logged) against Google AI Studio's actual billed total for
+  the same window (Jul 11 - Aug 7: £34.53, ≈$44) — a ~4x gap far too large
+  for FX/rounding, confirmed structurally by reading the SDK's
+  `GenerateContentResponseUsageMetadata` type definition directly (it has
+  a `thoughts_token_count` field this project's code simply never
+  accessed). Fixed going forward (`gemini_model.py` now adds
+  `thoughts_token_count` into the cost calculation, and logs it separately
+  in `runtime_info` for audit — `output_tokens` itself is left meaning
+  "visible response tokens" for comparability with non-thinking
+  providers). Regression tests added (`tests/test_gemini_model.py`).
+  **Not corrected retroactively** in the ~800 already-written
+  gemini-3.1-pro-preview rows — same policy as every other `cost_usd`
+  bug above: it's a logged-at-the-time field. Real spend for finishing the
+  Gemini Pro Preview Dynamic-L4 crawl (`analysis/GEMINI_DAILY_CRAWL.md`)
+  should be estimated from the AI Studio dashboard's actual per-model
+  spend, not from this project's own pre-fix `cost_usd` sums, which
+  undercounted Pro Preview specifically by roughly 4x.
 - HuggingFace cache lives on scratch, not home (set HF_HOME accordingly).
 - Documentation and manifest files under `data/` are force-added (`git add -f`) —
   the blanket `/data/` gitignore (generated batches/checkpoints/results) does not
