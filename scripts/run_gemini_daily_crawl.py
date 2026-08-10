@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from pathlib import Path
 
 import yaml
@@ -53,6 +54,57 @@ def _count_rows(path: Path) -> int:
         return 0
     with open(path) as f:
         return sum(1 for line in f if line.strip())
+
+
+CONFIG_RETRY_ATTEMPTS = 3
+CONFIG_RETRY_PAUSE_SECONDS = 60
+
+
+def _run_config_with_retries(config: dict, cfg_path: str, run_fn, sleep_fn=time.sleep) -> tuple[Path | None, bool]:
+    """Run one config, retrying the WHOLE call a few times on a persistent
+    non-429 APIError before giving up on just this config.
+
+    A persistent 5xx (e.g. "high demand") on one specific problem can
+    exhaust GeminiModel's own 5-retry/62s backoff and raise -- found
+    2026-08-09/10 (job 9587710, 9590545) both crashing on
+    L4-matrix-001/L4-mega-001 after burning only ~5% of the day's budget,
+    wasting the rest since the old code treated ANY non-429 APIError as
+    immediately fatal for the whole script. Confirmed empirically that
+    this is genuinely transient, not a permanent block on that problem:
+    resuming the SAME config a day later (append_jsonl + the resume
+    matcher make this safe) got 3 more rows past the exact point day 2
+    died before hitting the same class of error again. So: retry the
+    whole config call a few times with a real pause (long enough to
+    matter -- GeminiModel's own backoff already proved insufficient)
+    before giving up on just THIS config and moving to the next one,
+    rather than crashing the whole script and abandoning every remaining
+    config for the day.
+
+    Returns (result_path, quota_exhausted_for_today). result_path is None
+    if this config's retries were exhausted on a non-429 error (caller
+    should move on to the next config, not treat it as a daily stop).
+    """
+    from google.genai import errors as genai_errors
+
+    for attempt in range(1, CONFIG_RETRY_ATTEMPTS + 1):
+        try:
+            return run_fn(config), False
+        except genai_errors.APIError as exc:
+            if exc.code == 429:
+                print(f"  429 (quota exhausted) on {cfg_path} -- stopping cleanly for today. "
+                      f"Whatever completed before this point is already saved (append-only).\n")
+                return None, True
+            if attempt < CONFIG_RETRY_ATTEMPTS:
+                print(f"  {exc.code} on {cfg_path} (attempt {attempt}/{CONFIG_RETRY_ATTEMPTS}) -- "
+                      f"already-completed problems are saved; retrying this config in "
+                      f"{CONFIG_RETRY_PAUSE_SECONDS}s in case it's transient.\n")
+                sleep_fn(CONFIG_RETRY_PAUSE_SECONDS)
+                continue
+            print(f"  {exc.code} on {cfg_path} -- {CONFIG_RETRY_ATTEMPTS} attempts exhausted, "
+                  f"deferring the rest of this config to a future run (not crashing the whole "
+                  f"day's budget over one stubborn config).\n")
+            return None, False
+    raise AssertionError("unreachable")  # loop always returns explicitly
 
 
 def _resume_file_row_count(config: dict) -> int:
@@ -110,22 +162,22 @@ def main() -> None:
             continue
 
         from src.eval.test_gen_runner import run_test_gen_experiment
-        from google.genai import errors as genai_errors
 
         # Snapshot row count of whatever resume file would match, so we can
         # tell exactly how many NEW rows this call added even if it fails
         # partway through -- append_jsonl already guarantees partial
-        # progress is on disk, this just measures it precisely.
+        # progress is on disk, this just measures it precisely. Taken
+        # before the (possibly retried) run, matching what a single
+        # successful attempt would have seen.
         before_count = _resume_file_row_count(config)
+        result_path, quota_exhausted_for_today = _run_config_with_retries(
+            config, cfg_path, run_test_gen_experiment,
+        )
 
-        try:
-            result_path = run_test_gen_experiment(config)
-        except genai_errors.APIError as exc:
-            if exc.code == 429:
-                print(f"  429 (quota exhausted) on {cfg_path} -- stopping cleanly for today. "
-                      f"Whatever completed before this point is already saved (append-only).\n")
-                break
-            raise  # anything other than a quota 429 is a real error, not an expected daily-limit stop
+        if quota_exhausted_for_today:
+            break
+        if result_path is None:
+            continue  # config retries exhausted on a non-429 error -- move to the next config
 
         after_count = _count_rows(result_path)
         added = after_count - before_count
