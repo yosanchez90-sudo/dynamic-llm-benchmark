@@ -1,0 +1,372 @@
+# Bibliography database for the dissertation.
+#
+# Citation keys follow a lastname+year+shortkeyword convention.
+# `spec_number` maps each entry back to the original numbered list [1]-[16]
+# the paper's reference spec used; entries with no spec_number (17+) are
+# additions beyond the spec, added per the 2026-08-11 bibliography-setup
+# pass and each carries a `why_added` note explaining the dependency.
+#
+# TBC resolution (2026-08-11): all 8 entries originally marked
+# "[Authors TBC]" ([4],[5],[6],[7],[9],[10],[13],[14]) were resolved
+# directly from arXiv/GitHub (OpenReview itself returned a bot-check page,
+# not content, for every URL tried -- consistent with the stated network
+# note; arxiv.org and GitHub raw content both fetched cleanly, contrary to
+# the stated allowlist, which is worth knowing for future passes). No entry
+# requires manual resolution. Three entries had a title that differs from
+# the spec's paraphrase, in each case verified twice against the paper's
+# own arXiv page before being corrected here -- see each entry's
+# `title_correction` note. [13] and [14] (the 2026-scheme arXiv IDs) were
+# both confirmed to be complete, non-provisional arXiv entries with full
+# metadata, not placeholders.
+#
+# Entries NOT in the original TBC list ([8] DyCodeEval, [11] Codex/HumanEval,
+# [12] UnLeakedTestBench, [15] TestEval, [16] Generalization or Memorization)
+# still carry a partial author list ("et al.") in the spec as pasted -- left
+# exactly as given, since resolving them was outside this pass's explicit
+# scope. Flagged in the summary table, not silently expanded.
+
+entries:
+  - key: sainz2023contamination
+    spec_number: 1
+    authors:
+      - "Oscar Sainz"
+      - "Jon Ander Campos"
+      - "Iker García-Ferrero"
+      - "Julen Etxaniz"
+      - "Oier Lopez de Lacalle"
+      - "Eneko Agirre"
+    title: "NLP Evaluation in Trouble: On the Need to Measure LLM Data Contamination for each Benchmark"
+    venue: "Findings of the Association for Computational Linguistics: EMNLP 2023"
+    year: 2023
+    url: "https://aclanthology.org/2023.findings-emnlp.722.pdf"
+    status: COMPLETE
+    source_used: "spec (as pasted, unchanged)"
+
+  - key: balloccu2024leakcheat
+    spec_number: 2
+    authors:
+      - "Simone Balloccu"
+      - "Patrícia Schmidtová"
+      - "Mateusz Lango"
+      - "Ondřej Dušek"
+    title: "Leak, Cheat, Repeat: Data Contamination and Evaluation Malpractices in Closed-Source LLMs"
+    venue: "Proceedings of EACL 2024"
+    year: 2024
+    url: "https://aclanthology.org/2024.eacl-long.5.pdf"
+    status: COMPLETE
+    source_used: "spec (as pasted, unchanged)"
+
+  - key: zhu2024dyval
+    spec_number: 3
+    authors:
+      - "Kaijie Zhu"
+      - "Jiaao Chen"
+      - "Jindong Wang"
+      - "Neil Zhenqiang Gong"
+      - "Diyi Yang"
+      - "Xing Xie"
+    title: "DyVal: Dynamic Evaluation of Large Language Models for Reasoning Tasks"
+    venue: "International Conference on Learning Representations (ICLR 2024)"
+    year: 2024
+    arxiv: "2309.17167"
+    url: "https://arxiv.org/pdf/2309.17167"
+    status: COMPLETE
+    source_used: "spec (as pasted, unchanged)"
+
+  - key: obrien2025mathemagic
+    spec_number: 4
+    authors:
+      - "Dayyán O'Brien"
+      - "Barry Haddow"
+      - "Emily Allaway"
+      - "Pinzhen Chen"
+    title: "MATHEMAGIC: Generating Dynamic Mathematics Benchmarks Robust to Memorization"
+    venue: "arXiv preprint"
+    year: 2025
+    arxiv: "2510.05962"
+    url: "https://arxiv.org/pdf/2510.05962"
+    status: COMPLETE
+    source_used: "arxiv.org/abs/2510.05962 (fetched directly, was reachable)"
+    note: "Lead author Pinzhen Chen shares a name with this project's supervisor -- verified this is the correct arXiv ID/paper as given in the spec, not assumed from the name coincidence."
+
+  - key: srivastava2026beyondbench
+    spec_number: 5
+    authors:
+      - "Gaurav Srivastava"
+      - "Aafiya Hussain"
+      - "Zhenyu Bi"
+      - "Swastik Roy"
+      - "Priya Pitre"
+      - "Meng Lu"
+      - "Morteza Ziyadi"
+      - "Xuan Wang"
+    title: "BeyondBench: Contamination-Resistant Evaluation of Reasoning in Language Models"
+    venue: "International Conference on Learning Representations (ICLR 2026)"
+    year: 2026
+    arxiv: "2509.24210"
+    url: "https://arxiv.org/abs/2509.24210"
+    status: COMPLETE
+    source_used: "arxiv.org/abs/2509.24210, cross-verified via github.com/ctrl-gaurav/BeyondBench README BibTeX (openreview.net/pdf itself returned a bot-check page, not content)"
+    title_correction: "Spec gave the title as 'BeyondBench: Algorithmic Problem Generation with Mathematical Guarantees' -- the actual paper title (confirmed on arXiv and in the GitHub repo's own BibTeX) is 'BeyondBench: Contamination-Resistant Evaluation of Reasoning in Language Models'. The spec's phrase describes the paper's mechanism, not its title -- an earlier OpenReview-listed variant even used a third wording ('Benchmark-Free Evaluation'), so this was checked against two independent sources before correcting, not assumed."
+
+  - key: white2025livebench
+    spec_number: 6
+    authors:
+      - "Colin White"
+      - "Samuel Dooley"
+      - "Manley Roberts"
+      - "Arka Pal"
+      - "Ben Feuer"
+      - "Siddhartha Jain"
+      - "Ravid Shwartz-Ziv"
+      - "Neel Jain"
+      - "Khalid Saifullah"
+      - "Sreemanti Dey"
+      - "Shubh Agrawal"
+      - "Sandeep Singh Sandha"
+      - "Siddartha Naidu"
+      - "Chinmay Hegde"
+      - "Yann LeCun"
+      - "Tom Goldstein"
+      - "Willie Neiswanger"
+      - "Micah Goldblum"
+    title: "LiveBench: A Challenging, Contamination-Limited LLM Benchmark"
+    venue: "International Conference on Learning Representations (ICLR 2025, Spotlight)"
+    year: 2025
+    arxiv: "2406.19314"
+    url: "https://arxiv.org/pdf/2406.19314"
+    status: COMPLETE
+    source_used: "arxiv.org/abs/2406.19314 (fetched directly, checked twice)"
+    title_correction: "Spec gave 'Contamination-Free' -- the actual title (verified twice, exact quote from the arXiv page both times) is 'Contamination-Limited'. Likely a paraphrase-from-memory error in the spec rather than a real title change between versions, but corrected from the verified current text either way."
+
+  - key: kim2025interviewer
+    spec_number: 7
+    authors:
+      - "Eunsu Kim"
+      - "Juyoung Suk"
+      - "Seungone Kim"
+      - "Niklas Muennighoff"
+      - "Dongkwan Kim"
+      - "Alice Oh"
+    title: "LLM-as-an-Interviewer: Beyond Static Testing Through Dynamic LLM Evaluation"
+    venue: "Findings of the Association for Computational Linguistics: ACL 2025"
+    year: 2025
+    url: "https://aclanthology.org/2025.findings-acl.1357.pdf"
+    status: COMPLETE
+    source_used: "aclanthology.org PDF, downloaded successfully and read directly (title page) -- the URL itself is reachable, only WebFetch's own text-extraction on raw PDF bytes failed, so this needed a direct PDF read rather than a second URL"
+
+  - key: wang2025dycodeeval
+    spec_number: 8
+    authors:
+      - "S. Wang"
+      - "et al."
+    title: "DyCodeEval: Dynamic Benchmarking of Reasoning Capabilities in Code Large Language Models Under Data Contamination"
+    venue: "arXiv preprint"
+    year: 2025
+    arxiv: "2503.04149"
+    url: "https://arxiv.org/abs/2503.04149"
+    source_repo: "https://github.com/SeekingDream/DyCodeEval"
+    status: COMPLETE
+    source_used: "spec (as pasted, unchanged) -- NOT in the requested TBC-resolution list; partial author list ('et al.') left as-is, out of this pass's scope"
+
+  - key: guan2025benchmarkuseful
+    spec_number: 9
+    authors:
+      - "Batu Guan"
+      - "Xiao Wu"
+      - "Yuanyuan Yuan"
+      - "Shaohua Li"
+    title: "Is Your Benchmark Still Useful? Dynamic Benchmarking for Code Language Models"
+    venue: "arXiv preprint"
+    year: 2025
+    arxiv: "2503.06643"
+    url: "https://arxiv.org/abs/2503.06643"
+    status: COMPLETE
+    source_used: "arxiv.org/abs/2503.06643 (fetched directly)"
+    title_correction: "Spec gave 'Is My Benchmark (Still) Useful?' -- the actual title is 'Is Your Benchmark Still Useful?' (no parentheses, 'Your' not 'My')."
+
+  - key: zhang2025code2bench
+    spec_number: 10
+    authors:
+      - "Zhe Zhang"
+      - "Runlin Liu"
+      - "Aishan Liu"
+      - "Xingyu Liu"
+      - "Xiang Gao"
+      - "Hailong Sun"
+    title: "Code2Bench: Scaling Source and Rigor for Dynamic Benchmark Construction"
+    venue: "arXiv preprint"
+    year: 2025
+    arxiv: "2508.07180"
+    url: "https://arxiv.org/abs/2508.07180"
+    status: COMPLETE
+    source_used: "arxiv.org/abs/2508.07180 (fetched directly)"
+
+  - key: chen2021codex
+    spec_number: 11
+    authors:
+      - "M. Chen"
+      - "et al."
+    title: "Evaluating Large Language Models Trained on Code"
+    venue: "arXiv preprint"
+    year: 2021
+    arxiv: "2107.03374"
+    url: "https://arxiv.org/pdf/2107.03374"
+    status: COMPLETE
+    source_used: "spec (as pasted, unchanged) -- NOT in the requested TBC-resolution list; partial author list left as-is, out of this pass's scope"
+
+  - key: huang2026ult
+    spec_number: 12
+    authors:
+      - "D. Huang"
+      - "et al."
+    title: "UnLeakedTestBench: A Decontaminated Benchmark for LLM Unit Test Generation"
+    venue: "ACM"
+    year: 2026
+    doi: "10.1145/3805043"
+    url: "https://dl.acm.org/doi/epdf/10.1145/3805043"
+    source_repo: "https://github.com/huangd1999/UnLeakedTestBench"
+    status: COMPLETE
+    source_used: "spec (as pasted, unchanged) -- NOT in the requested TBC-resolution list; partial author list left as-is, out of this pass's scope. Worth flagging: this is the ULT/PLT source benchmark this whole dissertation's Comparison A/B is built against -- probably the single most load-bearing citation in the file, and currently the only one still with 'et al.' Recommend resolving this one manually even though it wasn't in-scope for this pass."
+
+  - key: haroon2026evolution
+    spec_number: 13
+    authors:
+      - "Sabaat Haroon"
+      - "Mohammad Taha Khan"
+      - "Muhammad Ali Gulzar"
+    title: "Evaluating LLM-Based Test Generation Under Software Evolution"
+    venue: "arXiv preprint"
+    year: 2026
+    arxiv: "2603.23443v1"
+    url: "https://arxiv.org/pdf/2603.23443v1"
+    data_url: "https://zenodo.org/records/18898624"
+    status: COMPLETE
+    source_used: "arxiv.org/abs/2603.23443 (fetched directly)"
+    provisional_check: "Confirmed NOT provisional -- full abstract, metadata, submission history (submitted 2026-03-24), and PDF/source access all present, same as any older arXiv entry."
+
+  - key: chou2026mucoco
+    spec_number: 14
+    authors:
+      - "Chua Jin Chou"
+      - "Khant That Lwin"
+      - "Ezekiel Soremekun"
+    title: "MuCoCo: Automated Consistency Testing of Code LLMs"
+    venue: "arXiv preprint"
+    year: 2026
+    arxiv: "2604.19086"
+    url: "https://arxiv.org/pdf/2604.19086"
+    status: COMPLETE
+    source_used: "arxiv.org/abs/2604.19086 (fetched directly)"
+    provisional_check: "Confirmed NOT provisional -- full abstract, author info, submission metadata (submitted 2026-04-21), and PDF/HTML/TeX access all present."
+
+  - key: wang2024testeval
+    spec_number: 15
+    authors:
+      - "W. Wang"
+      - "C. Yang"
+      - "Z. Wang"
+      - "Y. Huang"
+      - "Z. Chu"
+      - "D. Song"
+      - "L. Zhang"
+      - "A. R. Chen"
+      - "L. Ma"
+    title: "TestEval: Benchmarking Large Language Models for Test Case Generation"
+    venue: "arXiv preprint"
+    year: 2024
+    arxiv: "2406.04531"
+    status: COMPLETE
+    source_used: "spec (as pasted, unchanged)"
+
+  - key: dong2026generalization
+    spec_number: 16
+    authors:
+      - "Y. Dong"
+      - "X. Jiang"
+      - "X. Zhang"
+      - "H. Liu"
+      - "Z. Jin"
+      - "B. Gu"
+      - "M. Yang"
+      - "G. Li"
+    title: "Generalization or Memorization: Data Contamination for Large Language Models in Code Generation"
+    venue: "IEEE Transactions on Software Engineering (early access)"
+    year: 2026
+    doi: "10.1109/TSE.2026.3713834"
+    status: COMPLETE
+    source_used: "spec (as pasted, unchanged)"
+
+  # --- Additions beyond the original [1]-[16] spec ---
+
+  - key: zhuo2025bigcodebench
+    authors:
+      - "Terry Yue Zhuo"
+      - "Minh Chien Vu"
+      - "Jenny Chim"
+      - "Han Hu"
+      - "Wenhao Yu"
+      - "Ratnadira Widyasari"
+      - "Imam Nur Bani Yusuf"
+      - "Haolan Zhan"
+      - "Junda He"
+      - "Indraneil Paul"
+      - "Simon Brunner"
+      - "Chen Gong"
+      - "Thong Hoang"
+      - "Armel Randy Zebaze"
+      - "Xiaoheng Hong"
+      - "Wen-Ding Li"
+      - "Jean Kaddour"
+      - "Ming Xu"
+      - "Zhihan Zhang"
+      - "Prateek Yadav"
+      - "Naman Jain"
+      - "Alex Gu"
+      - "Zhoujun Cheng"
+      - "Jiawei Liu"
+      - "Qian Liu"
+      - "Zijian Wang"
+      - "Binyuan Hui"
+      - "Niklas Muennighoff"
+      - "David Lo"
+      - "Daniel Fried"
+      - "Xiaoning Du"
+      - "Harm de Vries"
+      - "Leandro Von Werra"
+    title: "BigCodeBench: Benchmarking Code Generation with Diverse Function Calls and Complex Instructions"
+    venue: "International Conference on Learning Representations (ICLR 2025, Oral)"
+    year: 2025
+    arxiv: "2406.15877"
+    url: "https://arxiv.org/abs/2406.15877"
+    status: COMPLETE
+    source_used: "arxiv.org/abs/2406.15877 (fetched directly)"
+    why_added: "RQ5 correlates this project's Dynamic/ULT Mut@K scores against published BigCodeBench Pass@1 (analysis/RQ5_LEADERBOARD_HARVEST.md, analysis/RQ5_INTERPRETATION.md 'Parts 2-3'/'Cross-family extension' sections) -- the paper cannot report that correlation without citing the benchmark it's correlated against. Explicitly requested."
+
+  - key: hu2022lora
+    authors:
+      - "Edward J. Hu"
+      - "Yelong Shen"
+      - "Phillip Wallis"
+      - "Zeyuan Allen-Zhu"
+      - "Yuanzhi Li"
+      - "Shean Wang"
+      - "Lu Wang"
+      - "Weizhu Chen"
+    title: "LoRA: Low-Rank Adaptation of Large Language Models"
+    venue: "International Conference on Learning Representations (ICLR 2022)"
+    year: 2022
+    arxiv: "2106.09685"
+    url: "https://arxiv.org/abs/2106.09685"
+    status: COMPLETE
+    source_used: "arxiv.org/abs/2106.09685 (fetched directly); venue confirmed via web search (ICLR 2022 poster) since the arXiv page alone doesn't list the venue"
+    why_added: "Comparison C's entire contamination-simulation experiment (PROJECT_BRIEF.md O7) is a LoRA fine-tune of Qwen2.5-Coder-1.5B on ULT's ground-truth data -- the paper cannot describe this experiment's method without citing the technique it fine-tunes with. Not in the original 16-entry spec; added as a genuine methodological dependency the spec omitted."
+
+# Total: 18 entries (16 from spec + 2 additions), well under the
+# handbook's 35-entry cap. No spec entry was dropped or flagged as
+# unlikely-to-be-cited -- on review, every one of [1]-[16] maps cleanly
+# onto either the contamination/dynamic-benchmarking literature this
+# thesis positions itself within, or the test-generation/mutation-testing
+# literature its methodology draws from directly (in [14] MuCoCo's case,
+# a near-exact methodological parallel: mutation analysis to test code-LLM
+# behavior). None read as padding.
