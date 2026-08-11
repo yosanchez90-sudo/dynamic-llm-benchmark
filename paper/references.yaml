@@ -20,10 +20,15 @@
 # metadata, not placeholders.
 #
 # Entries NOT in the original TBC list ([8] DyCodeEval, [11] Codex/HumanEval,
-# [12] UnLeakedTestBench, [15] TestEval, [16] Generalization or Memorization)
-# still carry a partial author list ("et al.") in the spec as pasted -- left
-# exactly as given, since resolving them was outside this pass's explicit
-# scope. Flagged in the summary table, not silently expanded.
+# [15] TestEval, [16] Generalization or Memorization) still carry a partial
+# author list ("et al.") in the spec as pasted -- left exactly as given,
+# since resolving them was outside this pass's explicit scope. [12]
+# UnLeakedTestBench was in this same out-of-scope set initially but was
+# resolved on 2026-08-11 at explicit follow-up request -- see its own
+# `note` field. Its title also needed correcting (same paraphrase-not-title
+# pattern as [5] BeyondBench): the real title is "Benchmarking LLMs for
+# Unit Test Generation from Real-World Functions", not "UnLeakedTestBench:
+# A Decontaminated Benchmark for LLM Unit Test Generation".
 
 entries:
   - key: sainz2023contamination
@@ -218,16 +223,33 @@ entries:
   - key: huang2026ult
     spec_number: 12
     authors:
-      - "D. Huang"
-      - "et al."
-    title: "UnLeakedTestBench: A Decontaminated Benchmark for LLM Unit Test Generation"
-    venue: "ACM"
+      - "Dong Huang"
+      - "Jie M. Zhang"
+      - "Mark Harman"
+      - "Qianru Zhang"
+      - "Mingzhe Du"
+      - "See-Kiong Ng"
+    affiliations:
+      - "National University of Singapore"
+      - "King's College London"
+      - "University College London"
+      - "University of Cambridge"
+      - "National University of Singapore"
+      - "National University of Singapore"
+    title: "Benchmarking LLMs for Unit Test Generation from Real-World Functions"
+    venue: "ACM Transactions on Software Engineering and Methodology"
     year: 2026
+    accepted: "2026-02-25"
+    published_online: "2026-03-28"
     doi: "10.1145/3805043"
     url: "https://dl.acm.org/doi/epdf/10.1145/3805043"
+    arxiv: "2508.00408"
+    arxiv_url: "https://arxiv.org/abs/2508.00408"
     source_repo: "https://github.com/huangd1999/UnLeakedTestBench"
     status: COMPLETE
-    source_used: "spec (as pasted, unchanged) -- NOT in the requested TBC-resolution list; partial author list left as-is, out of this pass's scope. Worth flagging: this is the ULT/PLT source benchmark this whole dissertation's Comparison A/B is built against -- probably the single most load-bearing citation in the file, and currently the only one still with 'et al.' Recommend resolving this one manually even though it wasn't in-scope for this pass."
+    source_used: "Full author list + affiliations from arxiv.org/abs/2508.00408 (fetched directly, quoted twice); exact venue name, DOI, and accepted/published dates from a targeted web search (dl.acm.org itself returned HTTP 403, consistent with the earlier note); GitHub README cross-confirmed both the arXiv ID and the real title. Two independent sources agree on the author list verbatim, same order."
+    title_correction: "Spec gave 'UnLeakedTestBench: A Decontaminated Benchmark for LLM Unit Test Generation' -- the actual published title (confirmed three times: arXiv page quoted twice, GitHub README, and the ACM listing found via search) is 'Benchmarking LLMs for Unit Test Generation from Real-World Functions'. 'UnLeakedTestBench' / 'ULT' is the benchmark's own name within the paper, not the paper's title -- same pattern as the BeyondBench correction above (a descriptive phrase mistaken for the title)."
+    note: "Resolved 2026-08-11 at explicit user request, after being flagged out-of-scope in the initial pass -- this is the ULT/PLT source benchmark this dissertation's Comparison A/B and RQ5 are built against, arguably the single most load-bearing citation in the file."
 
   - key: haroon2026evolution
     spec_number: 13
