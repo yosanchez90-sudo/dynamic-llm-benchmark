@@ -118,6 +118,25 @@ def main() -> None:
     raw("HTwoPreMutkTotal", f"{int(seen_pre_mutk['n_total'])}")
     num("HTwoPostMutk", seen_post_mutk["mut_at_k"], ".3f")
 
+    # ---------------------------------------------- Equivalent-mutant validation
+    # analysis/equiv_mutants/inspection_sheet.xlsx is currently fully unfilled
+    # (0/120 verdicts across all four tiers); scripts/compute_validated_score.py
+    # correctly writes nothing until at least one tier has filled rows. This
+    # block picks up its output automatically, per tier, once that happens --
+    # no further code changes needed -- and stays a no-op until then, matching
+    # the paper's own "not yet complete" disclosure (04_results.tex, Additional
+    # Disclosures).
+    validated_path = ANALYSIS / "equiv_mutants" / "validated_scores.csv"
+    if validated_path.exists():
+        tier_name = {"L1": "LOne", "L2": "LTwo", "L3": "LThree", "L4": "LFour"}
+        for _, row in pd.read_csv(validated_path).iterrows():
+            name = tier_name[row["tier"]]
+            num(f"HTwoValidated{name}MutK", row["mut_at_k_validated"], ".3f")
+            if pd.notna(row["mut_at_k_validated_boot_lo"]):
+                raw(f"HTwoValidated{name}MutKCI",
+                    f"[{row['mut_at_k_validated_boot_lo']:.3f}, {row['mut_at_k_validated_boot_hi']:.3f}]")
+            num(f"HTwoValidated{name}EquivRate", row["equivalent_rate"], ".3f")
+
     # -------------------------------------------------------------------- H3
     all_tier = pd.read_csv(ANALYSIS / "h3_tier_gradient_all_tier.csv")
     l2l4 = pd.read_csv(ANALYSIS / "h3_tier_gradient_l2l4.csv")
