@@ -1,7 +1,7 @@
 # RQ5 sanitizer sensitivity analysis (post-hoc, zero-compute)
 
-Generated: 2026-08-07T15:20:37.936575+00:00
-Git commit: 21d80e1
+Generated: 2026-08-12T00:13:32.053842+00:00
+Git commit: ce774c2
 Script: scripts/analyze_rq5_sanitizer_sensitivity.py
 
 src/eval/test_gen_scorer.py::sanitize_test_file strips a reimplementation of
@@ -21,11 +21,11 @@ RQ5 primary/coverage-adjusted picture. Canonical models only, Dynamic pooled
 | claude-haiku-4-5-20251001 | 1500 | 0 | 0.00% | 400 | 46 | 11.50% |
 | claude-sonnet-4-6 | 1500 | 0 | 0.00% | 400 | 41 | 10.25% |
 | gemini-3.1-flash-lite | 1200 | 0 | 0.00% | 400 | 27 | 6.75% |
-| gemini-3.1-pro-preview | 583 | 0 | 0.00% | 101 | 4 | 3.96% |
+| gemini-3.1-pro-preview | 1200 | 0 | 0.00% | 101 | 4 | 3.96% |
 | gpt-5-2025-08-07 | 1500 | 0 | 0.00% | 400 | 1 | 0.25% |
 | gpt-5-mini-2025-08-07 | 1500 | 0 | 0.00% | 400 | 0 | 0.00% |
 
-Total repaired: 67/12283 Dynamic rows, 228/3301 ULT rows.
+Total repaired: 67/12900 Dynamic rows, 228/3301 ULT rows.
 
 ## Recomputed metrics with repaired rows excluded (dropped, not re-scored)
 
@@ -37,7 +37,7 @@ Total repaired: 67/12283 Dynamic rows, 228/3301 ULT rows.
 | claude-haiku-4-5-20251001 | 0.955 -> 0.955 | 0.502 -> 0.502 | 0.801 -> 0.765 | 0.087 -> 0.076 |
 | claude-sonnet-4-6 | 0.954 -> 0.954 | 0.703 -> 0.703 | 0.756 -> 0.740 | 0.195 -> 0.187 |
 | gemini-3.1-flash-lite | 0.953 -> 0.953 | 0.652 -> 0.652 | 0.821 -> 0.817 | 0.265 -> 0.241 |
-| gemini-3.1-pro-preview | 0.969 -> 0.969 | 0.940 -> 0.940 | 0.888 -> 0.887 | 0.733 -> 0.742 |
+| gemini-3.1-pro-preview | 0.960 -> 0.960 | 0.956 -> 0.956 | 0.888 -> 0.887 | 0.733 -> 0.742 |
 | gpt-5-2025-08-07 | 0.960 -> 0.960 | 0.887 -> 0.887 | 0.869 -> 0.869 | 0.698 -> 0.699 |
 | gpt-5-mini-2025-08-07 | 0.958 -> 0.958 | 0.838 -> 0.838 | 0.851 -> 0.851 | 0.547 -> 0.547 |
 
@@ -45,8 +45,8 @@ Total repaired: 67/12283 Dynamic rows, 228/3301 ULT rows.
 
 | Metric | scope | n | Kendall τ | perm p |
 |---|---|---|---|---|
-| raw Mut@K | Dynamic<->ULT | 9 | 0.333 | 0.2540 |
-| raw Mut@K, repaired rows excluded | Dynamic<->ULT | 9 | 0.333 | 0.2540 |
+| raw Mut@K | Dynamic<->ULT | 9 | 0.278 | 0.3505 |
+| raw Mut@K, repaired rows excluded | Dynamic<->ULT | 9 | 0.278 | 0.3505 |
 | coverage-adjusted | Dynamic<->ULT | 9 | 0.944 | 0.0002 |
 | coverage-adjusted, repaired rows excluded | Dynamic<->ULT | 9 | 0.889 | 0.0003 |
 

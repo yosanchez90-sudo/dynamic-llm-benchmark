@@ -1,7 +1,7 @@
 # Stability (RQ4.1) — raw tables
 
-Generated: 2026-08-07T15:12:32.146413+00:00
-Git commit: 21d80e1
+Generated: 2026-08-12T00:05:42.210985+00:00
+Git commit: ce774c2
 Script: scripts/analyze_stability.py
 
 **Interpretation lives in `analysis/STABILITY_INTERPRETATION.md`**
@@ -23,7 +23,7 @@ Qwen__Qwen2.5-Coder-1.5B-Instruct         0.815858     0.042065                 
         claude-haiku-4-5-20251001         0.955334     0.003907                 5
                 claude-sonnet-4-6         0.954239     0.002966                 5
             gemini-3.1-flash-lite         0.953551     0.003559                 4
-           gemini-3.1-pro-preview         0.969689     0.004767                 4
+           gemini-3.1-pro-preview         0.959604     0.000570                 4
                  gpt-5-2025-08-07         0.960076     0.002314                 5
             gpt-5-mini-2025-08-07         0.958190     0.001344                 5
 
@@ -52,9 +52,10 @@ Qwen__Qwen2.5-Coder-1.5B-Instruct   L3         0.722222     0.392837            
             gemini-3.1-flash-lite   L2         0.976719     0.001307                 4
             gemini-3.1-flash-lite   L3         0.940342     0.008628                 4
             gemini-3.1-flash-lite   L4         0.881176     0.007363                 4
-           gemini-3.1-pro-preview   L1         0.983772     0.001397                 4
-           gemini-3.1-pro-preview   L2         0.973584     0.013150                 2
-           gemini-3.1-pro-preview   L3         0.955980     0.006526                 4
+           gemini-3.1-pro-preview   L1         0.984981     0.001170                 4
+           gemini-3.1-pro-preview   L2         0.980265     0.001815                 4
+           gemini-3.1-pro-preview   L3         0.956093     0.001493                 4
+           gemini-3.1-pro-preview   L4         0.918941     0.002670                 4
                  gpt-5-2025-08-07   L1         0.985481     0.003231                 5
                  gpt-5-2025-08-07   L2         0.990686     0.002183                 5
                  gpt-5-2025-08-07   L3         0.961006     0.004096                 5
@@ -68,18 +69,18 @@ Qwen__Qwen2.5-Coder-1.5B-Instruct   L3         0.722222     0.392837            
 
 instantiation_a instantiation_b  n_models      tau  p_value
               1               2         9 0.888889 0.000243
-              1               3         9 0.666667 0.012665
-              1               4         9 0.555556 0.044615
+              1               3         9 0.555556 0.044615
+              1               4         9 0.500000 0.075176
               1               5         7 0.428571 0.238889
-              2               3         9 0.555556 0.044615
-              2               4         9 0.666667 0.012665
+              2               3         9 0.444444 0.119439
+              2               4         9 0.611111 0.024741
               2               5         7 0.333333 0.381349
-              3               4         9 0.666667 0.012665
+              3               4         9 0.500000 0.075176
               3               5         7 0.904762 0.002778
               4               5         7 0.523810 0.136111
 
-N=4 (pairs among instantiations ['1', '2', '3', '4'], headline scope) mean pairwise tau: 0.667
-All-pairs mean pairwise tau (incl. instantiation 5): 0.619
+N=4 (pairs among instantiations ['1', '2', '3', '4'], headline scope) mean pairwise tau: 0.583
+All-pairs mean pairwise tau (incl. instantiation 5): 0.569
 
 ## Holm-Bonferroni within RQ4/H5 (PROJECT_BRIEF.md Sec 3.1)
 
@@ -92,26 +93,26 @@ are two different reported scopes, not one pooled family.
 
 instantiation_a instantiation_b  n_models      tau  p_value  p_value_holm
               1               2         9 0.888889 0.000243      0.001455
-              1               3         9 0.666667 0.012665      0.063327
-              1               4         9 0.555556 0.044615      0.089231
-              2               3         9 0.555556 0.044615      0.089231
-              2               4         9 0.666667 0.012665      0.063327
-              3               4         9 0.666667 0.012665      0.063327
+              1               3         9 0.555556 0.044615      0.178461
+              1               4         9 0.500000 0.075176      0.225529
+              2               3         9 0.444444 0.119439      0.225529
+              2               4         9 0.611111 0.024741      0.123705
+              3               4         9 0.500000 0.075176      0.225529
 
-Significant at raw p<0.05: 6/6. Significant at Holm-adjusted p<0.05: **1/6**.
+Significant at raw p<0.05: 3/6. Significant at Holm-adjusted p<0.05: **1/6**.
 
 ### All-pairs set (10 pairs, corrected separately from the N=4 set above)
 
 instantiation_a instantiation_b  n_models      tau  p_value  p_value_holm
               1               2         9 0.888889 0.000243      0.002425
-              1               3         9 0.666667 0.012665      0.101323
-              1               4         9 0.555556 0.044615      0.223076
+              1               3         9 0.555556 0.044615      0.312307
+              1               4         9 0.500000 0.075176      0.451058
               1               5         7 0.428571 0.238889      0.477778
-              2               3         9 0.555556 0.044615      0.223076
-              2               4         9 0.666667 0.012665      0.101323
+              2               3         9 0.444444 0.119439      0.477756
+              2               4         9 0.611111 0.024741      0.197928
               2               5         7 0.333333 0.381349      0.477778
-              3               4         9 0.666667 0.012665      0.101323
+              3               4         9 0.500000 0.075176      0.451058
               3               5         7 0.904762 0.002778      0.025000
-              4               5         7 0.523810 0.136111      0.408333
+              4               5         7 0.523810 0.136111      0.477756
 
-Significant at raw p<0.05: 7/10. Significant at Holm-adjusted p<0.05: **2/10**.
+Significant at raw p<0.05: 4/10. Significant at Holm-adjusted p<0.05: **2/10**.

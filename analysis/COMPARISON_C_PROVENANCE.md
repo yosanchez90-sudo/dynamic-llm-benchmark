@@ -1,7 +1,7 @@
 # Comparison C — canonical 2x3 DiD results (raw tables)
 
-Generated: 2026-08-07T15:12:36.424438+00:00
-Git commit: 21d80e1
+Generated: 2026-08-12T00:05:49.493739+00:00
+Git commit: ce774c2
 Script: scripts/analyze_comparison_c.py
 
 **Interpretation lives in `analysis/COMPARISON_C_INTERPRETATION.md`**

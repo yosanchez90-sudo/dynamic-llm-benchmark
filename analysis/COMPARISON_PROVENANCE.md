@@ -1,7 +1,7 @@
 # Comparison A/B generation provenance
 
-Generated: 2026-08-07T15:38:03.244482+00:00
-Git commit: 21d80e1
+Generated: 2026-08-12T00:05:32.448598+00:00
+Git commit: ce774c2
 
 Sources: data/results/dynamic/*.jsonl (tier=L4 only for Comparison A),
 data/results/ult/*.jsonl, data/results/plt/*.jsonl.
@@ -41,7 +41,7 @@ Qwen__Qwen2.5-Coder-1.5B-Instruct                 375                     0     
         claude-haiku-4-5-20251001                 375                    98                       0.261333          400             35                0.087500
                 claude-sonnet-4-6                 375                   123                       0.328000          400             78                0.195000
             gemini-3.1-flash-lite                 300                   145                       0.483333          400            106                0.265000
-           gemini-3.1-pro-preview                  38                    38                       1.000000          101             74                0.732673
+           gemini-3.1-pro-preview                 300                   292                       0.973333          101             74                0.732673
                  gpt-5-2025-08-07                 375                   361                       0.962667          400            279                0.697500
             gpt-5-mini-2025-08-07                 375                   306                       0.816000          400            219                0.547500
 
@@ -58,8 +58,8 @@ this table: 5.55e-17 (floating-point noise only --
 
 | | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
 |---|---|---|---|---|---|
-| raw Mut@K (pre-registered primary) | 8 | 0.7966 | 0.8477 | -0.167 | 0.7422 |
-| definition-matched / coverage-adjusted (co-primary) | 8 | 0.4313 | 0.2804 | -0.833 | 0.0391 |
+| raw Mut@K (pre-registered primary) | 8 | 0.7996 | 0.8477 | -0.167 | 0.7422 |
+| definition-matched / coverage-adjusted (co-primary) | 8 | 0.4312 | 0.2804 | -0.833 | 0.0391 |
 
 **Does the conclusion change?** Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read (which side is higher, and that n_models=8 is too small at either p-value to call this a real effect) does not flip.
 
@@ -77,7 +77,7 @@ Qwen__Qwen2.5-Coder-32B-Instruct                    13             31
        claude-haiku-4-5-20251001                    98             35
                claude-sonnet-4-6                   123             78
            gemini-3.1-flash-lite                   145            106
-          gemini-3.1-pro-preview                    38             74
+          gemini-3.1-pro-preview                   292             74
                 gpt-5-2025-08-07                   361            279
            gpt-5-mini-2025-08-07                   306            219
 
@@ -86,8 +86,8 @@ result below**: ['Qwen__Qwen2.5-Coder-32B-Instruct', 'Qwen__Qwen2.5-Coder-7B-Ins
 
 | | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
 |---|---|---|---|---|---|
-| raw Mut@K, unfiltered (primary) | 8 | 0.7966 | 0.8477 | -0.167 | 0.7422 |
-| raw Mut@K, thin cells (n_defined<20) excluded | 6 | 0.8810 | 0.8311 | -1.000 | 0.0312 |
+| raw Mut@K, unfiltered (primary) | 8 | 0.7996 | 0.8477 | -0.167 | 0.7422 |
+| raw Mut@K, thin cells (n_defined<20) excluded | 6 | 0.8849 | 0.8311 | -1.000 | 0.0312 |
 
 **Does the 8-model result survive thin-cell filtering?**
 NO in the sense that it shrinks to n_models=6 once thin cells are excluded -- 2 of the original 8 model(s) were resting on a point estimate averaged over fewer than 20 baseline-passing problems, not a stable per-model mean.
@@ -100,7 +100,7 @@ ITS precision is governed by n_total, not n_defined -- a model with
 n_defined=1 but n_total=375 (e.g. Qwen 7B, dynamic_l4) still gives a
 well-estimated near-zero definition-matched score, not a shaky one. Checked
 directly against the same THIN_N_DEFINED=20 threshold applied to n_total
-instead: 0 models -- every model's n_total is >>20 on both sides (min n_total this table: dynamic_l4=38, ult=101), so no model is excluded from the co-primary row above on thinness grounds.
+instead: 0 models -- every model's n_total is >>20 on both sides (min n_total this table: dynamic_l4=300, ult=101), so no model is excluded from the co-primary row above on thinness grounds.
 
 ## Comparison B conditioning/survivorship + co-primary + thin-cell audit (added 2026-08-03)
 

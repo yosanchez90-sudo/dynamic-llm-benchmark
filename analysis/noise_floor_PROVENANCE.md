@@ -1,7 +1,7 @@
 # Noise floor by metric and tier — provenance
 
-Generated: 2026-08-07T15:29:46.060231+00:00
-Git commit: 21d80e1
+Generated: 2026-08-12T00:23:29.071269+00:00
+Git commit: ce774c2
 Script: scripts/plot_noise_floor.py
 
 Computed directly from data/results/dynamic/*.jsonl (canonical 9 models),
