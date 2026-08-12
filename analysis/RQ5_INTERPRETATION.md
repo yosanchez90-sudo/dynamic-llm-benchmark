@@ -423,6 +423,54 @@ the same "baseline-pass-rate agreement is real and robust" finding as the
 Dynamic↔ULT internal comparison above, now validated against a public
 benchmark this project had no hand in constructing.
 
+## H6 clause 2 — reported result (added 2026-08-12, zero new compute)
+
+**The approved H6's second clause** (`docs/Approved_Hypotheses.md`: "...
+this correlation will be weaker than the correlation between
+static-benchmark mutation score and the same proxy... Pearson r and
+Spearman ρ between scores," no Fisher z required) **is answerable
+entirely from the table above and its Pearson/Spearman companions,
+already computed for clause 1.** Reported here as a hypothesis result,
+not a gap — see `analysis/HYPOTHESIS_DEVIATIONS.md` for the full ledger
+entry this section summarizes.
+
+| Scope | Metric | Statistic | Dynamic-BCB | ULT-BCB | Dynamic stronger? |
+|---|---|---|---|---|---|
+| canonical, n=3 | raw | Pearson r | 0.981 [0.981,1.00] | 0.927 [0.927,1.00] | yes |
+| canonical, n=3 | raw | Spearman rho | 1.000 | 1.000 | tie (ceiling at n=3) |
+| canonical, n=3 | raw | Kendall tau | 1.000 | 1.000 | tie (ceiling at n=3) |
+| canonical, n=3 | coverage-adj | Pearson r | 0.9999 [0.9999,1.00] | 0.859 [0.859,1.00] | yes |
+| canonical, n=3 | coverage-adj | Spearman rho | 1.000 | 1.000 | tie |
+| canonical, n=3 | coverage-adj | Kendall tau | 1.000 | 1.000 | tie |
+| cross-family, n=7 | raw | Pearson r | 0.461 [-0.135,0.986] | 0.243 [-0.687,0.957] | yes |
+| cross-family, n=7 | raw | Spearman rho | 0.464 [-0.585,1.00] | 0.143 [-0.765,1.00] | yes |
+| cross-family, n=7 | raw | Kendall tau | 0.429 [-0.335,1.00] | 0.238 [-0.647,1.00] | yes |
+| cross-family, n=7 | coverage-adj | Pearson r | 0.946 [0.814,0.998] | 0.747 [0.312,0.987] | yes |
+| cross-family, n=7 | coverage-adj | Spearman rho | 0.964 [0.565,1.00] | 0.821 [0.059,1.00] | yes |
+| cross-family, n=7 | coverage-adj | Kendall tau | 0.905 [0.556,1.00] | 0.714 [0.059,1.00] | yes |
+
+**Dynamic is the stronger (or tied) correlation in all 12 comparisons —
+never weaker.** At cross-family n=7 (the scope that isn't ceiling-limited
+by n=3's near-total lack of statistical resolution), Dynamic is strictly
+stronger on every one of the 6 statistic-metric combinations, not just on
+average. **Verdict: H6 clause 2 is NOT SUPPORTED** — direction is
+opposite to the prediction. This is worth reading as a favourable finding
+rather than a failed prediction: the dynamic benchmark tracks external
+code-generation capability at least as well as, and by several measures
+better than, the static benchmark it was designed as a
+contamination-resistant alternative to.
+
+**Caveats that travel with this table**, the same ones already disclosed
+for clause 1's cross-family numbers below but not previously attached at
+this specific comparison: 2 of the 7 cross-family points are individually
+thin-cell (CodeLlama-13B: ULT n_defined=8; Mistral-7B: Dynamic
+n_defined=5, ULT n_defined=1 — both below this project's own
+n_defined<20 thinness threshold, part of why several of the CIs above are
+wide); 2 of the 7 cross-family models have chat-template dates postdating
+their own published BigCodeBench eval date; StarCoder2 required a
+non-identical prompt-delivery accommodation (full detail: "Cross-family
+extension — limitations" below).
+
 **Bottom-line construct-validity statement, checked directly against the
 pre-registered frame (`analysis/RQ5_ANALYSIS_PLAN.md`), not smoothed over.**
 That frame set three zones in advance: near-zero = undermines validity,

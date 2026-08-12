@@ -110,6 +110,43 @@ that closer look, was closed rather than built — supervisor decision,
 2026-08-05, `analysis/H4_DESIGN_MEMO.md` — so this pattern stays an
 observation, not something a future analysis will formally resolve.)
 
+## Literal "never goes back up" clause (added 2026-08-12, zero new compute)
+
+The approved wording (`docs/Approved_Hypotheses.md`) is stronger than
+"Spearman ρ is significant and negative" — it says mean mutation score
+"will never go back up" between adjacent tiers. Spearman ρ tests a
+monotone *trend*, which is compatible with an occasional small local
+rebound; this section closes that gap directly by checking every adjacent
+step (L1→L2, L2→L3, L3→L4) for each of the 9 canonical models' raw
+per-tier mean Mut@K (`analysis/RQ5_PROVENANCE.md`'s per-tier columns).
+Independently corroborated by this file's own "low-power tier-mean"
+table above: `tier_mean_spearman_raw` is exactly -0.8, not -1.0, for
+precisely the two models flagged below — the signature of exactly one
+adjacent-pair inversion in a 4-point ordinal sequence, computed by a
+different script from different code, agreeing with the direct check.
+
+| Model | Rebound? | Where | Magnitude |
+|---|---|---|---|
+| gpt-5-2025-08-07 | **YES** | L1→L2 | 0.985487 → 0.990774 (+0.53pp) |
+| gpt-5-mini-2025-08-07 | **YES** | L1→L2 | 0.982875 → 0.990388 (+0.75pp) |
+| claude-sonnet-4-6 | No | — | strictly decreasing, all 4 tiers |
+| claude-haiku-4-5-20251001 | No | — | strictly decreasing, all 4 tiers |
+| gemini-3.1-pro-preview | No | — | strictly decreasing, all 4 tiers |
+| gemini-3.1-flash-lite | No | — | strictly decreasing, all 4 tiers |
+| Qwen 32B | No | — | strictly decreasing, all 4 tiers |
+| Qwen 7B | No | — | strictly decreasing, all 4 tiers |
+| Qwen 1.5B | No | — | strictly decreasing, L1-L3 (no L4 data — floor effect) |
+
+**7 of 9 models satisfy the literal clause exactly. 2 (both GPT-5 models)
+violate it once each, at the identical L1→L2 step, both by less than 1
+percentage point, both already at ≥98% mutation score at L1** — a
+near-ceiling regime this project's own docs repeatedly flag as a
+measurement-noise zone (`analysis/RQ5_DIAGNOSTICS.md` sec 2b's
+resolving-power audit finds L1 the least-discriminating tier project-wide,
+SD=0.007 across all 9 models), not a substantive capability reversal, but
+a literal exception to the approved wording nonetheless — report both
+facts, not just the trend-level SUPPORTED verdict above.
+
 ## Bottom line
 
 RQ2/H3 is answered cleanly: mutation-score effectiveness declines with
