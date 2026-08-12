@@ -129,7 +129,24 @@ PRE/POST on ULT, PLT, and Dynamic (both an L4 CC-matched control and an
 L1-L3 headroom control). **`baseline_pass_rate` is the primary outcome**,
 not mutation score.
 
-**Why it differs**: PRE (base-model) Mut@K is undefined for **111 of the
+**Why it differs — two distinct deviations, not one:**
+
+**(1) An explicit interpretive step the approved wording itself requires,
+not an added assumption.** The approved sentence alone is ambiguous
+between two readings: "its mutation-score [the raw post-fine-tune value]
+on the static benchmark will be larger than on the dynamic benchmark," or
+"its mutation-score *gain* [pre-to-post difference] on the static
+benchmark will be larger than its gain on the dynamic benchmark." Only
+the accompanying Test clause resolves this — "validate differences on
+mutation scores (**pre vs. post** fine-tuning), considering (static vs.
+dynamic)" is explicit about comparing a *difference*, which only a
+gain/DiD reading supports; the raw-score reading would need no "pre vs.
+post" language at all. This project reads H2 as a gain/DiD hypothesis on
+that basis, and executes it as one (Comparison C's 2×3
+difference-in-differences) — recorded here as a resolved ambiguity in the
+approved text, not a deviation from it.
+
+**(2) A genuine metric substitution.** PRE (base-model) Mut@K is undefined for **111 of the
 112 seen-ULT problems** (`n_mut_defined=1` in the PRE row of
 `COMPARISON_C_PROVENANCE.md`'s Mut@K table) — the base 1.5B model almost
 never produces a suite that clears ULT's baseline-pass gate at all, and
@@ -264,15 +281,37 @@ with different random seeds."
 
 **What was executed**: Pairwise Kendall's τ between per-instantiation
 model rankings (`scripts/analyze_stability.py`). **N=4 headline scope**
-(2 of 9 canonical models — both Gemini — never reached the approved N=5:
-Flash-Lite by design cut-priority, Pro Preview additionally quota-capped
-at N=4 until its crawl completed 2026-08-11). **Mean pairwise τ = 0.583**
-(live, this session's rebuild — corrected from a stale 0.667 that
-predates the Gemini crawl's completion; see
-`analysis/WORKBOOK_VERIFICATION.md`).
+(2 of 9 canonical models — both Gemini — never reached the approved N=5).
+**Mean pairwise τ = 0.583** at N=4 (live, this session's rebuild —
+corrected from a stale 0.667 that predates the Gemini crawl's completion;
+see `analysis/WORKBOOK_VERIFICATION.md`); **0.569 all-pairs** (including
+instantiation 5, which exists for 7 of the 9 canonical models — every
+model except the two Geminis).
 
 **Why it differs**:
-1. **N=4, not the approved N=5**, for the reason above.
+1. **N=4, not the approved N=5 — a checked and declined gap, not an open
+   one.** Confirmed 2026-08-12 via `scripts/coverage_matrix.py` (zero
+   active/pending SLURM jobs): 172/180 model×tier×instantiation cells
+   complete; the only gap is both Gemini models' instantiation 5 (600
+   problems). Closing it was quantified at **$9.60** (Gemini Pro Preview
+   $9.34, Flash-Lite $0.27, `scripts/estimate_cost.py
+   --target-instantiations 5`) with a 4-5 hour to 2-day completion
+   window, and **declined 2026-08-12** for two reasons: (a) H5's
+   THRESHOLD NOT MET verdict is unchanged at any plausible resulting τ;
+   (b) adding two more models to every inst5-involving pair would most
+   likely move τ further *down*, not up, for the same noise-floor reason
+   τ fell from 0.667 to 0.583 when Gemini Pro Preview's L4 data landed
+   (`analysis/RQ5_DIAGNOSTICS.md` sec 2b: 5 adjacent canonical models sit
+   within a pooled spread of 0.005, smaller than their own
+   between-instantiation SDs — this is a property of how tightly this
+   model population clusters on this metric, not of the instrument).
+   N=4 is itself the pre-registered cut-priority decision from
+   2026-07-15 (`PROJECT_BRIEF.md` §11, "the fifth dynamic instantiation"
+   — cut-priority item #4, designed in advance to preserve every RQ), so
+   reporting at N=4 exercises a documented contingency as intended, not
+   an unexplained shortfall. Both scopes are reported (N=4 headline and
+   the all-pairs figure including the partial fifth instantiation) so no
+   collected data is discarded.
 2. **The approved H5 covers the whole of RQ4** — RQ4.2/4.3/4.4 have no
    approved hypothesis of their own and are reported descriptively, not
    as a gap.
@@ -302,15 +341,23 @@ pair fall short of the pre-registered 0.7 bar; score-level reliability
 in question — it is specifically rank-level stability that falls short.
 
 **Paper-ready sentence**: "H5 (pairwise Kendall's τ across dynamic-
-benchmark instantiations, threshold τ>0.7) is not met: mean pairwise τ =
-0.583 at the N=4 headline scope (2 of 9 canonical models — both Gemini —
-capped below the approved N=5 target). Of the 6 N=4-scope pairs, only 1
+benchmark instantiations, threshold τ>0.7) is not met at either reported
+scope: mean pairwise τ = 0.583 at the N=4 headline scope (the largest all
+9 canonical models can enter) and 0.569 across all pairs including a
+partial fifth instantiation (present for 7 of 9 models — both Gemini
+models excepted). Closing the remaining N=5 gap was quantified at $9.60
+and declined, since the noise-floor mechanism driving the current
+shortfall (several models clustered within 0.005 of each other, smaller
+than their own measurement noise) predicts the gap would not close, and
+plausibly widen, with more data. Of the 6 N=4-scope pairs, only 1
 (instantiations 1-2, τ=0.889) individually exceeds 0.7, and it is the
 only pair to survive Holm-Bonferroni correction within the family.
 Score-level reliability is separately strong (StableMut@K SD 0.001-0.004
 for most models); it is specifically rank-level agreement across
 re-instantiations that falls short of the pre-registered bar, not
-measurement noise generally."
+measurement noise generally, and the shortfall is attributable to the
+model population's own tight clustering rather than to the dynamic
+benchmark as an instrument."
 
 ---
 

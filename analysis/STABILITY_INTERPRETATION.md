@@ -111,33 +111,142 @@ the primary stability claim per the recommendation below; the two
 surviving pairs are additional, real evidence, not a reason to lead with
 individual-pair significance now that some exists.
 
-## Data completeness (check against `analysis/STABILITY.md`'s Generated/Git-commit
-stamp before trusting this as current)
+**2026-08-11/12 — DATA-LANDING change, not a bug: Gemini 3.1 Pro Preview's
+Dynamic-L4 crawl completed.** Fourth movement of this point estimate,
+second driven by real new data rather than a bug fix. Before: Gemini Pro
+Preview had only 38 of 300 Dynamic-L4 rows landed (all in instantiation 1),
+a thin, unrepresentative sample of its L4 performance feeding into its
+per-instantiation pooled Mut@K. After: 292 of 300 defined, spread properly
+across all 4 instantiations. **The mechanism, stated explicitly rather
+than left as an unexplained number movement**: Gemini Pro Preview's
+Dynamic-L4 contribution to its own pooled (all-tier) Mut@K score changed
+materially once a real, full-sized sample replaced a 38-row partial one —
+which moved its rank relative to the other 8 canonical models in at least
+one instantiation's pooled ordering, which perturbs *every pairwise
+Kendall tau comparison Gemini Pro Preview participates in*, not just the
+pairs directly involving whichever instantiation moved. This is exactly
+the failure mode `analysis/RQ5_DIAGNOSTICS.md`'s noise-floor audit
+predicts in general: as of this session's live rebuild, the largest run
+of adjacent, hard-to-separate models (gpt-5-mini-2025-08-07 >
+claude-haiku-4-5-20251001 > Qwen 32B > claude-sonnet-4-6 >
+gemini-3.1-flash-lite) sit within a pooled spread of **0.005** — smaller
+than every one of those five models' own between-instantiation SDs
+(0.001-0.004). Gemini Pro Preview's own pooled score (0.9596) sits close
+enough to this same crowded band that a real, non-buggy shift in its L4
+component is enough to reorder it against one or more neighbors in a
+given instantiation — a property of *how tightly clustered this specific
+model population is*, not of the dynamic-benchmark instrument being
+unreliable. **N=4 mean pairwise tau: 0.667 → 0.583. All-pairs mean:
+0.619 → 0.569** (both down, continuing the direction of the 2026-08-07
+movement, not reversing it). **Significance count also moved**: N=4 set
+now 3/6 significant at raw p<0.05 (was 6/6), all-pairs set now 4/10 (was
+7/10) — but the Holm-survivor count and the specific surviving pairs are
+**unchanged**: still 1/6 (pair 1-2, Holm p=0.0015) and 2/10 (pairs 1-2 and
+3-5, Holm p=0.0015/0.0250). Full detail and per-pair breakdown:
+`analysis/HYPOTHESIS_DEVIATIONS.md`'s H5 entry.
 
-N=4 (`PROJECT_BRIEF.md` §11) is the target scope; N=5 is the design
-target, now reached by 6 of 9 canonical models (updated 2026-08-07).
+## Full tau movement history, every cause labelled
+
+Five point estimates, four movements — two bug fixes, two data landings,
+both data landings moving the figure *down*, not up:
+
+| Date | N=4 mean τ | All-pairs mean τ | Cause | Type |
+|---|---|---|---|---|
+| 2026-07-26 (pre-fix snapshot) | 0.746 | 0.748 | baseline, before either fix below | — |
+| 2026-07-25/26 | 0.675 | 0.685 | `src/Analysis/loader.py` gained dedup logic; ~560 silently double-counted rows removed | **BUG-FIX** |
+| 2026-07-28 | 0.635 | 0.661 | `analyze_stability.py` gained a canonical-model filter; 2 non-canonical LoRA-adapter labels excluded | **BUG-FIX** |
+| 2026-08-07 | 0.667 | 0.619 | GPT-5/-mini's full N=5 Dynamic backfill + Claude Sonnet/Haiku's inst5 completion landed | **DATA-LANDING** |
+| 2026-08-11/12 | **0.583** | **0.569** | Gemini 3.1 Pro Preview's Dynamic-L4 crawl completed (38→292 defined rows) | **DATA-LANDING** |
+
+**Read plainly**: every bug fix in this project's history moved this
+number *down* (removing inflation from duplicate rows and leaked
+non-canonical models); both real data landings after that have also moved
+it *down* — the direction is consistent across both categories, but for
+different reasons. The bug fixes removed artificial agreement; the data
+landings are removing a different kind of artificial agreement — the
+false stability of ranking models whose true separation, as more data
+lands, keeps turning out to be smaller than earlier partial samples
+suggested.
+
+## H5 stated as two separable claims, not one
+
+RQ4.1 asks whether the dynamic benchmark is "a reliable measuring
+instrument." That question conflates two different properties this data
+answers differently:
+
+1. **Score-level reliability — strong, and not in question.** Each
+   model's own aggregate Mut@K is highly stable across re-instantiations:
+   SD 0.001-0.004 for 7 of 9 canonical models (Qwen 1.5B ~0.04 is a
+   known, explained outlier — see "StableMut@K" below). Re-running the
+   benchmark on a fresh seed reproduces each model's own score closely.
+2. **Rank-level agreement — weak, and weak for a reason that is a
+   property of the model population being measured, not of the
+   instrument.** Pairwise Kendall τ (mean 0.583 at N=4) falls well short
+   of H5's 0.7 threshold. This is not because the benchmark measures
+   inconsistently — it's because several of the 9 canonical models score
+   within a few thousandths of each other on pooled Mut@K, closer
+   together than their own measurement noise allows any instrument to
+   reliably order. A benchmark cannot rank-stabilize models that are, in
+   the metric it uses, this close together — no amount of additional
+   instantiations closes a gap that's already smaller than the noise
+   floor of the thing being measured.
+
+**These are not in tension and both should be reported, not averaged
+into one verdict.** The dynamic benchmark's *scores* are trustworthy and
+reproducible; its *rankings*, specifically among the models clustered in
+the noise floor, are not currently distinguishable from the reordering
+you'd expect from remeasurement noise alone — a fact about this
+particular model population's tight clustering on this metric, established
+directly (`RQ5_DIAGNOSTICS.md` sec 2b), not inferred from the tau movement
+alone.
+
+## H5's N=5 gap — declined, not open (decision recorded 2026-08-12)
+
+The approved H5 specifies N=5. This project executed and reports at N=4,
+the pre-registered cut-priority decision from 2026-07-15
+(`PROJECT_BRIEF.md` §11, "the fifth dynamic instantiation" — cut-priority
+item #4, designed in advance to preserve every RQ). Closing the remaining
+gap (both Gemini models' instantiation 5, 600 problems) was quantified
+2026-08-12 at $9.60 (Gemini Pro Preview $9.34, Flash-Lite $0.27,
+`scripts/estimate_cost.py --target-instantiations 5`) with a 4-5 hour to
+2-day completion window, and **declined** for two stated reasons: (a) H5's
+THRESHOLD NOT MET verdict is unchanged at any plausible resulting τ — no
+realistic movement from 2 more data points crosses the 0.583→0.7 gap; (b)
+adding two more models to every inst5-involving pair would, per the
+noise-floor mechanism above, most likely move τ further *down*, not up
+— the same reason τ fell from 0.667 to 0.583 when Gemini Pro's L4 data
+landed applies again to landing its inst5 data. This is a disclosed
+deviation from the approved N=5, not a silent gap — see
+`analysis/HYPOTHESIS_DEVIATIONS.md`'s H5 entry and
+`analysis/OPEN_ITEMS.md` for the full decision record.
+
+**Both scopes are reported, using all data actually collected rather than
+discarding the partial fifth instantiation**: the N=4 headline (τ=0.583,
+the largest scope all 9 models can enter) and the all-pairs figure
+(τ=0.569, including instantiation 5, which exists for 7 of the 9 canonical
+models — every model except the two Geminis).
+
+## Data completeness — updated 2026-08-12, frozen (see "N=5 gap" above)
+
+N=4 (`PROJECT_BRIEF.md` §11) is the target scope and, as of 2026-08-12,
+the **final** scope — the remaining N=5 gap was checked and deliberately
+declined (see above), not left open pending more data. Confirmed via
+`scripts/coverage_matrix.py` (live, zero active/pending SLURM jobs at
+time of check): **172 of 180 model×tier×instantiation cells complete
+(95.6%)**; the only 8 missing cells are both Gemini models' instantiation
+5, all 4 tiers each.
 
 - **Complete for N=5 (design target, not just N=4):** Claude Sonnet 4.6,
-  Claude Haiku 4.5 (inst5 completed 2026-08-06, was previously partial —
-  135/300 and 143/300), Qwen 2.5-Coder 1.5B/7B/32B, **GPT-5, GPT-5-mini**
-  (landed 2026-08-07 — see next bullet for what this changes).
-- **Partial for N=4:** Gemini 3.1 Pro Preview (still missing most of its
-  L4 tier — see `analysis/GEMINI_DAILY_CRAWL.md` for current, actively-
-  changing status), Gemini 3.1 Flash-Lite (complete for inst1-4, inst5
-  deliberately out of scope for either Gemini model).
-- ~~**Effectively single-instantiation, not multi-instantiation N=4
-  scope:** GPT-5, GPT-5-mini~~ **No longer true as of 2026-08-07.** Both
-  now have full inst1-5 Dynamic coverage (300/300 every tier×instantiation
-  cell) and enter every pairwise-tau comparison for the first time —
-  this is the direct cause of the tau movement documented in "Correction
-  history" above. The previous supervisor-credit/cost constraint that kept
-  them single-instantiation is resolved (self-funded batch submission,
-  `analysis/OPENAI_COST_AND_BILLING.md`), not merely re-described.
+  Claude Haiku 4.5, Qwen 2.5-Coder 1.5B/7B/32B, GPT-5, GPT-5-mini — 7 of
+  9 canonical models.
+- **Complete for N=4, frozen at N=4 by decision, not partial data:**
+  Gemini 3.1 Pro Preview (its Dynamic-L4 crawl completed 2026-08-11,
+  38→292 defined rows — no longer partial at any instantiation 1-4),
+  Gemini 3.1 Flash-Lite (complete for inst1-4 throughout). Neither model's
+  instantiation 5 will be run — declined, not pending.
 
-Re-run `scripts/analyze_stability.py` once Gemini Pro Preview's L4 closes
-out, and update this file's completeness section before treating any
-stability figure as final for the dissertation — Gemini Pro Preview is
-now the only canonical model not at N=4-or-better.
+This section will not change again unless the N=5 decision above is
+explicitly revisited.
 
 ## StableMut@K — is each model's OWN score stable across instantiations?
 
@@ -185,36 +294,36 @@ Full table: `analysis/stability_stablemut_by_tier.csv`. Two patterns worth calli
 ## Kendall tau — do models RANK the same way across instantiations?
 
 See `analysis/STABILITY.md` for the current live N=4 and all-pairs per-pair table
-and means. **Updated 2026-08-07** after GPT-5/-mini's full N=5 landing and
-Claude Sonnet/Haiku's inst5 completion (see "Correction history" above for
-the full mechanism): **6 of 6 N=4 pairs (and 7 of 10 all-pairs) are now
-significant at raw p<0.05 — 1 of 6 (and 2 of 10) remain significant once
-each set is Holm-Bonferroni-corrected within its own family**
+and means. **Updated 2026-08-12** after Gemini Pro Preview's Dynamic-L4
+crawl completed (see "Correction history" and "Full tau movement history"
+above for the full mechanism): **3 of 6 N=4 pairs (and 4 of 10 all-pairs)
+are significant at raw p<0.05 — 1 of 6 (and 2 of 10) remain significant
+once each set is Holm-Bonferroni-corrected within its own family**
 (`analysis/STABILITY.md`'s own generated table has the full
 raw-vs-adjusted-p breakdown, corrected as two separate families — N=4's 6
-pairs and all-pairs' 10 pairs — not one pooled 16-test correction). This
-is a real strengthening from the 2026-08-04 reading immediately below
-(historical, preserved as the record of what the correction looked like
-before this data landed): pair 1-2 now survives Holm correction in both
-the N=4 and all-pairs families (Holm p=0.0015 and 0.0024 respectively),
-and pair 3-5 also survives in the all-pairs family (Holm p=0.0250). **This
-is still not a reason to describe pairwise Kendall tau as broadly
-significant** — 1/6 and 2/10 are still small minorities of their own
-families — but it is no longer accurate to say *none* survive, the way it
-was as of the 2026-08-04 reading. The mean pairwise tau point estimate
-(0.667 N=4 / 0.619 all-pairs) remains the primary, more robust stability
-claim (see "Recommendation for the write-up" below); the two surviving
-pairs are additional corroborating evidence, not a reason to lead with
-individual-pair significance.
+pairs and all-pairs' 10 pairs — not one pooled 16-test correction). The
+raw-significant *count* dropped from the 2026-08-07 reading (was 6/6 and
+7/10) when Gemini Pro Preview's L4 data landed, but the **Holm-survivor
+count and the specific surviving pairs are unchanged**: pair 1-2 still
+survives in both the N=4 and all-pairs families (Holm p=0.0015 and 0.0024
+respectively), and pair 3-5 still survives in the all-pairs family (Holm
+p=0.0250). The mean pairwise tau point estimate (**0.583 N=4 / 0.569
+all-pairs**, down from 0.667/0.619) remains the primary, more robust
+stability claim (see "Recommendation for the write-up" below); the two
+surviving pairs are additional corroborating evidence, not a reason to
+lead with individual-pair significance.
 
-**2026-08-04 reading (historical, preserved for the correction-history
-record — see above for the current numbers):** as of that snapshot, 3 of
-6 N=4 pairs (and 3 of 10 all-pairs) were significant at raw p<0.05, and 0
-of 6 (and 0 of 10) survived Holm-Bonferroni correction. This revised the
-previous, uncorrected framing further below ("four to five of six...
-typically significant") downward substantially at the time — that framing
-is now doubly superseded, first by the 2026-08-04 correction and again by
-the 2026-08-07 data landing above.
+**Historical readings, preserved for the correction-history record — see
+"Full tau movement history" above for the complete, labelled sequence**:
+as of 2026-08-04 (pre-data-landing), 3 of 6 N=4 pairs (and 3 of 10
+all-pairs) were significant at raw p<0.05, 0 of 6 (0 of 10) survived
+Holm. As of 2026-08-07 (post GPT-5/-mini + Claude inst5 landing), 6 of 6
+(7 of 10) were raw-significant, 1 of 6 (2 of 10) survived Holm. The
+current 2026-08-12 reading's raw-significant *count* (3/6, 4/10) happens
+to numerically resemble the 2026-08-04 pre-landing reading (3/6, 3/10) —
+a coincidence of count, not of which specific pairs are significant or of
+the underlying mean; the "Full tau movement history" table above is the
+authoritative record of the actual point-estimate sequence.
 
 ### Why score-level stability (0.82-0.97) reads higher than rank-level tau (~0.6-0.7)
 
@@ -232,14 +341,21 @@ than have that folded into one mean.
 
 ## Recommendation for the write-up
 
-Report both: StableMut@K (the primary, low-variance stability claim, per model and per
-tier) and the N=4 mean pairwise tau (currently 0.667 — check `analysis/STABILITY.md`
-for the number as of your actual commit, this has now moved three times, twice from
-bugfixes and once from real data landing — see "Correction history" above) with the
-full 6-pair breakdown, not just the mean, as the ranking-stability
-claim. Flag Qwen 1.5B and Qwen-32B-at-L4 as the two genuine outliers worth a sentence
-each, rather than smoothing them into the aggregate. Note the data-completeness
-caveats above explicitly if this is written up before Gemini Pro Preview closes out.
+Report the two separable claims from above, not one blended verdict:
+**StableMut@K** (score-level, the primary low-variance stability claim,
+per model and per tier — strong, uncontested) and **pairwise Kendall τ**
+(rank-level — currently 0.583 N=4 / 0.569 all-pairs, both scopes reported
+per the N=5-decline decision above, with the full 6-pair/10-pair
+breakdown visible, not just the mean). State explicitly that the
+rank-level shortfall traces to the model population's own tight
+clustering (noise-floor mechanism above), not to instrument
+unreliability. Flag Qwen 1.5B and Qwen-32B-at-L4 as the two genuine
+score-level outliers worth a sentence each, rather than smoothing them
+into the aggregate. This figure has now moved four times (twice from bug
+fixes, twice from real data landing, always downward — "Full tau movement
+history" above) and is now **frozen**, not pending — the data-completeness
+section above documents that state explicitly rather than leaving an
+open-ended "check before citing" caveat.
 
 **Whenever quoting this figure in another document (e.g. RQ5's attenuation
 correction), prefer computing it live via
