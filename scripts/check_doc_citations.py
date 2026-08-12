@@ -41,10 +41,23 @@ see find_hand_typed_numbers): the same two labels apply via a same-line
 LaTeX comment, `% cite:historical` or `% cite:external`, since a bare
 `<!-- --> ` HTML comment isn't valid inside a .tex line. Use this for
 numbers that are genuinely not a pipeline-derived result -- a model's own
-published name/version fragment (e.g. the "1.5" in "Qwen2.5-Coder-1.5B"),
-or a universal statistical convention (e.g. the "0.05" in "p<0.05") --
-never for a project-specific pre-registered constant, which should get
-its own macro in build_paper_values.py instead so the prose stays
+published name/version fragment (e.g. the "1.5" in "Qwen2.5-Coder-1.5B").
+CAUTION: this project's paper/sections/*.tex files write each paragraph
+as a single physical source line, and `%` comments to true end-of-line --
+placing the marker after anything other than the paragraph's own final
+character silently drops the rest of that paragraph from the compiled
+PDF with no error (confirmed 2026-08-12: an `% cite:external` marker
+placed mid-paragraph, after a "p<0.05" mention that wasn't the sentence's
+last, ate the paragraph's remaining sentences including its hypothesis
+verdict; caught only by a full re-read of the compiled section, not by
+the citation checker itself, which has no way to detect a comment that
+successfully "suppressed" real prose it was never meant to touch). Only
+use this marker when the flagged number is provably the last thing on
+its physical line; for anything mid-paragraph (e.g. a universal
+statistical convention like the "0.05" in "p<0.05"), give it a real
+macro in build_paper_values.py instead (see \SigLevel) -- exactly the
+same treatment as a project-specific pre-registered constant, which
+should get its own macro too, so the prose stays
 single-sourced against docs/Approved_Hypotheses.md or the relevant
 analysis plan.
 

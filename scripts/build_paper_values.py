@@ -150,6 +150,11 @@ def main() -> None:
     # fixed design constant, hardcoded here rather than left as a bare
     # literal in paper prose so the two stay single-sourced.
     num("HFiveTauThreshold", 0.7, ".1f")
+    # Standard statistical significance convention (p<0.05), not project-
+    # specific -- given its own macro rather than an inline `% cite:`
+    # marker because it sits mid-paragraph, where a same-line LaTeX
+    # comment would silently swallow the rest of that physical line.
+    num("SigLevel", 0.05, ".2f")
     stable = pd.read_csv(ANALYSIS / "stability_stablemut.csv")
     kendall = pd.read_csv(ANALYSIS / "stability_kendall.csv")
     n4_pairs = {(1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4)}
