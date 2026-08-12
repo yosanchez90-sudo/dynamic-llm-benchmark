@@ -4,7 +4,11 @@ whatever result files currently exist on disk and (re)writes its own
 analysis/*.csv, analysis/*.md, and/or analysis/figures/* outputs -- all of
 which are regenerable (see each script's own docstring for its specific
 "safe to re-run any time" note) and gitignored except the provenance/
-interpretation .md files.
+interpretation .md files. One entry (research_questions_md) instead
+mirrors docs/Research_questions.xlsx to docs/RESEARCH_QUESTIONS.md -- same
+no-argument/reads-current-disk-state/safe-to-rerun shape, different output
+directory since it tracks a hand-maintained reference doc, not a
+generated analysis table.
 
 Deliberately excludes scripts that take required CLI arguments and are
 invoked once per condition rather than once per thesis asset (e.g.
@@ -64,6 +68,8 @@ STEPS: list[tuple[str, str, str]] = [
      "Noise floor by metric and Dynamic tier figure"),
     ("collapse_vs_survival_figure", "scripts/plot_collapse_vs_survival.py",
      "Collapse vs survival figure (raw vs coverage-adjusted Mut@K at n=3 vs n=7)"),
+    ("research_questions_md", "scripts/build_research_questions_md.py",
+     "docs/RESEARCH_QUESTIONS.md: diffable markdown mirror of docs/Research_questions.xlsx"),
 ]
 
 

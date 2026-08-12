@@ -442,6 +442,25 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
   version: `analysis/RQ5_SUPERVISOR_SUMMARY_20260729.md`. One-command
   regeneration for all of the above plus Comparison A/B/C and stability:
   `scripts/build_thesis_assets.py`.
+- **Hypothesis reconciliation (2026-08-12)**: `docs/Approved_Hypotheses.md`
+  and `docs/Research_questions.xlsx` (both supervisor-facing reference
+  artifacts) entered the repo and were reconciled against this project's
+  actual executed analysis (`analysis/HYPOTHESIS_DEVIATIONS.md`,
+  `analysis/HYPOTHESIS_COVERAGE_AUDIT.md`, `analysis/
+  WORKBOOK_VERIFICATION.md`). **The approved set is exactly six
+  hypotheses (H1-H6), where H1 carries two tests (Comparison A;
+  Comparison B/ULT-vs-PLT) and H5 covers the whole of RQ4** — this is the
+  only set the write-up reports. **A later expanded draft (H4a, H4b, and
+  separate hypotheses for RQ4.2/4.3/4.4) was drafted at some earlier point
+  in this project's working documents but was never submitted to or
+  approved by the supervisor.** It creates no obligation and does not
+  appear in the paper; recorded here for the audit trail only, per
+  `docs/Research_questions.xlsx`'s own Hypotheses-sheet governance note.
+  Also corrected this pass: Comparison B (ULT vs PLT) had been treated in
+  several `analysis/` docs as an informal, unofficial exploratory check,
+  excluded from RQ1's Holm-Bonferroni family — `docs/
+  Approved_Hypotheses.md` names it verbatim as H1's own second test; RQ1's
+  family is now the two-test family it always should have been.
 
 ---
 

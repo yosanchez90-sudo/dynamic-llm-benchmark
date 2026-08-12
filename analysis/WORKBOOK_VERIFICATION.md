@@ -219,6 +219,20 @@ contradicts outright, beyond the two staleness items in §0/§2 — every
 other workbook claim checked is either accurate or a defensible,
 correctly-flagged interpretive choice.
 
+## Addendum (2026-08-12, during Phase 3): a second stale-model-name cell found
+
+While generating `docs/RESEARCH_QUESTIONS.md` (Phase 3, task 10), a second
+instance of the same stale-model-name issue flagged in §4 (Sheet2 N7) was
+found in **Sheet2 C8** (RQ4.4's own research-question description),
+missed by the original consistency pass since I had only checked N7 at
+the time: "Compare the three frontier-tier slots (GPT-5.4, Claude Sonnet
+4.6, Gemini 2.5 Pro)... GPT-5.4 mini, Claude Haiku 4.5, Gemini 2.5 Flash."
+Same category, same root cause (both are RQ4-family cells never updated
+after the 2026-07-14 model substitution recorded in `PROJECT_BRIEF.md`
+§11), fixed alongside N7 as part of Phase 3's workbook edits. Noted here
+so this file's own record of what was found stays complete, not just
+what was found first.
+
 ## 6. What this means for Phase 2
 
 Per your instruction 5: **reporting before proceeding**, since two figures
