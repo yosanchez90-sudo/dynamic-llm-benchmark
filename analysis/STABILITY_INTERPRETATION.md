@@ -39,6 +39,7 @@ tau=1.000 read was the easy case flagged as a risk in earlier partial-data
 commentary, not a robust ceiling), while others were largely unaffected (1-5,
 untouched by the Sonnet/Haiku duplicate files, is identical in both columns).
 
+<!-- cite:historical:start --><!-- frozen 2026-07-26 snapshot, deliberately preserved as history, not a current claim -->
 | Pair | n models | tau (pre-fix) | tau (post-fix) | p (pre-fix) | p (post-fix) |
 |---|---|---|---|---|---|
 | 1-2 | 8 | 0.786 | 0.857 | 0.0055 | 0.0017 |
@@ -51,6 +52,7 @@ untouched by the Sonnet/Haiku duplicate files, is identical in both columns).
 | 3-4 | 7 | 0.524 | 0.714 | 0.1361 | 0.0302 |
 | 3-5 | 5 | 0.400 | 0.600 | 0.4833 | 0.2333 |
 | 4-5 | 5 | 1.000 | 0.800 | 0.0167 | 0.0833 |
+<!-- cite:historical:end -->
 
 Mean pairwise tau (this 2026-07-26 snapshot): N=4 (pairs 1-2..3-4, 6 pairs)
 0.746 pre-fix -> 0.675 post-fix; N=5 (all 10 pairs) 0.748 pre-fix -> 0.685 post-fix.

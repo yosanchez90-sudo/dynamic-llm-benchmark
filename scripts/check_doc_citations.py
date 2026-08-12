@@ -13,12 +13,6 @@ the live value to 0.278; STABILITY_INTERPRETATION.md citing a stale mean
 pairwise tau).
 
 WHAT THIS DOES NOT DO -- read before trusting a MISMATCH as a bug:
-- It has no notion of "this document deliberately preserves a historical
-  value for its own correction-history record" (e.g. "moved from 0.667 to
-  0.583"). Docs that narrate a number's history will show their old
-  values as MISMATCH/UNVERIFIABLE by design -- that is expected, not a
-  defect, and is exactly why this script's output needs a human read
-  before acting on it, not a mechanical find-replace.
 - It matches on VALUE within a small tolerance per statistic type, not on
   full semantic context (which exact pair/scope/metric a number claims to
   be). A MATCH means "this number is live somewhere in the reference
@@ -26,6 +20,21 @@ WHAT THIS DOES NOT DO -- read before trusting a MISMATCH as a bug:
   citation for this exact sentence."
 - MISMATCH lists the closest live value(s) of the same statistic type as
   a lead, not a guaranteed replacement.
+
+SUPPRESSING LEGITIMATE FINDINGS -- two mechanisms, use whichever fits:
+1. Inline marker, same line as the claim: `<!-- cite:historical -->` or
+   `<!-- cite:external -->`. Suppresses every claim found on that line.
+   For a multi-line span (e.g. a frozen historical table), bracket it with
+   `<!-- cite:historical:start -->` ... `<!-- cite:historical:end -->` (or
+   `:external:`) on their own lines.
+2. `analysis/CITATION_ALLOWLIST.md`, a markdown table keyed on
+   file+line+kind+value (line matched with a small tolerance so minor
+   nearby edits don't silently break the entry) with a required one-line
+   reason. Use this when an inline marker would be awkward to place, or
+   for values the checker can't verify due to a known extraction gap
+   (documented per-entry) rather than genuine document staleness.
+Both produce a SUPPRESSED verdict, counted separately from MATCH so a
+suppressed-but-wrong value doesn't silently look verified.
 
 Usage:
     python scripts/check_doc_citations.py                 # full report
@@ -110,6 +119,76 @@ class Claim:
     file: str
     line_no: int
     context: str
+
+
+ALLOWLIST_PATH = ROOT / "analysis" / "CITATION_ALLOWLIST.md"
+_INLINE_MARKER_RE = re.compile(r"<!--\s*cite:(historical|external)\s*-->")
+_BLOCK_START_RE = re.compile(r"<!--\s*cite:(historical|external):start\s*-->")
+_BLOCK_END_RE = re.compile(r"<!--\s*cite:(historical|external):end\s*-->")
+
+
+def _marked_lines(text: str) -> set[int]:
+    """1-indexed line numbers covered by an inline or block cite: marker."""
+    marked: set[int] = set()
+    in_block = False
+    for line_no, line in enumerate(text.splitlines(), start=1):
+        if _INLINE_MARKER_RE.search(line):
+            marked.add(line_no)
+        if _BLOCK_START_RE.search(line):
+            in_block = True
+            marked.add(line_no)
+            continue
+        if _BLOCK_END_RE.search(line):
+            in_block = False
+            marked.add(line_no)
+            continue
+        if in_block:
+            marked.add(line_no)
+    return marked
+
+
+@dataclass
+class AllowlistEntry:
+    file: str
+    line: int
+    kind: str
+    value: float
+    reason: str
+
+
+def _load_allowlist() -> list[AllowlistEntry]:
+    if not ALLOWLIST_PATH.exists():
+        return []
+    entries: list[AllowlistEntry] = []
+    for line in ALLOWLIST_PATH.read_text().splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) != 5 or cells[0] in ("file", "---"):
+            continue
+        if re.match(r"^-+$", cells[1]):
+            continue
+        try:
+            entries.append(AllowlistEntry(
+                file=cells[0], line=int(cells[1]), kind=cells[2],
+                value=float(cells[3]), reason=cells[4],
+            ))
+        except ValueError:
+            continue  # malformed row -- skip rather than crash the checker
+    return entries
+
+
+_LINE_DRIFT_TOLERANCE = 3  # allowlist entries survive small nearby edits
+
+
+def _allowlist_covers(entry_list: list[AllowlistEntry], claim: Claim, tol: float) -> AllowlistEntry | None:
+    for entry in entry_list:
+        if (entry.file == Path(claim.file).name
+                and entry.kind == claim.kind
+                and abs(entry.line - claim.line_no) <= _LINE_DRIFT_TOLERANCE
+                and abs(entry.value - claim.value) <= tol):
+            return entry
+    return None
 
 
 # Markdown/CSV table column name -> claim kind. Matched case-insensitively
@@ -334,16 +413,27 @@ def build_reference_index() -> dict[str, list[Claim]]:
     return index
 
 
-def check_doc(doc_key: str, reference_index: dict[str, list[Claim]]) -> list[tuple[Claim, str, list[Claim]]]:
+def check_doc(doc_key: str, reference_index: dict[str, list[Claim]],
+              allowlist: list[AllowlistEntry] | None = None) -> list[tuple[Claim, str, list[Claim]]]:
     """Return [(claim, verdict, closest_matches)] for one doc."""
     fname = DOC_FILES[doc_key]
+    path = ANALYSIS / fname
+    marked = _marked_lines(path.read_text()) if path.exists() else set()
+    allowlist = allowlist if allowlist is not None else _load_allowlist()
     results = []
-    for claim in _extract(ANALYSIS / fname):
+    for claim in _extract(path):
         candidates = reference_index.get(claim.kind, [])
         tol = _tolerance(claim.kind, claim.value)
         exact = [c for c in candidates if abs(c.value - claim.value) <= tol]
         if exact:
             results.append((claim, "MATCH", exact[:1]))
+            continue
+        if claim.line_no in marked:
+            results.append((claim, "SUPPRESSED", []))
+            continue
+        allow_hit = _allowlist_covers(allowlist, claim, tol)
+        if allow_hit is not None:
+            results.append((claim, "SUPPRESSED", []))
             continue
         # widen search for "closest" candidates to report as a lead
         near = sorted(candidates, key=lambda c: abs(c.value - claim.value))
@@ -372,44 +462,49 @@ def main() -> None:
     total_refs = sum(len(v) for v in reference_index.values())
     print(f"Reference corpus: {total_refs} tagged values from "
           f"{len(REFERENCE_FILES)} auto-regenerated sources "
-          f"({', '.join(f'{k}={len(v)}' for k, v in sorted(reference_index.items()))})\n")
+          f"({', '.join(f'{k}={len(v)}' for k, v in sorted(reference_index.items()))})")
+    allowlist = _load_allowlist()
+    print(f"Allowlist: {len(allowlist)} entries from "
+          f"{ALLOWLIST_PATH.relative_to(ROOT)}\n")
 
     selected = args.only or list(DOC_FILES)
-    totals = {"MATCH": 0, "MISMATCH": 0, "UNVERIFIABLE": 0}
-    mismatches_for_summary = []
+    totals = {"MATCH": 0, "MISMATCH": 0, "UNVERIFIABLE": 0, "SUPPRESSED": 0}
 
     for key in selected:
-        results = check_doc(key, reference_index)
+        results = check_doc(key, reference_index, allowlist)
         if not results:
             continue
         fname = DOC_FILES[key]
-        n_match = sum(1 for _, v, _ in results if v == "MATCH")
-        n_mismatch = sum(1 for _, v, _ in results if v == "MISMATCH")
-        n_unverif = sum(1 for _, v, _ in results if v == "UNVERIFIABLE")
-        totals["MATCH"] += n_match
-        totals["MISMATCH"] += n_mismatch
-        totals["UNVERIFIABLE"] += n_unverif
-        print(f"=== {fname} ({n_match} match, {n_mismatch} mismatch, "
-              f"{n_unverif} unverifiable) ===")
+        counts = {v: 0 for v in totals}
+        for _, verdict, _ in results:
+            counts[verdict] += 1
+            totals[verdict] += 1
+        print(f"=== {fname} ({counts['MATCH']} match, {counts['MISMATCH']} mismatch, "
+              f"{counts['UNVERIFIABLE']} unverifiable, {counts['SUPPRESSED']} suppressed) ===")
         for claim, verdict, candidates in results:
-            if verdict == "MATCH":
-                continue  # quiet on matches; report only what needs a look
+            if verdict in ("MATCH", "SUPPRESSED"):
+                continue  # quiet on matches and suppressed; report only what needs a look
             cand_str = "; ".join(
                 f"{c.value} ({c.file}:{c.line_no})" for c in candidates
             ) or "no candidate of this type found anywhere in the reference corpus"
             print(f"  [{verdict}] {fname}:{claim.line_no} "
                   f"{claim.kind}={claim.value}  context: \"...{claim.context}...\"")
             print(f"      closest live value(s): {cand_str}")
-            if verdict == "MISMATCH":
-                mismatches_for_summary.append((fname, claim, candidates))
         print()
 
     print("=" * 70)
     print(f"TOTAL: {totals['MATCH']} match, {totals['MISMATCH']} mismatch, "
-          f"{totals['UNVERIFIABLE']} unverifiable")
-    print("Read this script's module docstring before treating every "
-          "MISMATCH as a bug: docs that narrate a number's own correction "
-          "history will show their historical values here by design.")
+          f"{totals['UNVERIFIABLE']} unverifiable, {totals['SUPPRESSED']} suppressed")
+    if totals["MISMATCH"] == 0:
+        print("GATE: PASS -- zero unsuppressed mismatches. Any UNVERIFIABLE "
+              "entries above are unconfirmed, not known-wrong; triage them "
+              "into a fix, an inline cite: marker, or an allowlist entry.")
+    else:
+        print(f"GATE: FAIL -- {totals['MISMATCH']} unsuppressed mismatch(es). "
+              "Each is either a real stale citation (fix it) or a legitimate "
+              "case missing its cite: marker/allowlist entry (suppress it) -- "
+              "see this script's module docstring for both mechanisms.")
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

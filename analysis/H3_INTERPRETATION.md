@@ -17,11 +17,14 @@ multiplier is the same for every model here — all 9 raw p-values are at
 the permutation floor). L2-L4 (ceiling-effect sensitivity check): **8/8**
 computable models significant at Holm-adjusted p<0.05 (**updated
 2026-08-07** — only **1 model, Qwen 1.5B**, has insufficient tier range in
-this scope; Gemini 3.1 Pro Preview's Dynamic-L4 gap has since partially
-closed via its daily crawl and it is now fully computable in both scopes,
-see "Incomplete tier coverage" below). Effect sizes range from ρ=-0.255
-(Gemini Pro Preview, L2-L4 — the weakest) to ρ=-0.529 (GPT-5-mini, L2-L4 —
-the strongest).
+this scope; Gemini 3.1 Pro Preview's Dynamic-L4 gap has since fully
+closed via its daily crawl completing 2026-08-11, and it is now fully
+computable in both scopes, see "Incomplete tier coverage" below). Effect
+sizes range from ρ=-0.266 (**Qwen 7B**, L2-L4 — the weakest; corrected
+2026-08-12 — Gemini Pro Preview's own L2-L4 rho moved to ρ=-0.280 as its
+L4 sample grew from 38 to 292 rows, which is no longer the weakest of the
+8, just close to it) to ρ=-0.529 (GPT-5-mini, L2-L4 —
+the strongest, unchanged).
 
 **This is the most uniform, unambiguous per-model result in the entire
 project** — RQ5's cross-benchmark agreement is contested and conditioning-

@@ -151,8 +151,9 @@ n=7 picture directly; the same mechanism persists at n=9, verified against
 clear outlier on both axes (0.81 Dynamic-pooled, 0.41 ULT) — its distance
 from the other 8 models still drives the Pearson coefficient
 disproportionately. Among those other 8, Dynamic-pooled scores are tightly
-bunched (0.925-0.969, a 4.4pp band) while ULT scores spread widely
-(0.756-0.901, a 14.5pp band), and **rank order agrees better than it did at
+bunched (0.925-0.960, a **3.5pp** band — corrected 2026-08-12 from a stale
+4.4pp) while ULT scores spread widely
+(0.756-0.901, a 14.5pp band, still current), and **rank order agrees better than it did at
 n=7 but is still far from clean**: sorted by Dynamic-pooled (descending),
 the order is Gemini-Pro-Preview > GPT-5 > GPT-5-mini > Claude-Haiku >
 Qwen32B > Claude-Sonnet > Gemini-Flash-Lite > Qwen7B; sorted by ULT

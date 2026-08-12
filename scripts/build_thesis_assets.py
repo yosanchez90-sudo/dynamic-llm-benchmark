@@ -71,10 +71,13 @@ STEPS: list[tuple[str, str, str]] = [
     ("research_questions_md", "scripts/build_research_questions_md.py",
      "docs/RESEARCH_QUESTIONS.md: diffable markdown mirror of docs/Research_questions.xlsx"),
     ("check_doc_citations", "scripts/check_doc_citations.py",
-     "Advisory: scan hand-written analysis/*.md docs for numeric claims that "
-     "no longer match any live provenance source (never fails the build -- "
-     "read its own output, many 'mismatches' are intentionally-preserved "
-     "historical values, not bugs)"),
+     "GATE: scan hand-written analysis/*.md docs for numeric claims that no "
+     "longer match any live provenance source. Fails the build (nonzero "
+     "exit) on any unsuppressed mismatch -- legitimate historical/external/"
+     "verified-current values must carry a cite: marker or an "
+     "analysis/CITATION_ALLOWLIST.md entry, not be silently ignored. Will "
+     "also scan paper/ sources once that directory holds prose, not just "
+     "references.yaml."),
 ]
 
 
@@ -110,6 +113,12 @@ def main() -> None:
     print(f"\n{'='*70}\nSUMMARY\n{'='*70}")
     for key, rc in results:
         print(f"  {key:20s} {'OK' if rc == 0 else f'FAILED (exit {rc})'}")
+
+    citation_result = next(((k, rc) for k, rc in results if k == "check_doc_citations"), None)
+    if citation_result is not None:
+        key, rc = citation_result
+        gate = "PASS" if rc == 0 else "FAIL -- unsuppressed citation mismatch(es), see output above"
+        print(f"\nCITATION GATE: {gate}")
 
     if any(rc != 0 for _, rc in results):
         sys.exit(1)

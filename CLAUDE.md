@@ -15,6 +15,25 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   an unlogged inherited default (e.g. from a base model's generation_config.json) can
   silently differ between runs and change results without any code or YAML diff to show it.
 - Pin model versions exactly (e.g. `claude-opus-4-7`, HF revision SHA). Never use `-latest` tags.
+- **Every hand-written number in `analysis/*.md` (and, once it holds prose,
+  `paper/`) must either verify against a live, auto-regenerated provenance
+  source, or carry an explicit historical/external marker.** Enforced by
+  `scripts/check_doc_citations.py`, registered as a gating step in
+  `scripts/build_thesis_assets.py` (nonzero exit on any unsuppressed
+  mismatch). A number that is deliberately superseded (a correction-history
+  entry, a "was X, now Y" construction) or genuinely external (no repo
+  counterpart — a paper's own reported figure, a leaderboard score) must be
+  marked so, not left to silently fail the gate: an inline `<!-- cite:historical -->`
+  / `<!-- cite:external -->` comment (or a `:start`/`:end` pair around a
+  multi-line span), or an entry in `analysis/CITATION_ALLOWLIST.md` keyed on
+  file+line+kind+value with a one-line reason. Never suppress a finding by
+  adding a marker/allowlist entry without first checking whether the number
+  is actually still correct — the point of the gate is that a hand-typed
+  figure drifts from the pipeline silently otherwise (confirmed repeatedly,
+  2026-08-12: RQ5_INTERPRETATION.md's tier-matched Dynamic-L4↔ULT reading
+  had actually flipped sign, not just drifted, after Gemini Pro Preview's
+  L4 crawl completed — a plain diff would not have caught this, only
+  re-deriving the number from live data did).
 - **`scripts/process_batch.py`'s `cost_usd` never applied OpenAI's 50% Batch
   API discount** (found 2026-08-07) — `compute_cost()` (`src/pricing.py`)
   only knows the standard real-time rate; every row this script has ever

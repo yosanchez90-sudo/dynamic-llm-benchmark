@@ -746,22 +746,25 @@ benchmarks disagree about model quality — it's that several models are so
 close together on pooled Mut@K that the benchmark has no resolving power
 between them at all, independent of ULT.
 
-**Evidence** (`analysis/RQ5_DIAGNOSTICS.md`) — **updated 2026-08-07, and
-the unresolvable chain grew, not shrank, with the new data**: six adjacent
-models by pooled Mut@K — GPT-5 > GPT-5-mini > Claude Haiku > Qwen 32B >
-Claude Sonnet > Gemini Flash-Lite (was four models: Claude Haiku > Claude
-Sonnet > Qwen 32B > Gemini Flash-Lite) — have a combined **pooled spread of
-0.007**, while their own individual between-instantiation SDs are 0.002,
-0.001, 0.004, 0.003, 0.003, 0.004. Every one of these SDs is larger than
-the gap separating the six models from each other. **These six models
+**Evidence** (`analysis/RQ5_DIAGNOSTICS.md`) — **corrected 2026-08-12
+(live rebuild, Gemini Pro Preview's Dynamic-L4 crawl completing
+2026-08-11 moved this exact chain — see `analysis/WORKBOOK_VERIFICATION.md`
+for the earlier-caught instance of this same stale figure): five adjacent
+models by pooled Mut@K — GPT-5-mini > Claude Haiku > Qwen 32B >
+Claude Sonnet > Gemini Flash-Lite (GPT-5 has dropped out of the chain's
+front end; historical record — as of 2026-08-07 it was six models with
+GPT-5 leading, and before that, four: Claude Haiku > Claude Sonnet > Qwen
+32B > Gemini Flash-Lite) — have a combined **pooled spread of 0.005**,
+while their own individual between-instantiation SDs are 0.001, 0.004,
+0.003, 0.003, 0.004. Every one of these SDs is larger than
+the gap separating the five models from each other. **These five models
 cannot be reliably rank-ordered against each other from this data alone**,
-regardless of what ULT says about them — GPT-5 and GPT-5-mini's arrival
-didn't resolve this ambiguity, it extended it to two more models.
+regardless of what ULT says about them.
 
 **Caveat**: this is a *partial* explanation, not a full one — it accounts
-for 6 of the 9 canonical models involved in the low-τ result (up from 4 of
-7), not all of them, and does not by itself explain the rest of the
-disagreement (which finding #5 below addresses).
+for 5 of the 9 canonical models involved in the low-τ result (down from 6,
+live rebuild), not all of them, and does not by itself explain the rest of
+the disagreement (which finding #5 below addresses).
 
 **How this could be attacked**: the noise-floor check uses
 between-instantiation SD as the "can we tell these apart" threshold — a
@@ -883,6 +886,7 @@ an effect."
 
 <details>
 <summary>Superseded 2026-08-07 — the pre-landing version of this finding, kept for the record</summary>
+<!-- cite:historical:start -->
 
 Before the 2026-08-07 data landing (n_models=5), raw unfiltered Comparison
 A said ULT scored slightly higher (`effect_r=+0.200`, p=0.81);
@@ -899,6 +903,7 @@ didn't change the story, they gave the rank-biserial statistic enough
 data to correctly average out the same two Qwen outliers that were already
 distorting the picture at n=5.
 
+<!-- cite:historical:end -->
 </details>
 
 ### 7. The ULT ground-truth quality audit — only ~8.4% of ULT's own shipped tests pass out of the box
