@@ -19,16 +19,29 @@
 # both confirmed to be complete, non-provisional arXiv entries with full
 # metadata, not placeholders.
 #
-# Entries NOT in the original TBC list ([8] DyCodeEval, [11] Codex/HumanEval,
-# [15] TestEval, [16] Generalization or Memorization) still carry a partial
-# author list ("et al.") in the spec as pasted -- left exactly as given,
-# since resolving them was outside this pass's explicit scope. [12]
-# UnLeakedTestBench was in this same out-of-scope set initially but was
-# resolved on 2026-08-11 at explicit follow-up request -- see its own
-# `note` field. Its title also needed correcting (same paraphrase-not-title
-# pattern as [5] BeyondBench): the real title is "Benchmarking LLMs for
-# Unit Test Generation from Real-World Functions", not "UnLeakedTestBench:
-# A Decontaminated Benchmark for LLM Unit Test Generation".
+# [12] UnLeakedTestBench was originally in the same out-of-scope set as
+# [8]/[11]/[15]/[16] below but was resolved on 2026-08-11 at explicit
+# follow-up request -- see its own `note` field. Its title also needed
+# correcting (same paraphrase-not-title pattern as [5] BeyondBench): the
+# real title is "Benchmarking LLMs for Unit Test Generation from
+# Real-World Functions", not "UnLeakedTestBench: A Decontaminated
+# Benchmark for LLM Unit Test Generation".
+#
+# [8] DyCodeEval and [11] Codex/HumanEval resolution (2026-08-12): both
+# now have complete author lists ("et al." truncation removed), fetched
+# and cross-verified independently. [8]'s spec data turned out to be
+# wrong, not just incomplete -- see its `title_correction` note: the
+# author surname, full title, and venue were all mismatched against the
+# real paper. [15] TestEval and [16] Generalization or Memorization
+# never actually carried literal "et al." truncation (both already had
+# full initials-only author lists, e.g. "W. Wang, C. Yang, ..." for
+# [15]) -- an earlier version of this comment described them
+# inaccurately as "et al."-truncated, corrected here. [16]'s metadata
+# was attempted-but-not-fully independently verified on 2026-08-12 (IEEE
+# Xplore blocked content extraction, no secondary source found a
+# matching entry) -- see its own `source_used` note for the full
+# account; flagged `status: PARTIALLY_VERIFIED`, the only entry in this
+# file not marked COMPLETE.
 
 entries:
   - key: sainz2023contamination
@@ -160,19 +173,21 @@ entries:
     status: COMPLETE
     source_used: "aclanthology.org PDF, downloaded successfully and read directly (title page) -- the URL itself is reachable, only WebFetch's own text-extraction on raw PDF bytes failed, so this needed a direct PDF read rather than a second URL"
 
-  - key: wang2025dycodeeval
+  - key: chen2025dycodeeval
     spec_number: 8
     authors:
-      - "S. Wang"
-      - "et al."
-    title: "DyCodeEval: Dynamic Benchmarking of Reasoning Capabilities in Code Large Language Models Under Data Contamination"
-    venue: "arXiv preprint"
+      - "Simin Chen"
+      - "Pranav Pusarla"
+      - "Baishakhi Ray"
+    title: "Dynamic Benchmarking of Reasoning Capabilities in Code Large Language Models under Data Contamination"
+    venue: "Proceedings of the 42nd International Conference on Machine Learning (ICML 2025)"
     year: 2025
     arxiv: "2503.04149"
     url: "https://arxiv.org/abs/2503.04149"
     source_repo: "https://github.com/SeekingDream/DyCodeEval"
     status: COMPLETE
-    source_used: "spec (as pasted, unchanged) -- NOT in the requested TBC-resolution list; partial author list ('et al.') left as-is, out of this pass's scope"
+    source_used: "arxiv.org/abs/2503.04149 (fetched directly) and github.com/SeekingDream/DyCodeEval's own README BibTeX (fetched independently), both agreeing exactly on authors/title/venue"
+    title_correction: "Spec gave authors as 'S. Wang, et al.' and title as 'DyCodeEval: Dynamic Benchmarking of Reasoning Capabilities in Code Large Language Models Under Data Contamination' -- both wrong, not just incomplete: the actual authors are Simin Chen, Pranav Pusarla, Baishakhi Ray (no one named Wang), and 'DyCodeEval:' is the tool's own name, not part of the paper's title (same descriptive-phrase-mistaken-for-title pattern as [5] BeyondBench and [12] ULT). Venue was also given as 'arXiv preprint'; the paper is published at ICML 2025, not a preprint. Corrected 2026-08-12 -- this entry's spec data appears to have been a fabricated/mismatched placeholder rather than a genuinely partial citation, unlike [11]'s honest 'et al.' truncation."
 
   - key: guan2025benchmarkuseful
     spec_number: 9
@@ -210,15 +225,71 @@ entries:
   - key: chen2021codex
     spec_number: 11
     authors:
-      - "M. Chen"
-      - "et al."
+      - "Mark Chen"
+      - "Jerry Tworek"
+      - "Heewoo Jun"
+      - "Qiming Yuan"
+      - "Henrique Ponde de Oliveira Pinto"
+      - "Jared Kaplan"
+      - "Harri Edwards"
+      - "Yuri Burda"
+      - "Nicholas Joseph"
+      - "Greg Brockman"
+      - "Alex Ray"
+      - "Raul Puri"
+      - "Gretchen Krueger"
+      - "Michael Petrov"
+      - "Heidy Khlaaf"
+      - "Girish Sastry"
+      - "Pamela Mishkin"
+      - "Brooke Chan"
+      - "Scott Gray"
+      - "Nick Ryder"
+      - "Mikhail Pavlov"
+      - "Alethea Power"
+      - "Lukasz Kaiser"
+      - "Mohammad Bavarian"
+      - "Clemens Winter"
+      - "Philippe Tillet"
+      - "Felipe Petroski Such"
+      - "Dave Cummings"
+      - "Matthias Plappert"
+      - "Fotios Chantzis"
+      - "Elizabeth Barnes"
+      - "Ariel Herbert-Voss"
+      - "William Hebgen Guss"
+      - "Alex Nichol"
+      - "Alex Paino"
+      - "Nikolas Tezak"
+      - "Jie Tang"
+      - "Igor Babuschkin"
+      - "Suchir Balaji"
+      - "Shantanu Jain"
+      - "William Saunders"
+      - "Christopher Hesse"
+      - "Andrew N. Carr"
+      - "Jan Leike"
+      - "Josh Achiam"
+      - "Vedant Misra"
+      - "Evan Morikawa"
+      - "Alec Radford"
+      - "Matthew Knight"
+      - "Miles Brundage"
+      - "Mira Murati"
+      - "Katie Mayer"
+      - "Peter Welinder"
+      - "Bob McGrew"
+      - "Dario Amodei"
+      - "Sam McCandlish"
+      - "Ilya Sutskever"
+      - "Wojciech Zaremba"
     title: "Evaluating Large Language Models Trained on Code"
     venue: "arXiv preprint"
     year: 2021
     arxiv: "2107.03374"
     url: "https://arxiv.org/pdf/2107.03374"
     status: COMPLETE
-    source_used: "spec (as pasted, unchanged) -- NOT in the requested TBC-resolution list; partial author list left as-is, out of this pass's scope"
+    source_used: "arxiv.org/abs/2107.03374 (fetched directly) -- full 70-author list confirmed against the arXiv listing page. Note for the paper's own reference-list rendering: IEEE style commonly truncates author lists this long to the first author + 'et al.' for display; this YAML entry stores the complete data regardless, truncation (if applied) is a render-time formatting choice, not a data-completeness one."
 
   - key: huang2026ult
     spec_number: 12
@@ -316,8 +387,8 @@ entries:
     venue: "IEEE Transactions on Software Engineering (early access)"
     year: 2026
     doi: "10.1109/TSE.2026.3713834"
-    status: COMPLETE
-    source_used: "spec (as pasted, unchanged)"
+    status: PARTIALLY_VERIFIED
+    source_used: "Attempted independent verification 2026-08-12, genuine effort, incomplete result -- report this honestly rather than upgrading confidence without real confirmation. CONFIRMED: the DOI mechanically resolves (302 redirect) to a real, specific IEEE Xplore document (ieeexplore.ieee.org/document/11611921) -- this is not a dead or fabricated DOI. NOT CONFIRMED: the exact title, full author list, and venue details as given here -- IEEE Xplore's own page returned no extractable content on two attempts (consistent with this file's earlier-noted pattern of dl.acm.org/openreview.net blocking scraping), and neither web search nor dblp.org (Yihong Dong's own author page, which is normally comprehensive and fast to index IEEE TSE) surfaced a matching 2025-2026 Dong publication titled anything close to this. The closest match found by every search is a DIFFERENT, confirmed-real paper by an overlapping but non-identical author team: Dong, Jiang, Liu, Jin, Gu, Yang, Li (7 authors, no Zhang), 'Generalization or Memorization: Data Contamination and Trustworthy Evaluation for Large Language Models', ACL Findings 2024, arXiv 2402.15938 -- plausibly this entry's TSE 2026 version is a real, later, code-generation-focused extension of that same paper by the same core team plus one added author, not yet indexed by dblp/search because it is genuinely early-access (dblp coverage of very recent early-access IEEE articles can lag by weeks) -- but this is the most likely explanation, not a confirmed one. Recommend a direct IEEE Xplore check with institutional access before this entry is finalised for submission, since it could not be completed here."
 
   # --- Additions beyond the original [1]-[16] spec ---
 
