@@ -54,6 +54,7 @@ analysis/figures/
 paper/references.bib
 paper/values.tex
 paper/*.pdf
+paper/*.docx
 paper/*.aux
 paper/*.bbl
 paper/*.blg
