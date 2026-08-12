@@ -98,9 +98,9 @@ def main() -> None:
     dyn_l1l3 = gain_row("dynamic_l1l3")
     pp("HTwoSeenGain", seen["gain"])
     raw("HTwoSeenGainCI", f"[{seen['gain_ci_lo']*100:.1f}, {seen['gain_ci_hi']*100:.1f}]")
-    pp("HTwoL1L3Gain", dyn_l1l3["gain"])
-    raw("HTwoL1L3GainCI", f"[{dyn_l1l3['gain_ci_lo']*100:.1f}, {dyn_l1l3['gain_ci_hi']*100:.1f}]")
-    pp("HTwoL4Gain", dyn_l4["gain"])
+    pp("HTwoLOneLThreeGain", dyn_l1l3["gain"])
+    raw("HTwoLOneLThreeGainCI", f"[{dyn_l1l3['gain_ci_lo']*100:.1f}, {dyn_l1l3['gain_ci_hi']*100:.1f}]")
+    pp("HTwoLFourGain", dyn_l4["gain"])
     pp("HTwoPltGain", plt_row["gain"])
     pp("HTwoUnseenGain", unseen["gain"])
     raw("HTwoSeenN", f"{int(seen['n_pre'])}")
@@ -126,6 +126,11 @@ def main() -> None:
     raw("HThreeLTwoLFourSig", f"{(computable['p_perm_holm'] < 0.05).sum()}/{len(computable)}")
 
     # -------------------------------------------------------------------- H5
+    # Pre-registered threshold (docs/Approved_Hypotheses.md:16: "the
+    # Kendall's tau ... will exceed 0.7"), not derived from a CSV -- a
+    # fixed design constant, hardcoded here rather than left as a bare
+    # literal in paper prose so the two stay single-sourced.
+    num("HFiveTauThreshold", 0.7, ".1f")
     stable = pd.read_csv(ANALYSIS / "stability_stablemut.csv")
     kendall = pd.read_csv(ANALYSIS / "stability_kendall.csv")
     n4_pairs = {(1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4)}
@@ -143,6 +148,11 @@ def main() -> None:
     raw("HFiveSdRange", f"{sd_middle.min():.3f}--{sd_middle.max():.3f}")
 
     # -------------------------------------------------------------------- H6
+    # Pre-registered validity-supporting band (analysis/RQ5_ANALYSIS_PLAN.md:91:
+    # "Moderate-to-strong (roughly Spearman rho in the 0.4-0.8 range ...)").
+    # Fixed design constants, not derived from a CSV -- see HFiveTauThreshold above.
+    num("HSixBandLow", 0.4, ".1f")
+    num("HSixBandHigh", 0.8, ".1f")
     rq5_corr = pd.read_csv(ANALYSIS / "rq5_correlations.csv")
     rq5_cf_corr = pd.read_csv(ANALYSIS / "rq5_cross_family_correlations.csv")
     diag_decomp_row = None  # decomposition figures come from a fresh recompute below

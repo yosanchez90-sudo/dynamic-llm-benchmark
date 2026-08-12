@@ -36,6 +36,18 @@ SUPPRESSING LEGITIMATE FINDINGS -- two mechanisms, use whichever fits:
 Both produce a SUPPRESSED verdict, counted separately from MATCH so a
 suppressed-but-wrong value doesn't silently look verified.
 
+For the separate hand-typed-number lint (`paper/sections/*.tex` only --
+see find_hand_typed_numbers): the same two labels apply via a same-line
+LaTeX comment, `% cite:historical` or `% cite:external`, since a bare
+`<!-- --> ` HTML comment isn't valid inside a .tex line. Use this for
+numbers that are genuinely not a pipeline-derived result -- a model's own
+published name/version fragment (e.g. the "1.5" in "Qwen2.5-Coder-1.5B"),
+or a universal statistical convention (e.g. the "0.05" in "p<0.05") --
+never for a project-specific pre-registered constant, which should get
+its own macro in build_paper_values.py instead so the prose stays
+single-sourced against docs/Approved_Hypotheses.md or the relevant
+analysis plan.
+
 Usage:
     python scripts/check_doc_citations.py                 # full report
     python scripts/check_doc_citations.py --only rq5_interpretation
@@ -459,21 +471,39 @@ def _extract(path: Path) -> list[Claim]:
 # "does this number match the live source", it asks "does a literal number
 # exist here at all, when it should be a macro reference instead".
 _TEX_COMMAND_RE = re.compile(r"\\[a-zA-Z]+\*?(?:\[[^\]]*\])?(?:\{[^{}]*\})*")
-_BARE_NUMBER_RE = re.compile(r"(?<![\w\\])(-?\d+\.\d+|-?\d+pp\b|-?\d+%)")
+# Leading "-" excluded when it's itself preceded by another "-": an en-dash
+# range written as LaTeX "--" (e.g. "0.4--0.8") would otherwise have its
+# second half misread as a negative number ("-0.8") instead of the upper
+# bound of the range.
+_BARE_NUMBER_RE = re.compile(r"(?<![\w\\-])(-?\d+\.\d+|-?\d+pp\b|-?\d+%)")
+# End-of-line suppression for the hand-typed-number lint, mirroring the
+# markdown docs' <!-- cite:historical/external --> convention but in
+# LaTeX's own comment syntax. Use for numbers that are genuinely not a
+# pipeline-derived result: a model's own published name/version fragment,
+# or a universal statistical convention (e.g. the p<0.05 significance
+# level) -- not for project-specific pre-registered constants, which
+# should get a real macro in build_paper_values.py instead (see
+# \HFiveTauThreshold, \HSixBandLow, \HSixBandHigh).
+_TEX_CITE_MARKER_RE = re.compile(r"%\s*cite:(historical|external)\b")
 
 
 def find_hand_typed_numbers(path: Path) -> list[tuple[int, str]]:
     """Return [(line_no, matched_text)] for numeric literals in prose that
     are not part of a LaTeX command (\\NumXXX{}, \\cite{}, \\ref{}, a
-    percent-escape \\%, etc.) and are not inside a comment."""
+    percent-escape \\%, etc.), are not inside a comment, and are not on a
+    line carrying a `% cite:historical`/`% cite:external` marker."""
     try:
         text = path.read_text()
     except FileNotFoundError:
         return []
     findings: list[tuple[int, str]] = []
     for line_no, line in enumerate(text.splitlines(), start=1):
-        code_part = line.split("%", 1)[0] if not line.lstrip().startswith("%") else ""
+        if line.lstrip().startswith("%"):
+            continue
+        code_part, _, comment_part = line.partition("%")
         if not code_part.strip():
+            continue
+        if _TEX_CITE_MARKER_RE.search("%" + comment_part):
             continue
         # Blank out every LaTeX command (and its brace groups) first, so a
         # number inside \cite{chen2021codex} or \ref{fig:onset} or a macro
