@@ -81,8 +81,11 @@ reliability of what was measured over the tiers it does have.
 
 ## Pooled estimand — reported with its stated confound, not as the headline
 
-All-tier pooled: ρ=-0.392 (n_problems=6,547 rows, p<0.001). L2-L4 pooled: ρ=-0.361
-(n_problems=4,925, p<0.001). Both are directionally consistent with every
+All-tier pooled: ρ=-0.387 (n_problems=7,146 rows, p<0.001; corrected
+2026-08-12 from a stale ρ=-0.392/n=6,547 that predated Gemini Pro
+Preview's Dynamic-L4 crawl completing 2026-08-11 — its added rows grew
+every pooled-row-count figure on this page). L2-L4 pooled: ρ=-0.351
+(n_problems=5,505, p<0.001; corrected from ρ=-0.361/n=4,925). Both are directionally consistent with every
 per-model result, which is reassuring, but per the pre-registered caveat
 this number conflates the within-model tier effect with between-model
 differences in how many rows each model contributes per tier — it is

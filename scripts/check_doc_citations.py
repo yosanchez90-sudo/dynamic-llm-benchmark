@@ -1,0 +1,416 @@
+"""Citation checker: scan hand-written analysis/*.md docs for numeric
+claims (Kendall tau, Spearman rho, Pearson r, p-values, percentage-point
+figures, n_models, n_defined) and check whether each value currently
+appears anywhere in this project's live, auto-regenerated provenance
+sources (the *_PROVENANCE.md / STABILITY.md / RANKING_MATRIX.md /
+RQ5_DIAGNOSTICS.md family, plus their underlying CSVs).
+
+WHAT THIS CATCHES: a hand-written doc citing a number that no longer
+appears anywhere in the current pipeline output -- exactly the failure
+mode found and fixed earlier in this pass (RQ5_INTERPRETATION.md citing
+tau=0.333 for the pooled Dynamic<->ULT primary after a data landing moved
+the live value to 0.278; STABILITY_INTERPRETATION.md citing a stale mean
+pairwise tau).
+
+WHAT THIS DOES NOT DO -- read before trusting a MISMATCH as a bug:
+- It has no notion of "this document deliberately preserves a historical
+  value for its own correction-history record" (e.g. "moved from 0.667 to
+  0.583"). Docs that narrate a number's history will show their old
+  values as MISMATCH/UNVERIFIABLE by design -- that is expected, not a
+  defect, and is exactly why this script's output needs a human read
+  before acting on it, not a mechanical find-replace.
+- It matches on VALUE within a small tolerance per statistic type, not on
+  full semantic context (which exact pair/scope/metric a number claims to
+  be). A MATCH means "this number is live somewhere in the reference
+  corpus for this statistic type," not "this is definitely the correct
+  citation for this exact sentence."
+- MISMATCH lists the closest live value(s) of the same statistic type as
+  a lead, not a guaranteed replacement.
+
+Usage:
+    python scripts/check_doc_citations.py                 # full report
+    python scripts/check_doc_citations.py --only rq5_interpretation
+    python scripts/check_doc_citations.py --list           # list doc keys
+"""
+from __future__ import annotations
+
+import argparse
+import re
+from dataclasses import dataclass
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+ANALYSIS = ROOT / "analysis"
+
+# Reference sources: auto-regenerated, safe to treat as "what the pipeline
+# currently says" -- re-run scripts/build_thesis_assets.py before trusting
+# this checker's output as current.
+REFERENCE_FILES = [
+    "COMPARISON_PROVENANCE.md",
+    "COMPARISON_C_PROVENANCE.md",
+    "RQ5_PROVENANCE.md",
+    "RQ5_DIAGNOSTICS.md",
+    "RQ5_CROSS_FAMILY_PROVENANCE.md",
+    "RQ5_SANITIZER_SENSITIVITY.md",
+    "STABILITY.md",
+    "H3_TIER_GRADIENT_PROVENANCE.md",
+    "RANKING_MATRIX.md",
+    "comparison_a_paired.csv",
+    "comparison_a_coverage.csv",
+    "comparison_a_coverage_adjusted.csv",
+    "comparison_b_coverage.csv",
+    "comparison_b_coverage_adjusted.csv",
+    "rq5_model_ranking.csv",
+    "rq5_cross_family_model_ranking.csv",
+    "rq5_correlations.csv",
+    "rq5_cross_family_correlations.csv",
+    "stability_kendall.csv",
+]
+
+# Hand-written docs to check -- key -> filename, so --only can target one.
+DOC_FILES = {
+    "comparison_a_interpretation": "COMPARISON_A_INTERPRETATION.md",
+    "comparison_c_interpretation": "COMPARISON_C_INTERPRETATION.md",
+    "rq5_interpretation": "RQ5_INTERPRETATION.md",
+    "stability_interpretation": "STABILITY_INTERPRETATION.md",
+    "h3_interpretation": "H3_INTERPRETATION.md",
+    "hypothesis_deviations": "HYPOTHESIS_DEVIATIONS.md",
+    "hypothesis_coverage_audit": "HYPOTHESIS_COVERAGE_AUDIT.md",
+    "open_items": "OPEN_ITEMS.md",
+    "metrics_and_findings_explained": "METRICS_AND_FINDINGS_EXPLAINED.md",
+    "workbook_verification": "WORKBOOK_VERIFICATION.md",
+}
+
+# (type, tolerance, regex) -- regex must have exactly one capturing group,
+# the numeric value (sign included where relevant).
+PATTERNS: list[tuple[str, float, re.Pattern]] = [
+    ("kendall_tau", 0.0006, re.compile(
+        r"(?:kendall(?:'?s)?\s*(?:τ|tau)|(?<![A-Za-z])τ|kendall_tau)\s*[:=]?\s*\**\s*(-?\d\.\d{2,6})")),
+    ("spearman_rho", 0.0006, re.compile(
+        r"(?:spearman\s*(?:ρ|rho)|(?<![A-Za-z])ρ|spearman_rho)\s*[:=]?\s*\**\s*(-?\d\.\d{2,6})")),
+    ("pearson_r", 0.0006, re.compile(
+        r"pearson\s*r\s*[:=]?\s*\**\s*(-?\d\.\d{2,6})")),
+    ("effect_r", 0.0006, re.compile(
+        r"effect_r\s*[:=]?\s*\**\s*(-?\d\.\d{2,6})")),
+    ("p_value", 0.0003, re.compile(
+        r"\bp\s*[=<]\s*\**\s*(\d\.\d{2,6})")),
+    ("pp", 0.06, re.compile(
+        r"([+-]?\d+\.\d)\s*pp\b")),
+    ("n_models", 0.5, re.compile(
+        r"n_models\s*[:=]\s*(\d+)")),
+    ("n_defined", 0.5, re.compile(
+        r"n_defined\s*[:=]\s*(\d+)")),
+]
+
+
+@dataclass
+class Claim:
+    kind: str
+    value: float
+    file: str
+    line_no: int
+    context: str
+
+
+# Markdown/CSV table column name -> claim kind. Matched case-insensitively
+# against the header cell with non-alnum chars stripped. Only exact-ish
+# matches map -- deliberately no bare "n" or "r" (too ambiguous across
+# n_models/n_pairs/n_rows/n_problems and pearson_r/effect_r).
+COLUMN_KIND_MAP = {
+    "kendalltau": "kendall_tau",
+    "kendall_tau": "kendall_tau",
+    "spearmanrho": "spearman_rho",
+    "spearman_rho": "spearman_rho",
+    "pearsonr": "pearson_r",
+    "pearson_r": "pearson_r",
+    "effect_r": "effect_r",
+    "p": "p_value",
+    "pvalue": "p_value",
+    "p_value": "p_value",
+    "p_perm": "p_value",
+    "kendallp_perm": "p_value",
+    "kendall_p_perm": "p_value",
+    "spearmanp_perm": "p_value",
+    "pearsonp_perm": "p_value",
+    "p_perm_holm": "p_value",
+    "kendall_p_perm_holm": "p_value",
+    "p_value_holm": "p_value",
+    "n_models": "n_models",
+    "n_defined": "n_defined",
+}
+# Columns on a 0-1 fraction scale that hand-written docs cite as "+X.Xpp" --
+# multiply by 100 and tag as "pp" in addition to any other tagging.
+PP_SCALE_COLUMNS = {"gain", "did", "delta", "control_delta",
+                     "gain_ci_lo", "gain_ci_hi", "did_ci_lo", "did_ci_hi"}
+
+
+def _norm_header(h: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", h.strip().lower())
+
+
+# Normalize map keys too, so "effect_r" in the map matches a header cell
+# normalized to "effectr" the same way "kendall_p_perm" matches "kendallpperm".
+COLUMN_KIND_MAP = {_norm_header(k): v for k, v in COLUMN_KIND_MAP.items()}
+PP_SCALE_COLUMNS = {_norm_header(c) for c in PP_SCALE_COLUMNS}
+
+
+def _extract_prose(path: Path, text: str) -> list[Claim]:
+    claims: list[Claim] = []
+    for line_no, line in enumerate(text.splitlines(), start=1):
+        for kind, _tol, pattern in PATTERNS:
+            for m in pattern.finditer(line):
+                try:
+                    value = float(m.group(1))
+                except ValueError:
+                    continue
+                start = max(0, m.start() - 30)
+                end = min(len(line), m.end() + 10)
+                claims.append(Claim(kind, value, str(path.relative_to(ROOT)),
+                                     line_no, line[start:end].strip()))
+    return claims
+
+
+def _extract_tables(path: Path, text: str) -> list[Claim]:
+    """Parse pipe-delimited markdown tables (or comma-delimited CSVs),
+    tagging each numeric cell by its column header via COLUMN_KIND_MAP."""
+    claims: list[Claim] = []
+    lines = text.splitlines()
+    is_csv = path.suffix == ".csv"
+
+    if is_csv:
+        if not lines:
+            return claims
+        headers = [h.strip() for h in lines[0].split(",")]
+        norm_headers = [_norm_header(h) for h in headers]
+        for line_no, line in enumerate(lines[1:], start=2):
+            cells = line.split(",")
+            for col_idx, cell in enumerate(cells):
+                if col_idx >= len(norm_headers):
+                    break
+                _tag_cell(claims, norm_headers[col_idx], headers[col_idx],
+                          cell.strip(), path, line_no)
+        return claims
+
+    i = 0
+    while i < len(lines) - 1:
+        line = lines[i]
+        nxt = lines[i + 1]
+        if "|" in line and re.match(r"^\s*\|?[\s:|-]+\|?\s*$", nxt):
+            headers = [c.strip() for c in line.strip().strip("|").split("|")]
+            norm_headers = [_norm_header(h) for h in headers]
+            j = i + 2
+            while j < len(lines) and "|" in lines[j]:
+                cells = [c.strip() for c in lines[j].strip().strip("|").split("|")]
+                for col_idx, cell in enumerate(cells):
+                    if col_idx >= len(norm_headers):
+                        break
+                    _tag_cell(claims, norm_headers[col_idx], headers[col_idx],
+                              cell, path, j + 1)
+                j += 1
+            i = j
+        else:
+            i += 1
+    return claims
+
+
+def _column_kind(norm_header: str) -> str | None:
+    if norm_header in COLUMN_KIND_MAP:
+        return COLUMN_KIND_MAP[norm_header]
+    # compound headers, e.g. "dynamic_n_defined" / "ult_n_defined" /
+    # "kendall_tau_ci_lo" -- suffix/substring match against known keys,
+    # longest key first so "n_defined" wins over a shorter accidental hit.
+    for key in sorted(COLUMN_KIND_MAP, key=len, reverse=True):
+        if norm_header.endswith(key):
+            return COLUMN_KIND_MAP[key]
+    return None
+
+
+def _is_pp_scale(norm_header: str) -> bool:
+    return norm_header in PP_SCALE_COLUMNS or any(
+        norm_header.endswith(c) for c in PP_SCALE_COLUMNS)
+
+
+_INT_KINDS = {"n_models", "n_defined"}
+
+
+def _tag_cell(claims: list[Claim], norm_header: str, raw_header: str,
+              cell: str, path: Path, line_no: int) -> None:
+    cell = cell.strip().strip("*")
+    kind = _column_kind(norm_header)
+    # n_models/n_defined columns are often plain integers (no decimal
+    # point) in the source CSVs/tables -- match those too, but only for
+    # count-type kinds, so a bare row index elsewhere isn't misread as a
+    # correlation/p-value.
+    if kind in _INT_KINDS and re.match(r"^-?\d+$", cell):
+        claims.append(Claim(kind, float(cell), str(path.relative_to(ROOT)),
+                             line_no, f"{raw_header}={cell}"))
+        return
+    m = re.match(r"^-?\d+\.\d+$", cell)
+    if not m:
+        return
+    value = float(cell)
+    context = f"{raw_header}={cell}"
+    if kind:
+        claims.append(Claim(kind, value, str(path.relative_to(ROOT)), line_no, context))
+    if _is_pp_scale(norm_header):
+        claims.append(Claim("pp", round(value * 100, 4),
+                             str(path.relative_to(ROOT)), line_no, context))
+
+
+def _extract_pandas_tables(path: Path, text: str) -> list[Claim]:
+    """Parse space-aligned `print(df)`-style tables (no pipes), the format
+    several provenance docs embed directly (e.g. COMPARISON_PROVENANCE.md's
+    survivorship audit, COMPARISON_C_PROVENANCE.md's DiD tables). pandas
+    right-justifies each column to a fixed width (= widest of header/any
+    data value), so a header token's END position in the header line is a
+    stable column boundary for every row below it -- sliced by character
+    position, not by splitting on whitespace runs (adjacent columns can be
+    separated by as little as one space when both are near their column's
+    max width, which breaks naive whitespace-split parsing)."""
+    claims: list[Claim] = []
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        header_spans = [(m.start(), m.end()) for m in re.finditer(r"\S+", lines[i])]
+        header_tokens = [lines[i][s:e] for s, e in header_spans]
+        if len(header_tokens) >= 3 and not any(
+            re.match(r"^-?\d+\.?\d*$", t) for t in header_tokens
+        ):
+            j = i + 1
+            data_rows = []
+            while j < len(lines) and lines[j].strip():
+                bounds = [0] + [e for _, e in header_spans[:-1]] + [len(lines[j])]
+                cells = [lines[j][bounds[k]:bounds[k + 1]].strip()
+                         for k in range(len(header_tokens))]
+                if len(cells) == len(header_tokens) and any(
+                    re.match(r"^-?\d+\.\d+$", c) for c in cells
+                ):
+                    data_rows.append((j, cells))
+                    j += 1
+                else:
+                    break
+            if data_rows:
+                norm_headers = [_norm_header(h) for h in header_tokens]
+                for line_idx, cells in data_rows:
+                    for col_idx, cell in enumerate(cells):
+                        _tag_cell(claims, norm_headers[col_idx], header_tokens[col_idx],
+                                  cell, path, line_idx + 1)
+                i = j
+                continue
+        i += 1
+    return claims
+
+
+def _extract(path: Path) -> list[Claim]:
+    try:
+        text = path.read_text()
+    except FileNotFoundError:
+        return []
+    return (_extract_prose(path, text) + _extract_tables(path, text)
+            + _extract_pandas_tables(path, text))
+
+
+def _tolerance(kind: str, value: float = 0.0) -> float:
+    base = 0.001
+    for k, tol, _ in PATTERNS:
+        if k == kind:
+            base = tol
+            break
+    if kind == "p_value":
+        # p-values are often quoted at 1-2 significant figures while the
+        # reference CSV/table stores full float precision -- widen
+        # proportionally so 0.331 vs 0.3312 (same value, different
+        # rounding) doesn't read as a mismatch, without so wide a net
+        # that a genuinely different p-value (e.g. 0.05 vs 0.20) matches.
+        return max(base, 0.15 * abs(value))
+    return base
+
+
+def build_reference_index() -> dict[str, list[Claim]]:
+    index: dict[str, list[Claim]] = {}
+    for fname in REFERENCE_FILES:
+        for claim in _extract(ANALYSIS / fname):
+            index.setdefault(claim.kind, []).append(claim)
+    return index
+
+
+def check_doc(doc_key: str, reference_index: dict[str, list[Claim]]) -> list[tuple[Claim, str, list[Claim]]]:
+    """Return [(claim, verdict, closest_matches)] for one doc."""
+    fname = DOC_FILES[doc_key]
+    results = []
+    for claim in _extract(ANALYSIS / fname):
+        candidates = reference_index.get(claim.kind, [])
+        tol = _tolerance(claim.kind, claim.value)
+        exact = [c for c in candidates if abs(c.value - claim.value) <= tol]
+        if exact:
+            results.append((claim, "MATCH", exact[:1]))
+            continue
+        # widen search for "closest" candidates to report as a lead
+        near = sorted(candidates, key=lambda c: abs(c.value - claim.value))
+        near = [c for c in near if abs(c.value - claim.value) <= max(tol * 10, 0.01)][:3]
+        if near:
+            results.append((claim, "MISMATCH", near))
+        else:
+            results.append((claim, "UNVERIFIABLE", []))
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__,
+                                      formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--only", nargs="+", choices=list(DOC_FILES),
+                         help="Check only these doc keys (see --list).")
+    parser.add_argument("--list", action="store_true", help="List doc keys and exit.")
+    args = parser.parse_args()
+
+    if args.list:
+        for key, fname in DOC_FILES.items():
+            print(f"  {key:32s} {fname}")
+        return
+
+    reference_index = build_reference_index()
+    total_refs = sum(len(v) for v in reference_index.values())
+    print(f"Reference corpus: {total_refs} tagged values from "
+          f"{len(REFERENCE_FILES)} auto-regenerated sources "
+          f"({', '.join(f'{k}={len(v)}' for k, v in sorted(reference_index.items()))})\n")
+
+    selected = args.only or list(DOC_FILES)
+    totals = {"MATCH": 0, "MISMATCH": 0, "UNVERIFIABLE": 0}
+    mismatches_for_summary = []
+
+    for key in selected:
+        results = check_doc(key, reference_index)
+        if not results:
+            continue
+        fname = DOC_FILES[key]
+        n_match = sum(1 for _, v, _ in results if v == "MATCH")
+        n_mismatch = sum(1 for _, v, _ in results if v == "MISMATCH")
+        n_unverif = sum(1 for _, v, _ in results if v == "UNVERIFIABLE")
+        totals["MATCH"] += n_match
+        totals["MISMATCH"] += n_mismatch
+        totals["UNVERIFIABLE"] += n_unverif
+        print(f"=== {fname} ({n_match} match, {n_mismatch} mismatch, "
+              f"{n_unverif} unverifiable) ===")
+        for claim, verdict, candidates in results:
+            if verdict == "MATCH":
+                continue  # quiet on matches; report only what needs a look
+            cand_str = "; ".join(
+                f"{c.value} ({c.file}:{c.line_no})" for c in candidates
+            ) or "no candidate of this type found anywhere in the reference corpus"
+            print(f"  [{verdict}] {fname}:{claim.line_no} "
+                  f"{claim.kind}={claim.value}  context: \"...{claim.context}...\"")
+            print(f"      closest live value(s): {cand_str}")
+            if verdict == "MISMATCH":
+                mismatches_for_summary.append((fname, claim, candidates))
+        print()
+
+    print("=" * 70)
+    print(f"TOTAL: {totals['MATCH']} match, {totals['MISMATCH']} mismatch, "
+          f"{totals['UNVERIFIABLE']} unverifiable")
+    print("Read this script's module docstring before treating every "
+          "MISMATCH as a bug: docs that narrate a number's own correction "
+          "history will show their historical values here by design.")
+
+
+if __name__ == "__main__":
+    main()

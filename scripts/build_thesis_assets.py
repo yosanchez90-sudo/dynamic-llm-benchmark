@@ -70,6 +70,11 @@ STEPS: list[tuple[str, str, str]] = [
      "Collapse vs survival figure (raw vs coverage-adjusted Mut@K at n=3 vs n=7)"),
     ("research_questions_md", "scripts/build_research_questions_md.py",
      "docs/RESEARCH_QUESTIONS.md: diffable markdown mirror of docs/Research_questions.xlsx"),
+    ("check_doc_citations", "scripts/check_doc_citations.py",
+     "Advisory: scan hand-written analysis/*.md docs for numeric claims that "
+     "no longer match any live provenance source (never fails the build -- "
+     "read its own output, many 'mismatches' are intentionally-preserved "
+     "historical values, not bugs)"),
 ]
 
 

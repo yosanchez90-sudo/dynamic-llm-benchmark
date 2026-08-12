@@ -16,13 +16,21 @@ where published, for both the canonical 9 and canonical+cross-family 13.
 
 **The single most informative number in that file** is its Table 2
 (cross-benchmark rank agreement, one row per metric, Holm-corrected as one
-12-test family): Dynamic↔ULT Kendall τ by metric is **updated 2026-08-07,
+12-test family): Dynamic↔ULT Kendall τ by metric is **updated 2026-08-12,
 n_models=9: exec_rate 0.423, baseline_pass_rate 0.889, conditional Mut@K
-0.333, coverage-adjusted Mut@K 0.944**. Three of the four metrics broadly
-agree with each other (0.4-0.9, all higher than the earlier n=7 reading);
-**conditional Mut@K is still the outlier, by a wide margin, among all
-four — not just relative to one alternative definition**, even though its
-own absolute value has moved up considerably (0.143→0.333). This still
+0.278, coverage-adjusted Mut@K 0.944** (conditional Mut@K corrected from a
+stale 0.333 — the only one of the four that moved when Gemini Pro
+Preview's Dynamic-L4 crawl completed 2026-08-11). **Sanitizer-sensitivity
+caveat, attached here since this is this document's most-cited headline
+figure**: `analysis/RQ5_SANITIZER_SENSITIVITY.md` finds coverage-adjusted
+Mut@K's τ=0.944 drops to **τ=0.889** if mechanically-repaired rows are
+excluded entirely (still significant, perm p=0.0003) — cite 0.889, not
+only 0.944, when the robustness of this specific number matters. Three of
+the four metrics broadly agree with each other (0.4-0.9, all higher than
+the earlier n=7 reading); **conditional Mut@K is still the outlier, by a
+wide margin, among all four — not just relative to one alternative
+definition**, even though its own absolute value has moved considerably
+(0.143→0.333→0.278, the last move 2026-08-11/12). This still
 reframes what Part 1 above reports: the comparatively low τ is not
 evidence that "Dynamic and ULT disagree" in some general sense — every
 other way of scoring the same underlying result rows agrees noticeably
@@ -103,22 +111,30 @@ regardless of what any external paper does.
 
 **The primary (Spearman/Kendall, per the pre-registered plan) result is much
 weaker than the score-level (Pearson) result suggests, and does not land in
-the pre-registered validity-supporting zone.** **Updated 2026-08-07**:
-n_models=9 (up from 7 — GPT-5/GPT-5-mini's ULT data landed, growing this
-from all models-with-ULT-data to the full canonical roster):
+the pre-registered validity-supporting zone.** **Updated 2026-08-12**
+(live rebuild, Gemini 3.1 Pro Preview's Dynamic-L4 crawl completing
+2026-08-11 moved this table's values down from the 2026-08-07 reading
+directly below — this is the current, authoritative reading; treat every
+other citation of this statistic elsewhere in this document as
+potentially describing an earlier snapshot, per `analysis/
+WORKBOOK_VERIFICATION.md` and `analysis/HYPOTHESIS_COVERAGE_AUDIT.md`'s
+"Open item"): n_models=9 (full canonical roster):
 
 | Statistic | Value | 95% bootstrap CI | Permutation p |
 |---|---|---|---|
-| Pearson r | 0.912 | [-0.478, 0.994] | 0.058 |
-| Spearman ρ | **0.350** | [-0.446, 1.000] | 0.355 |
-| Kendall τ | **0.333** | [-0.250, 1.000] | 0.254 |
+| Pearson r | 0.910 | [-0.512, 0.992] | 0.067 |
+| Spearman ρ | **0.333** | [-0.466, 0.944] | 0.383 |
+| Kendall τ | **0.278** | [-0.313, 0.875] | 0.350 |
 
 (Source: `analysis/RQ5_PROVENANCE.md`, regenerated `scripts/analyze_rq5.py`
-— re-check that file's timestamp before citing these exact numbers. The
-n=7 reading this table originally reported, Kendall τ=0.143, is preserved
-below as explicit historical record, not deleted — it is still the number
-several downstream sections' *qualitative reasoning* was built against, and
-those sections are being updated in turn, not silently orphaned.)
+— re-check that file's timestamp before citing these exact numbers.)
+
+**2026-08-07 reading (historical, preserved as the record several
+downstream sections' qualitative reasoning was originally built
+against — those sections have not all been individually updated to the
+2026-08-12 numbers above, see the note at the top of this cell)**:
+Pearson r=0.912, Spearman ρ=0.350, Kendall τ=0.333, n_models=9. Before
+that, the n=7 reading this table originally reported was Kendall τ=0.143.
 
 The Pearson number alone would read as a strong, encouraging correlation.
 It still isn't fully one at n_models=9 — the CI still includes strongly
@@ -174,25 +190,33 @@ low, not a higher, more flattering number to report instead.
 **(a) Difficulty composition.** Pooling L1-L4 compares a mixed-difficulty
 benchmark against ULT's CC>=8-only band. Tier-matching (Dynamic-L4 only,
 Comparison A's own convention) does not simply weaken the correlation.
-**Updated 2026-08-07, n_models=8** (up from 5, now that Gemini Pro
-Preview's partial L4 landing makes it computable here too): Pearson r
-flips to negative (r=-0.476, CI [-0.89, 0.97]) but Kendall τ — the
-pre-registered primary statistic — **collapses to exactly τ=0.000** (CI
-[-0.57, 0.91], perm p=1.0000, the least-informative possible permutation
-reading), not the negative τ=-0.200 the earlier n=5 reading showed. Read
-precisely: this is not "tier-matching makes Dynamic and ULT actively
-disagree" (that would need a negative rank correlation) — it is
-"tier-matching removes whatever positive rank signal pooling was
-contributing, leaving literally none," a distinction the smaller-sample
-negative τ obscured. Either reading still rules out the easy story
-("pooling just adds noise that tier-matching would fix") — the CC-matched
-comparison's rank agreement (τ=0.000) is no better than the pooled one
-(τ=0.333), if anything worse. The discrimination audit explains part of
-why pooling is misleading regardless of sign: L1 has a 0.017 range across
-all 9 models (everyone at ceiling) while L4 has a 0.371 range and ULT a
-0.494 range — pooling a near-zero-variance tier in with the genuinely
-discriminating ones dilutes whatever signal the hard tiers carry, in
-either direction.
+**Updated 2026-08-12, n_models=8** (unchanged count, but Gemini Pro
+Preview's Dynamic-L4 crawl completing 2026-08-11 moved its own L4 mean
+substantially, 38→292 defined rows): Pearson r=-0.452 (CI [-0.89, 0.99]),
+Kendall τ — the pre-registered primary statistic — is **0.143** (CI
+[-0.43, 1.00], perm p=0.7185). **This has itself moved from the
+2026-08-07 reading immediately below**, which found τ collapsing to
+exactly 0.000 — it no longer does; the CC-matched reading is now
+positive, matching the pooled reading's sign rather than diverging from
+it. Read precisely: this was never "tier-matching makes Dynamic and ULT
+actively disagree" (that would need a negative rank correlation) at any
+snapshot — it has moved from "removes whatever positive rank signal
+pooling was contributing, leaving literally none" (2026-08-07) to
+"recovers a small positive signal, similar in magnitude to the pooled
+reading" (current). The CC-matched comparison's rank agreement (τ=0.143)
+is now roughly on par with the pooled one (τ=0.278), not worse than it as
+the 2026-08-07 reading suggested. The discrimination audit explains part
+of why pooling is misleading regardless of sign: L1 has a 0.017 range
+across all 9 models (everyone at ceiling) while L4 has a 0.378 range and
+ULT a 0.494 range — pooling a near-zero-variance tier in with the
+genuinely discriminating ones dilutes whatever signal the hard tiers
+carry, in either direction.
+
+**2026-08-07 reading (historical)**: n_models=8 (up from 5, once Gemini
+Pro Preview's then-partial L4 landing first made this computable):
+Pearson r=-0.476 (CI [-0.89, 0.97]), Kendall τ=0.000 (CI [-0.57, 0.91],
+perm p=1.0000, the least-informative possible permutation reading) — not
+the negative τ=-0.200 the earlier n=5 reading showed.
 
 **(b) Conditioning/survivorship — the largest single factor found, and
 still the largest at n_models=9 (updated 2026-08-07).** Mut@K is only
@@ -288,12 +312,13 @@ mutation-operator catalogue, docstring-synonym variation) — validity is
 designed in, not discovered after the fact. The **bottom-up** argument (this
 RQ5/H6 analysis) is empirical: does the benchmark's ranking of models agree
 with independent measures of related capability? The answer here is mixed
-and instructive rather than simply confirmatory. **Updated 2026-08-07**:
+and instructive rather than simply confirmatory. **Updated 2026-08-12**:
 cross-provider rank agreement with ULT (n_models=9, spanning distinct
 architectures and providers) has moved off near-zero but still falls short
 of the pre-registered validity-supporting band on the pre-registered
-primary metric (Kendall τ=0.143→0.333), and that finding is reported as-is,
-not smoothed over. A post-hoc diagnosis, however, complicates a simple
+primary metric (Kendall τ=0.143→0.333→**0.278**, the last move
+2026-08-11/12 as Gemini Pro Preview's Dynamic-L4 crawl completed), and
+that finding is reported as-is, not smoothed over. A post-hoc diagnosis, however, complicates a simple
 "distinct capabilities" reading — with a sharper edge than it first
 appeared: most of the gap is attributable to how Mut@K conditions on
 baseline-pass rather than to Dynamic and ULT disagreeing about model
@@ -480,17 +505,21 @@ generic code-gen leaderboard, there would be no reason to run a separate
 test-generation benchmark at all"). Neither of this analysis's two headline
 numbers lands in the validity-supporting zone:
 
-- The pre-registered primary (conditional Mut@K, τ=0.333, updated
-  2026-08-07 from 0.143, and its cross-family echo τ=0.385) still falls
-  short of the 0.4-0.8 validity-supporting band — closer to it than the
-  original n=7 reading, but reported as still short, not re-litigated as
-  a win.
-- The coverage-adjusted score (τ=0.944 canonical, updated from 0.905;
-  0.897 cross-family internal, updated from 0.855; 0.905/0.714 cross-family
-  external, unaffected by this landing) sits at or above the
-  near-perfect end — by the pre-registered frame's own logic, **this is
-  the "redundant" zone, not the "validity-supporting" one.** Presenting
-  0.944 as an unqualified win misreads the frame that was written down
+- The pre-registered primary (conditional Mut@K, τ=0.278 as of
+  2026-08-12 — moved from 0.143 [2026-07-xx] to 0.333 [2026-08-07] to
+  0.278 [2026-08-11/12, Gemini Pro Preview's Dynamic-L4 crawl completing]
+  — and its cross-family echo τ=0.359, similarly down from 0.385) still
+  falls short of the 0.4-0.8 validity-supporting band — closer to it than
+  the original n=7 reading, but reported as still short, not re-litigated
+  as a win.
+- The coverage-adjusted score (τ=0.944 canonical, updated from 0.905 —
+  and itself τ=0.889 if mechanically-repaired rows are excluded, per the
+  sanitizer-sensitivity caveat above; 0.897 cross-family internal, updated
+  from 0.855; 0.905/0.714 cross-family external, unaffected by this
+  landing) sits at or above the near-perfect end — by the pre-registered
+  frame's own logic, **this is the "redundant" zone, not the
+  "validity-supporting" one**, under either the 0.944 or the 0.889
+  reading. Presenting 0.944 as an unqualified win misreads the frame that was written down
   specifically to prevent exactly that reading. Taken at face value, a
   benchmark whose coverage-adjusted score predicts a generic code-gen
   leaderboard this well is not adding much test-generation-specific
@@ -569,6 +598,21 @@ this means StarCoder2's results are not from a byte-identical prompt
 structure to the other candidates, a genuine (small, disclosed) methodological
 asymmetry within the cross-family cohort itself, separate from the
 published-benchmark comparison above.
+
+**Thin-cell inputs to the cross-family n=7 correlation itself (added
+2026-08-12 — this is the caveat missing from this section before this
+pass, per `analysis/WORKBOOK_VERIFICATION.md`).** 2 of the 7 cross-family
+data points feeding every n=7 correlation cited in this document
+(Dynamic↔ULT, Dynamic↔BigCodeBench, ULT↔BigCodeBench, both raw and
+coverage-adjusted) are individually thin-cell by this project's own
+n_defined<20 threshold: **CodeLlama-13B** (ULT n_defined=8) and
+**Mistral-7B** (Dynamic n_defined=5, ULT n_defined=1 — see the floor
+verification immediately below for why Mistral's own count is this low).
+Their own per-model means are shakier point estimates than the other 5
+candidates', which widens several of this document's n=7 correlation
+CIs without necessarily changing the point estimate — the caveat should
+travel with any citation of an n=7 cross-family figure, not just the ones
+in this section.
 
 **Mistral-7B-Instruct-v0.3 floor verification (2026-07-28).** Its full-scale
 Dynamic run landed a baseline_pass_rate of just 1.7% (5/300) — by far the

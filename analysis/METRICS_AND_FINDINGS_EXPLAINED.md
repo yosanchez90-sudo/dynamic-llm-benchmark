@@ -689,18 +689,26 @@ is itself worth restating here: most canonical models cluster within a few
 percentage points of each other, so Kendall τ is disproportionately
 sensitive to noise the score-level SD doesn't reflect at all.
 
-**How this could be attacked**: N=4, not the originally-planned N=5 (cut
-2026-07-15 for cost reasons, PROJECT_BRIEF.md §11 §8) — a critic could ask
-whether the missing 5th instantiation would move the τ=0.667 point
-estimate meaningfully; the project's own record shows this exact number
-has already moved three times — 0.746 (pre loader-dedup-fix) to 0.675
-(post-dedup-fix) to 0.635 (post canonical-model-filter fix), all three
-purely from bug fixes with no new data, then 0.635 to 0.667 (2026-08-07,
-this time from genuine new data — GPT-5/GPT-5-mini and Claude Sonnet/Haiku
-reaching the N=5 target) — a legitimate basis for treating any single
-point estimate here cautiously, and a useful illustration that not every
-movement in this project's numbers is a bug; `analysis/STABILITY_INTERPRETATION.md`'s
-correction history distinguishes the two kinds explicitly.
+**This was an open question as of 2026-08-07; it has since been asked and
+answered directly, not just anticipated.** N=4, not the originally-planned
+N=5 (cut 2026-07-15 for cost reasons, PROJECT_BRIEF.md §11 §8) — the
+question was whether the missing 5th instantiation would move the mean
+pairwise τ point estimate meaningfully. The project's own record shows
+this number has now moved **four** times, not three: 0.746 (pre
+loader-dedup-fix) → 0.675 (post-dedup-fix) → 0.635 (post
+canonical-model-filter fix) — the first three purely from bug fixes with
+no new data — then 0.635 → 0.667 (2026-08-07, GPT-5/GPT-5-mini and Claude
+Sonnet/Haiku reaching N=5), then **0.667 → 0.583 (2026-08-11/12, Gemini
+Pro Preview's Dynamic-L4 crawl completing)**, the second data-landing
+move, continuing downward. Closing the remaining N=5 gap (both Gemini
+models' 5th instantiation) was quantified 2026-08-12 at $9.60 and
+declined, precisely because this history predicts the same thing would
+happen again: `analysis/RQ5_DIAGNOSTICS.md`'s noise-floor audit shows
+several models clustered within a pooled spread smaller than their own
+measurement noise, so more data from models already in that cluster is
+expected to perturb rankings further, not resolve them.
+`analysis/STABILITY_INTERPRETATION.md`'s correction history has the full,
+labelled sequence and the N=5-decline decision record.
 
 ### 3. The tier-discrimination gradient — the benchmark's easy tier cannot discriminate models at all
 
@@ -767,7 +775,10 @@ finding, not a formal hypothesis test.
 
 **Claim**: almost all of the recovered Dynamic↔ULT agreement under
 `coverage_adjusted` (τ=0.944, updated 2026-08-07 from 0.905 — see finding
-#6) comes from models agreeing on *whether they can produce a passing
+#6; **drops to τ=0.889 if mechanically-repaired rows are excluded
+entirely**, `analysis/RQ5_SANITIZER_SENSITIVITY.md`, still significant
+perm p=0.0003 — cite 0.889 alongside 0.944 when this number's robustness
+matters) comes from models agreeing on *whether they can produce a passing
 suite at all*, not from agreeing on *how good the tests are once they do*.
 
 **Evidence** (`analysis/RQ5_DIAGNOSTICS.md`, updated 2026-08-07):
@@ -976,12 +987,15 @@ whether more DATA or more ANALYSIS would be needed to support them.
   existed; testing whether a different boundary choice changes the L1
   near-ceiling effect is an analysis that hasn't been run, not data that's
   missing. Unaffected by the 2026-08-07 landing.
-- **"The noise-floor finding accounts for all of τ=0.333"** (updated
-  2026-08-07 from τ=0.143) — it currently explains 6 of the 9 canonical
-  models involved (up from 4 of 7 — the unresolvable chain grew with the
-  new data, finding #4), not all of them; a fuller resolvability analysis
-  across every pair (not just the longest unresolvable run) would sharpen
-  this.
+- **"The noise-floor finding accounts for all of τ=0.278"** (moved
+  2026-08-07 from τ=0.143 to τ=0.333, then again 2026-08-12 to **τ=0.278**
+  as Gemini Pro Preview's Dynamic-L4 crawl completed — see
+  `analysis/WORKBOOK_VERIFICATION.md`) — it currently explains 5 of the 9
+  canonical models involved (down from 6, live rebuild — `analysis/
+  RQ5_DIAGNOSTICS.md` sec 2b's unresolvable chain is
+  gpt-5-mini→claude-haiku→Qwen-32B→claude-sonnet→gemini-flash-lite), not
+  all of them; a fuller resolvability analysis across every pair (not just
+  the longest unresolvable run) would sharpen this.
 - **"ULT's own harness would reproduce this project's 8.4% ground-truth
   figure"** (finding #7) — this project's own scoring code was used
   throughout; cross-checking against ULT's own published evaluation

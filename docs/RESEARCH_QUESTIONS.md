@@ -1,7 +1,7 @@
 # Research questions workbook — markdown mirror
 
 Generated from `docs/Research_questions.xlsx` by `scripts/build_research_questions_md.py`.
-Git commit at generation time: c2c3261
+Git commit at generation time: 2c191c0
 
 The xlsx is the source of truth for formatting; this file exists so the
 workbook's content is diffable and greppable in git. Do not hand-edit —
@@ -100,5 +100,5 @@ edit the xlsx and regenerate.
 | Statistics | Fisher z-test | Test for whether two correlations differ significantly. | NOT required by the approved H6 - it appeared only in the unapproved expanded draft. |
 | Quality flags | thin cell | A model x benchmark cell with n_defined < 20. | Its Mut@K is a shaky point estimate however respectable the number looks. |
 | Quality flags | floor effect | The model cannot clear a gate at all, so the metric sits at its minimum before and after any intervention. | Qwen 1.5B has 0 defined rows at Dynamic-L4. |
-| Quality flags | noise floor | When the gap between two models is smaller than their own between-instantiation SDs. | Six adjacent models share a pooled spread of 0.007 - they cannot be reliably rank-ordered. |
+| Quality flags | noise floor | When the gap between two models is smaller than their own between-instantiation SDs. | Five adjacent models share a pooled spread of 0.005 (corrected 2026-08-12 from a stale 'six... 0.007', which predated Gemini Pro Preview's Dynamic-L4 crawl completing 2026-08-11) - they cannot be reliably rank-ordered. |
 
