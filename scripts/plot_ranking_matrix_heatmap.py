@@ -32,7 +32,14 @@ METRIC_LABELS = {
     "conditional_mutk": "conditional Mut@K", "coverage_adjusted": "coverage-adjusted Mut@K",
 }
 PAIRS = ["Dynamic<->ULT", "Dynamic<->BigCodeBench", "ULT<->BigCodeBench"]
-PAIR_LABELS = ["Dynamic\n↔ ULT", "Dynamic\n↔ BigCodeBench", "ULT\n↔ BigCodeBench"]
+# "(pooled)" is load-bearing, not decorative: the Dynamic side of every pair
+# here is pooled across all four CC tiers, not the CC-matched Dynamic-L4
+# slice Comparison A uses -- see analysis/TIER_SYMMETRY_AUDIT.md's reverse
+# check (defect #1). Every other RQ5 figure in this project states this in
+# its axis label; this one didn't, and a reader who only ever sees this
+# figure standalone (e.g. pasted into a chapter with its own caption) had no
+# way to know from the artifact alone.
+PAIR_LABELS = ["Dynamic (pooled)\n↔ ULT", "Dynamic (pooled)\n↔ BigCodeBench", "ULT\n↔ BigCodeBench"]
 
 
 def _heatmap_panel(ax, sub_df, scope_label, cmap, norm):
