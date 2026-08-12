@@ -79,6 +79,23 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   should be estimated from the AI Studio dashboard's actual per-model
   spend, not from this project's own pre-fix `cost_usd` sums, which
   undercounted Pro Preview specifically by roughly 4x.
+- **Permanent backup**: `/users/40492566/dissertation_backups/20260812_preflight`
+  (home filesystem, not scratch — scratch is purged after 3 months of
+  inactivity, home is not). Created 2026-08-12 as a write-up-phase
+  pre-flight item. Contents: all 8 LoRA adapter final checkpoints
+  (`data/finetune/*/adapter_final`, 3.7G — deliberately excludes the much
+  larger per-run training-checkpoint/optimizer-state trees, 26-56G each,
+  not needed for reproducing any reported result), the full `data/results/`
+  and `data/batches/` trees, the three `data/raw/ult_plt/*manifest*.json`
+  files plus `data/results/finetune_rebuild/shards/manifests/*.csv`, and
+  the full `analysis/` tree (151 files). Total 3.9G. Verified 2026-08-12:
+  file counts match source exactly for every category (256/256 results,
+  41/41 batches, 151/151 analysis, 80/80 adapter files); checksums spot-
+  checked on 3 random files, all identical. Excludes base-model weights
+  and raw JSONL result files' own git-tracked provenance/interpretation
+  siblings (already in git history, not scratch-only). Not automated —
+  a one-off snapshot; re-run manually before any future action that could
+  touch these paths destructively.
 - HuggingFace cache lives on scratch, not home (set HF_HOME accordingly).
 - Documentation and manifest files under `data/` are force-added (`git add -f`) —
   the blanket `/data/` gitignore (generated batches/checkpoints/results) does not

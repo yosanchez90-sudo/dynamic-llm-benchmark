@@ -302,6 +302,34 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
   funds it). GPT-5/gpt-5-mini backfill deliberately held back from this account until
   separately funded — see the N=4 entry below for what's running now (Anthropic +
   Gemini only).
+- **Gate cut-priority items #1 and #3 invoked, formally recorded 2026-08-12
+  (decisions themselves predate this entry — recorded here for completeness,
+  since only item #4 below had previously received its own dated §11
+  paragraph despite all three appearing in the workbook's own experiment-
+  status column as CUT):**
+  - **#1, K=5 sensitivity sweep — CUT, never run.** The 60-template corpus
+    would have been re-evaluated at K=5 attempts/problem (Pass@K-style) as
+    a robustness check on the headline K=1 result. Dropped first per §8's
+    own stated order; no run of any kind exists under `prompting_condition`
+    or `K=5` anywhere in `data/results/` (confirmed —
+    `scripts/coverage_matrix.py`'s own DEFERRED lane reports zero K=5 rows
+    every time it has been run this project). §12's glossary already
+    states this in passing ("a K=5 sensitivity sweep was cut (§8) and
+    never run"); this is that same fact given its own dated record.
+  - **#3, one-shot prompting sweep — CUT, never run.** The same corpus
+    would have been re-evaluated with a one-shot (single in-context
+    example) prompt variant alongside the headline zero-shot condition.
+    Dropped third per §8's order, after item #2 (dropping two of the
+    LLMs) was never invoked at all — the full 9-model canonical panel was
+    completed, so item #2 was skipped over, not exhausted. No
+    `prompting_condition=one_shot` rows exist anywhere in `data/results/`.
+  - **Net effect on scope**: of §8's four-item cut-priority list, items #1
+    and #3 were fully invoked (zero-cost, nothing built or run under
+    either condition), item #4 was partially invoked (N=4 achieved instead
+    of the N=5 target, not a full drop — see the dated entry immediately
+    below), and item #2 was never invoked (all 9 canonical models
+    completed). Every one of PROJECT_BRIEF's RQs is preserved regardless,
+    per §8's own design constraint on the cut order.
 - **Instantiation count reduced 5 -> 4 (2026-07-15):** invokes gate cut-priority item
   #4 ("the fifth dynamic instantiation") from §8 — pre-registered before this
   decision, not a post-hoc rationalization. Driven by real cost data collected during
@@ -461,6 +489,31 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
   excluded from RQ1's Holm-Bonferroni family — `docs/
   Approved_Hypotheses.md` names it verbatim as H1's own second test; RQ1's
   family is now the two-test family it always should have been.
+- **Experimental freeze declared 2026-08-12.** Data collection for the
+  main study is closed; the write-up phase (§8's final gated phase)
+  proceeds on the data as it stood at this date, not as a moving target.
+  Coverage at freeze (`scripts/coverage_matrix.py`, live, zero active or
+  pending SLURM jobs at the time of the check): **172 of 180
+  model×tier×instantiation cells complete (95.6%)**; every lane
+  (RUNNABLE NOW BY US and SUPERVISOR-GATED) reports zero gaps except the
+  one below. The sole remaining gap — both Gemini models' 5th
+  instantiation, 600 problems, 8 cells — was quantified at **$9.60**
+  (Gemini Pro Preview $9.34, Flash-Lite $0.27,
+  `scripts/estimate_cost.py --target-instantiations 5`) with a 4-5 hour to
+  2-day completion window, and **declined** the same day: H5's THRESHOLD
+  NOT MET verdict is unchanged at any plausible resulting τ, and the
+  noise-floor mechanism (`analysis/RQ5_DIAGNOSTICS.md` sec 2b — several
+  canonical models cluster within a pooled spread smaller than their own
+  between-instantiation SDs) predicts more data would move τ further
+  down, not up, repeating the pattern already observed when τ fell from
+  0.667 to 0.583 as Gemini Pro Preview's L4 data landed. Full decision
+  record: `analysis/OPEN_ITEMS.md`, `analysis/HYPOTHESIS_DEVIATIONS.md`'s
+  H5 entry. A permanent backup of adapters, results, batches, manifests,
+  and `analysis/` as they stood at freeze is recorded in `CLAUDE.md`'s
+  hard rules, path `/users/40492566/dissertation_backups/20260812_preflight`.
+  No further Dynamic/ULT/PLT data collection is expected before
+  submission; any exception to this freeze should update this entry, not
+  silently resume collection.
 
 ---
 
