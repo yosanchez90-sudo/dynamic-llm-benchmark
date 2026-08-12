@@ -128,6 +128,7 @@ DOC_FILES = {
     "metrics_and_findings_explained": "analysis/METRICS_AND_FINDINGS_EXPLAINED.md",
     "workbook_verification": "analysis/WORKBOOK_VERIFICATION.md",
     "paper_values": "paper/values.tex",
+    "paper_number_audit": "paper/NUMBER_AUDIT.md",
 }
 # paper/sections/*.tex are added dynamically in main() (the file set changes
 # as the paper is drafted) rather than hardcoded here -- see _paper_section_docs().
