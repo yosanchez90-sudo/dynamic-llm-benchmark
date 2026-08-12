@@ -53,43 +53,59 @@ ANALYSIS = ROOT / "analysis"
 
 # Reference sources: auto-regenerated, safe to treat as "what the pipeline
 # currently says" -- re-run scripts/build_thesis_assets.py before trusting
-# this checker's output as current.
+# this checker's output as current. Paths are ROOT-relative.
 REFERENCE_FILES = [
-    "COMPARISON_PROVENANCE.md",
-    "comparison_rq1_holm.csv",
-    "COMPARISON_C_PROVENANCE.md",
-    "RQ5_PROVENANCE.md",
-    "RQ5_DIAGNOSTICS.md",
-    "RQ5_CROSS_FAMILY_PROVENANCE.md",
-    "RQ5_SANITIZER_SENSITIVITY.md",
-    "STABILITY.md",
-    "H3_TIER_GRADIENT_PROVENANCE.md",
-    "RANKING_MATRIX.md",
-    "comparison_a_paired.csv",
-    "comparison_a_coverage.csv",
-    "comparison_a_coverage_adjusted.csv",
-    "comparison_b_coverage.csv",
-    "comparison_b_coverage_adjusted.csv",
-    "rq5_model_ranking.csv",
-    "rq5_cross_family_model_ranking.csv",
-    "rq5_correlations.csv",
-    "rq5_cross_family_correlations.csv",
-    "stability_kendall.csv",
+    "analysis/COMPARISON_PROVENANCE.md",
+    "analysis/comparison_rq1_holm.csv",
+    "analysis/COMPARISON_C_PROVENANCE.md",
+    "analysis/RQ5_PROVENANCE.md",
+    "analysis/RQ5_DIAGNOSTICS.md",
+    "analysis/RQ5_CROSS_FAMILY_PROVENANCE.md",
+    "analysis/RQ5_SANITIZER_SENSITIVITY.md",
+    "analysis/STABILITY.md",
+    "analysis/H3_TIER_GRADIENT_PROVENANCE.md",
+    "analysis/RANKING_MATRIX.md",
+    "analysis/comparison_a_paired.csv",
+    "analysis/comparison_a_coverage.csv",
+    "analysis/comparison_a_coverage_adjusted.csv",
+    "analysis/comparison_b_coverage.csv",
+    "analysis/comparison_b_coverage_adjusted.csv",
+    "analysis/comparison_c_did.csv",
+    "analysis/comparison_c_gradient.csv",
+    "analysis/comparison_c_mutk.csv",
+    "analysis/rq5_model_ranking.csv",
+    "analysis/rq5_cross_family_model_ranking.csv",
+    "analysis/rq5_correlations.csv",
+    "analysis/rq5_cross_family_correlations.csv",
+    "analysis/rq5_sanitizer_sensitivity.csv",
+    "analysis/stability_kendall.csv",
+    "analysis/stability_stablemut.csv",
+    "analysis/h3_tier_gradient_all_tier.csv",
+    "analysis/h3_tier_gradient_l2l4.csv",
+    # paper/values.tex is itself generated straight from the analysis/*.csv
+    # files above (scripts/build_paper_values.py) -- included as a reference
+    # source too so its own macros count as "live" for any OTHER paper/
+    # source that might cite the same figure a second time in different form.
+    "paper/values.tex",
 ]
 
-# Hand-written docs to check -- key -> filename, so --only can target one.
+# Hand-written docs to check -- key -> ROOT-relative path, so --only can
+# target one.
 DOC_FILES = {
-    "comparison_a_interpretation": "COMPARISON_A_INTERPRETATION.md",
-    "comparison_c_interpretation": "COMPARISON_C_INTERPRETATION.md",
-    "rq5_interpretation": "RQ5_INTERPRETATION.md",
-    "stability_interpretation": "STABILITY_INTERPRETATION.md",
-    "h3_interpretation": "H3_INTERPRETATION.md",
-    "hypothesis_deviations": "HYPOTHESIS_DEVIATIONS.md",
-    "hypothesis_coverage_audit": "HYPOTHESIS_COVERAGE_AUDIT.md",
-    "open_items": "OPEN_ITEMS.md",
-    "metrics_and_findings_explained": "METRICS_AND_FINDINGS_EXPLAINED.md",
-    "workbook_verification": "WORKBOOK_VERIFICATION.md",
+    "comparison_a_interpretation": "analysis/COMPARISON_A_INTERPRETATION.md",
+    "comparison_c_interpretation": "analysis/COMPARISON_C_INTERPRETATION.md",
+    "rq5_interpretation": "analysis/RQ5_INTERPRETATION.md",
+    "stability_interpretation": "analysis/STABILITY_INTERPRETATION.md",
+    "h3_interpretation": "analysis/H3_INTERPRETATION.md",
+    "hypothesis_deviations": "analysis/HYPOTHESIS_DEVIATIONS.md",
+    "hypothesis_coverage_audit": "analysis/HYPOTHESIS_COVERAGE_AUDIT.md",
+    "open_items": "analysis/OPEN_ITEMS.md",
+    "metrics_and_findings_explained": "analysis/METRICS_AND_FINDINGS_EXPLAINED.md",
+    "workbook_verification": "analysis/WORKBOOK_VERIFICATION.md",
+    "paper_values": "paper/values.tex",
 }
+# paper/sections/*.tex are added dynamically in main() (the file set changes
+# as the paper is drafted) rather than hardcoded here -- see _paper_section_docs().
 
 # (type, tolerance, regex) -- regex must have exactly one capturing group,
 # the numeric value (sign included where relevant).
@@ -381,13 +397,94 @@ def _extract_pandas_tables(path: Path, text: str) -> list[Claim]:
     return claims
 
 
+# LaTeX \newcommand macro name suffix -> claim kind, longest suffix first
+# so e.g. "...NDefined" wins over the shorter "...N" it also ends with.
+# Matches build_paper_values.py's own naming convention (\Num<Hyp><Quantity>,
+# digits spelled out since LaTeX macro names can't contain them).
+MACRO_SUFFIX_KIND = [
+    ("NDefined", "n_defined"),
+    ("EffectR", "effect_r"),
+    ("Tau", "kendall_tau"),
+    ("Rho", "spearman_rho"),
+    ("Gain", "pp"),
+    ("Did", "pp"),
+    ("HolmP", "p_value"),
+    ("P", "p_value"),
+    ("N", "n_models"),
+]
+
+_LATEX_MACRO_RE = re.compile(r"\\newcommand\{\\(\w+)\}\{([^}]*)\}")
+
+
+def _extract_latex_macros(path: Path, text: str) -> list[Claim]:
+    """Parse \\newcommand{\\Name}{value} definitions (paper/values.tex's own
+    format), inferring each macro's statistic kind from its name suffix.
+    Values that aren't a bare int/float (CI ranges, SD bands, etc.) are
+    skipped -- not every macro maps to a single checkable number."""
+    claims: list[Claim] = []
+    for line_no, line in enumerate(text.splitlines(), start=1):
+        m = _LATEX_MACRO_RE.search(line)
+        if not m:
+            continue
+        macro_name, raw_value = m.group(1), m.group(2).strip()
+        if not re.match(r"^-?\d+\.?\d*$", raw_value):
+            continue  # CI/range/count-pair strings -- not a single value
+        value = float(raw_value)
+        kind = next((k for suf, k in MACRO_SUFFIX_KIND if macro_name.endswith(suf)), None)
+        if kind is None:
+            continue
+        if kind == "pp":
+            value = round(value, 4)  # already 0-100 scale, matches PP_SCALE_COLUMNS' own scaling
+        claims.append(Claim(kind, value, str(path.relative_to(ROOT)), line_no,
+                             f"\\{macro_name}={raw_value}"))
+    return claims
+
+
 def _extract(path: Path) -> list[Claim]:
     try:
         text = path.read_text()
     except FileNotFoundError:
         return []
+    if path.suffix == ".tex":
+        return _extract_latex_macros(path, text)
     return (_extract_prose(path, text) + _extract_tables(path, text)
             + _extract_pandas_tables(path, text))
+
+
+# paper/sections/*.tex prose must cite every result value via a \NumXXX
+# macro (defined once in paper/values.tex, read live from analysis/*.csv),
+# never as a bare literal -- otherwise a re-run after new data lands
+# silently leaves the old, now-wrong number sitting in the prose. Distinct
+# check from the MATCH/MISMATCH value-verification above: this doesn't ask
+# "does this number match the live source", it asks "does a literal number
+# exist here at all, when it should be a macro reference instead".
+_TEX_COMMAND_RE = re.compile(r"\\[a-zA-Z]+\*?(?:\[[^\]]*\])?(?:\{[^{}]*\})*")
+_BARE_NUMBER_RE = re.compile(r"(?<![\w\\])(-?\d+\.\d+|-?\d+pp\b|-?\d+%)")
+
+
+def find_hand_typed_numbers(path: Path) -> list[tuple[int, str]]:
+    """Return [(line_no, matched_text)] for numeric literals in prose that
+    are not part of a LaTeX command (\\NumXXX{}, \\cite{}, \\ref{}, a
+    percent-escape \\%, etc.) and are not inside a comment."""
+    try:
+        text = path.read_text()
+    except FileNotFoundError:
+        return []
+    findings: list[tuple[int, str]] = []
+    for line_no, line in enumerate(text.splitlines(), start=1):
+        code_part = line.split("%", 1)[0] if not line.lstrip().startswith("%") else ""
+        if not code_part.strip():
+            continue
+        # Blank out every LaTeX command (and its brace groups) first, so a
+        # number inside \cite{chen2021codex} or \ref{fig:onset} or a macro
+        # NAME (macro names are letters-only, but this also strips the
+        # command's own argument braces where a real citation year/label
+        # number might otherwise false-positive) never reaches the bare-
+        # number regex.
+        stripped = _TEX_COMMAND_RE.sub(" ", code_part)
+        for m in _BARE_NUMBER_RE.finditer(stripped):
+            findings.append((line_no, m.group(0)))
+    return findings
 
 
 def _tolerance(kind: str, value: float = 0.0) -> float:
@@ -409,7 +506,7 @@ def _tolerance(kind: str, value: float = 0.0) -> float:
 def build_reference_index() -> dict[str, list[Claim]]:
     index: dict[str, list[Claim]] = {}
     for fname in REFERENCE_FILES:
-        for claim in _extract(ANALYSIS / fname):
+        for claim in _extract(ROOT / fname):
             index.setdefault(claim.kind, []).append(claim)
     return index
 
@@ -418,7 +515,7 @@ def check_doc(doc_key: str, reference_index: dict[str, list[Claim]],
               allowlist: list[AllowlistEntry] | None = None) -> list[tuple[Claim, str, list[Claim]]]:
     """Return [(claim, verdict, closest_matches)] for one doc."""
     fname = DOC_FILES[doc_key]
-    path = ANALYSIS / fname
+    path = ROOT / fname
     marked = _marked_lines(path.read_text()) if path.exists() else set()
     allowlist = allowlist if allowlist is not None else _load_allowlist()
     results = []
@@ -446,7 +543,21 @@ def check_doc(doc_key: str, reference_index: dict[str, list[Claim]],
     return results
 
 
+def _discover_paper_sections() -> None:
+    """Add every paper/sections/*.tex file to DOC_FILES under a
+    paper_section_<name> key -- called before argparse so --list/--only see
+    them. The file set changes as the paper is drafted; hardcoding it would
+    go stale the moment a new section file is added."""
+    sections_dir = ROOT / "paper" / "sections"
+    if not sections_dir.exists():
+        return
+    for tex_path in sorted(sections_dir.glob("*.tex")):
+        key = f"paper_section_{tex_path.stem}"
+        DOC_FILES[key] = str(tex_path.relative_to(ROOT))
+
+
 def main() -> None:
+    _discover_paper_sections()
     parser = argparse.ArgumentParser(description=__doc__,
                                       formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--only", nargs="+", choices=list(DOC_FILES),
@@ -493,9 +604,28 @@ def main() -> None:
             print(f"      closest live value(s): {cand_str}")
         print()
 
+    # Hand-typed-number lint: paper/sections/*.tex only -- values.tex is
+    # exempt (it's the macro-DEFINITION file, its right-hand sides are
+    # supposed to be literals).
+    hand_typed_total = 0
+    for key in selected:
+        fname = DOC_FILES[key]
+        if not key.startswith("paper_section_"):
+            continue
+        findings = find_hand_typed_numbers(ROOT / fname)
+        if findings:
+            print(f"=== {fname} -- {len(findings)} hand-typed number(s), "
+                  f"should be \\NumXXX macro references ===")
+            for line_no, text in findings:
+                print(f"  [HAND_TYPED] {fname}:{line_no}  \"{text}\"")
+            print()
+        hand_typed_total += len(findings)
+
     print("=" * 70)
     print(f"TOTAL: {totals['MATCH']} match, {totals['MISMATCH']} mismatch, "
-          f"{totals['UNVERIFIABLE']} unverifiable, {totals['SUPPRESSED']} suppressed")
+          f"{totals['UNVERIFIABLE']} unverifiable, {totals['SUPPRESSED']} suppressed, "
+          f"{hand_typed_total} hand-typed")
+    totals["MISMATCH"] += hand_typed_total
     if totals["MISMATCH"] == 0:
         print("GATE: PASS -- zero unsuppressed mismatches. Any UNVERIFIABLE "
               "entries above are unconfirmed, not known-wrong; triage them "

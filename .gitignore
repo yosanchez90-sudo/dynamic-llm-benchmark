@@ -47,3 +47,16 @@ wandb/
 analysis/*.csv
 analysis/*.xlsx
 analysis/figures/
+
+# Regenerable paper build outputs — references.yaml (source of truth) and
+# sections/*.tex (hand-written) are NOT covered by this and are tracked
+# normally. `make` regenerates everything below from source before compiling.
+paper/references.bib
+paper/values.tex
+paper/*.pdf
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.toc

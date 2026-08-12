@@ -70,6 +70,11 @@ STEPS: list[tuple[str, str, str]] = [
      "Collapse vs survival figure (raw vs coverage-adjusted Mut@K at n=3 vs n=7)"),
     ("research_questions_md", "scripts/build_research_questions_md.py",
      "docs/RESEARCH_QUESTIONS.md: diffable markdown mirror of docs/Research_questions.xlsx"),
+    ("paper_bib", "scripts/build_paper_bib.py",
+     "paper/references.bib: generated from paper/references.yaml"),
+    ("paper_values", "scripts/build_paper_values.py",
+     "paper/values.tex: every quantitative value the paper cites, as LaTeX "
+     "macros read live from analysis/*.csv"),
     ("check_doc_citations", "scripts/check_doc_citations.py",
      "GATE: scan hand-written analysis/*.md docs for numeric claims that no "
      "longer match any live provenance source. Fails the build (nonzero "
