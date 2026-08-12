@@ -153,7 +153,7 @@ depends on the Holm-Bonferroni correction below**, since H1 Test 2 is a
 member of a real, two-test correctable family, not a standalone
 observational check.
 
-## Multiple-comparisons correction for RQ1 (H1 Test 1 + H1 Test 2) — recomputed 2026-08-12
+## Multiple-comparisons correction for RQ1 (H1 Test 1 + H1 Test 2)
 
 PROJECT_BRIEF.md §3.1 requires Holm-Bonferroni correction "within each RQ
 family." **RQ1's family is H1's two tests** — Test 1 is this comparison
@@ -163,20 +163,22 @@ family." **RQ1's family is H1's two tests** — Test 1 is this comparison
 bootstrap CI and **never computes a p-value** (`src/Contamination/
 did.py::compute_did`), consistent with §3.1's own stated philosophy
 ("effect sizes with CIs are primary; p-values support") — it contributes
-nothing to this family. **This corrects an earlier version of this
-section**, which treated Comparison B as outside PROJECT_BRIEF's six
-hypotheses and therefore RQ1's family as size one (a stated no-op). That
-was wrong: the approved H1 names ULT-vs-PLT as its own second test, so
-the family holds two correctable p-values, one per conditioning:
+nothing to this family.
+
+**Computed in the pipeline, not by hand**: `scripts/build_comparison_tables.py`
+applies `src/Analysis/multiple_comparisons.py::holm_bonferroni` to
+{H1 Test 1, H1 Test 2} separately per conditioning, writing
+`analysis/comparison_rq1_holm.csv` — re-run
+`scripts/build_thesis_assets.py --only comparison_ab` any time the
+underlying p-values move, rather than re-deriving the adjustment by hand.
+Current values (`analysis/comparison_rq1_holm.csv` / `COMPARISON_PROVENANCE.md`'s
+"RQ1 Holm-Bonferroni correction" section):
 
 | Conditioning | H1 Test 1 raw p | H1 Test 2 raw p | Holm-adjusted (Test 1, Test 2) | Either survive at α=0.05? |
 |---|---|---|---|---|
-| Raw / pre-registered primary | 0.7422 | 0.0391 | 0.7422, **0.0782** | **No** — Test 2's own primary reading no longer clears correction |
-| Thin-cell-filtered (robustness) | 0.0312 | 0.0312 | 0.0624, 0.0624 | No — both readings were individually <0.05 raw, neither survives once corrected as a 2-test family |
+| Raw / pre-registered primary | 0.7422 | 0.0391 | 0.7422, **0.0781** | **No** — Test 2's own primary reading no longer clears correction |
+| Thin-cell-filtered (robustness) | 0.0312 | 0.0312 | 0.0625, 0.0625 | No — both readings were individually <0.05 raw, neither survives once corrected as a 2-test family |
 | Definition-matched (co-primary) | 0.0391 | 0.0078 | **0.0391, 0.0156** | **Yes — both** |
-
-(Holm-Bonferroni, m=2: sort ascending, adjusted p(1) = 2×p(1), adjusted
-p(2) = max(adjusted p(1), 1×p(2)), non-decreasing by construction.)
 
 **Which conditioning is "the" pre-registered family, corrected**: the raw
 reading is each test's own pre-registered primary; the definition-matched

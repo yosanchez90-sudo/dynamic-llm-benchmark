@@ -56,6 +56,7 @@ ANALYSIS = ROOT / "analysis"
 # this checker's output as current.
 REFERENCE_FILES = [
     "COMPARISON_PROVENANCE.md",
+    "comparison_rq1_holm.csv",
     "COMPARISON_C_PROVENANCE.md",
     "RQ5_PROVENANCE.md",
     "RQ5_DIAGNOSTICS.md",

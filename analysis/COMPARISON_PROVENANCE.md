@@ -1,7 +1,7 @@
 # Comparison A/B generation provenance
 
-Generated: 2026-08-12T00:05:32.448598+00:00
-Git commit: ce774c2
+Generated: 2026-08-12T12:58:32.240266+00:00
+Git commit: 61cd4f7
 
 Sources: data/results/dynamic/*.jsonl (tier=L4 only for Comparison A),
 data/results/ult/*.jsonl, data/results/plt/*.jsonl.
@@ -13,11 +13,12 @@ absent from comparison_a_paired.csv): ['Qwen__Qwen2.5-Coder-1.5B-Instruct']
 
 **Interpretation lives in `analysis/COMPARISON_A_INTERPRETATION.md`** — see
 that file's "Multiple-comparisons correction for RQ1" section before
-quoting any p-value here as "significant": H1's own pre-registered family
-is exactly one test (this comparison's raw/unfiltered Wilcoxon), for which
-Holm-Bonferroni is a stated no-op; the thin-filtered/definition-matched
-rows below are robustness variants of that same question, not separate
-corrected hypotheses.
+quoting any p-value here as "significant": RQ1's correctable family is
+this comparison (H1 Test 1) plus Comparison B (H1 Test 2), corrected
+separately per conditioning — see "RQ1 Holm-Bonferroni correction" below
+for the live numbers. The thin-filtered/definition-matched rows are three
+independently-corrected conditionings, not robustness variants excluded
+from correction.
 
 ## Comparison B (ULT vs PLT) — 9/9 models
 Missing: none
@@ -167,25 +168,30 @@ definition-matched/coverage-adjusted=0.956. All three share the same sign -- a d
 narrative verdict on both comparisons together (this block reports the raw
 numbers; that doc reports the reasoned conclusion).
 
-## Multiple-comparisons correction — not applied in this file, by design
+## RQ1 Holm-Bonferroni correction (H1 Test 1 + H1 Test 2) — computed here 2026-08-12
 
-Several rows above clear raw p<0.05 (both comparisons' thin-cell-filtered
-and definition-matched readings, and Comparison B's raw-unfiltered
-reading). **None of these are Holm-Bonferroni corrected against each
-other** — see `analysis/COMPARISON_A_INTERPRETATION.md`'s "Multiple-
-comparisons correction for RQ1" section for why: PROJECT_BRIEF.md's §3.1
-RQ1 family is exactly {H1, H2}, where H1 is Comparison A's single raw/
-pre-registered-primary Wilcoxon test (the thin-filtered and definition-
-matched rows are robustness variants of that same question, not separate
-pre-registered hypotheses) and H2 (Comparison C's DiD) never computes a
-p-value — a correctable family of size one, for which Holm-Bonferroni is
-a stated no-op, not a silent omission. Comparison B is not one of
-PROJECT_BRIEF's six official hypotheses at all (an informal/exploratory
-observational check, per this script's own module docstring), so it was
-never a candidate for this correction either. Read every p-value in this
-file as an uncorrected, single-test significance level — informative on
-its own terms, but not "significant after multiple-comparisons
-correction" in the sense RQ4/H5 and RQ5/H6 use that phrase.
+`docs/Approved_Hypotheses.md` names ULT-vs-PLT (Comparison B) as H1's own
+second test, not an unofficial exploratory check — RQ1's correctable
+family is these two tests, corrected separately per conditioning (three
+independent 2-test families, not one pooled 6-test family). H2
+(Comparison C's DiD) reports an effect size + bootstrap CI and never
+computes a p-value, so it contributes nothing to this family. Full detail:
+`analysis/comparison_rq1_holm.csv`, `analysis/HYPOTHESIS_DEVIATIONS.md`'s
+H1 Test 2 entry.
+
+      conditioning      test  p_value  p_value_holm  survives_holm_0.05
+               raw H1 Test 1 0.742188      0.742188               False
+               raw H1 Test 2 0.039062      0.078125               False
+     thin_filtered H1 Test 1 0.031250      0.062500               False
+     thin_filtered H1 Test 2 0.031250      0.062500               False
+definition_matched H1 Test 1 0.039062      0.039062                True
+definition_matched H1 Test 2 0.007812      0.015625                True
+
+**Read plainly**: at the raw/pre-registered-primary conditioning, neither
+test survives Holm correction. At the definition-matched co-primary
+conditioning, both survive. The thin-cell-filtered reading is a
+robustness variant, reported here for completeness rather than as a
+member of the pre-registered family.
 
 ## Cross-definition note (added 2026-07-30, revised 2026-08-03 -- see analysis/RQ5_CROSS_DEFINITION_AUDIT.md)
 
