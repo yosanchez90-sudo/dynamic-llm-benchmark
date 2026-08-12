@@ -5,12 +5,12 @@ document reports discrepancies, it does not fix them (see §5 for what's
 queued for Phase 2/3, pending sign-off).
 
 **Method**: `scripts/build_thesis_assets.py` was run end-to-end first
-(Phase 0 — see the separate summary at the end of this session's reply for
-what changed), so every number below is checked against **live,
-just-regenerated** output, not a stale on-disk snapshot. `docs/
-Approved_Hypotheses.md` is treated as governing for hypothesis *wording*;
-the repo (`analysis/*.md`, `analysis/*.csv`) is treated as governing for
-*numbers*, per your framing — the workbook is a map, not ground truth.
+(Phase 0 — see the separate Phase 0 summary for what changed), so every
+number below is checked against **live, just-regenerated** output, not a
+stale on-disk snapshot. `docs/Approved_Hypotheses.md` is treated as
+governing for hypothesis *wording*; the repo (`analysis/*.md`,
+`analysis/*.csv`) is treated as governing for *numbers* — the workbook is
+a map, not ground truth.
 
 ## 0. Headline
 
@@ -19,14 +19,14 @@ Approved_Hypotheses.md`** (checked clause-by-clause, §1 below) and **the
 large majority of its cited numbers are correct against live data** —
 Comparison A, Comparison B, H2's entire DiD table, H3's headline
 significance counts, and H6 clause 2's entire four-number cross-family
-table all match exactly. But **two of the specific figures you flagged as
+table all match exactly. But **two of the specific figures flagged as
 likely to have moved have in fact moved**, and the workbook still carries
 the old values:
 
 1. **H5's stability headline is stale and the gap is not small.** The
    workbook states mean pairwise Kendall τ (N=4) = **0.667**, with 6 of 6
    pairs individually significant at raw p<0.05. Live data (regenerated
-   this session, reflecting Gemini Pro Preview's Dynamic-L4 crawl
+   this pass, reflecting Gemini Pro Preview's Dynamic-L4 crawl
    completing 2026-08-11) gives **τ = 0.583**, with only **3 of 6** pairs
    raw-significant. This doesn't change the qualitative verdict (still
    THRESHOLD NOT MET, now by a wider margin), but the point estimate and
@@ -43,9 +43,9 @@ Both are downstream of the same root cause: **Gemini Pro Preview's
 Dynamic-L4 crawl completed 2026-08-11**, after the numbers currently
 baked into the workbook (and into several hand-written `analysis/*.md`
 docs — this isn't a workbook-only problem, see §3) were computed. Neither
-finding overturns a verdict, but both are "material" in the sense your
-brief used the word — flagging per instruction 5 before touching anything
-in Phase 2.
+finding overturns a verdict, but both are material enough to flag here,
+ahead of any Phase 2 change, per this document's own read-only scope
+(intro above).
 
 ## 1. Hypothesis wording — Hypotheses sheet vs `docs/Approved_Hypotheses.md`
 
@@ -53,11 +53,11 @@ in Phase 2.
 |---|---|---|---|
 | H1 Test 1 | "Mutation scores produced by 8 LLMs on the dynamic benchmark will be lower than the scores on the static benchmarks, after controlling for cyclomatic complexity." Test: "paired comparison, Wilcoxon signed-rank across model–problem pairs." | Matches, condensed faithfully. | AGREES |
 | H1 Test 2 | "Comparison between ULT vs PLT. Observational contamination signal: same models, decontaminated vs leaked equivalents. Having Mutation score as the main metric." | Matches. | AGREES |
-| H2 | "...its mutation-score on the static benchmark will be larger than on the dynamic benchmark (even after applying changes)." Test: "validate differences on mutation scores (pre vs. post fine-tuning), considering (static vs. dynamic)." | Workbook renders this as a **gain** comparison ("its mutation-score **gain**... will exceed its gain..."). | AGREES, with a note — the approved sentence alone is ambiguous between "raw post-fine-tune score" and "gain," but the Test clause ("pre vs. post... static vs. dynamic") only makes sense as a gain/DiD comparison, so the workbook's reading is the correct disambiguation, not an addition to the approved text. Worth stating explicitly as an interpretive step when this hypothesis is written up, per your governance framing. |
+| H2 | "...its mutation-score on the static benchmark will be larger than on the dynamic benchmark (even after applying changes)." Test: "validate differences on mutation scores (pre vs. post fine-tuning), considering (static vs. dynamic)." | Workbook renders this as a **gain** comparison ("its mutation-score **gain**... will exceed its gain..."). | AGREES, with a note — the approved sentence alone is ambiguous between "raw post-fine-tune score" and "gain," but the Test clause ("pre vs. post... static vs. dynamic") only makes sense as a gain/DiD comparison, so the workbook's reading is the correct disambiguation, not an addition to the approved text. Worth stating explicitly as an interpretive step when this hypothesis is written up. |
 | H3 | "Mean mutation score will keep decreasing (or stay the same) from L1 to L4... it will never go back up." Test: Spearman ρ, per model and pooled. | Near-verbatim. | AGREES |
 | H4 | "The gap... will be larger at L1–L2 than at L3–L4." Test: tier×benchmark interaction, regression, LLM as random effect. | Verbatim. | AGREES |
 | H5 | "...Kendall's τ... will exceed 0.7..." Test: pairwise Kendall's τ across instantiations. | Verbatim. | AGREES |
-| H6 | Single approved sentence, two clauses (positive-but-imperfect; weaker-than-static). Test: Pearson r + Spearman ρ, **no Fisher z**. | Split into "H6 clause 1" / "H6 clause 2" rows. | AGREES — this is a faithful decomposition of one approved sentence into its two testable clauses, exactly what your task 8 asks the analysis to treat clause 2 as. The workbook is also correct that the approved wording requires no Fisher z-test (confirmed: `docs/Approved_Hypotheses.md` line 18 says only "Pearson r and Spearman ρ"). |
+| H6 | Single approved sentence, two clauses (positive-but-imperfect; weaker-than-static). Test: Pearson r + Spearman ρ, **no Fisher z**. | Split into "H6 clause 1" / "H6 clause 2" rows. | AGREES — this is a faithful decomposition of one approved sentence into its two testable clauses, consistent with treating clause 2 as independently testable. The workbook is also correct that the approved wording requires no Fisher z-test (confirmed: `docs/Approved_Hypotheses.md` line 18 says only "Pearson r and Spearman ρ"). |
 
 No hypothesis's approved *meaning* has been altered in the workbook. The
 H2 "gain" reading is the only place an interpretive step was taken beyond
@@ -66,10 +66,10 @@ the literal sentence, and it's the correct one given the Test clause.
 ## 2. Quantitative claims — full verification table
 
 "Verdict" is AGREES / DISAGREES / NOT FOUND against the **live**,
-just-regenerated repo value. Where I flag DISAGREES I give both numbers
+just-regenerated repo value. Every DISAGREES row gives both numbers
 and the reason for the gap, not just the mismatch.
 
-| Claim | Workbook value | Live repo value | Source (regenerated this session) | Verdict |
+| Claim | Workbook value | Live repo value | Source (regenerated this pass) | Verdict |
 |---|---|---|---|---|
 | H1 Test 1 (Comparison A raw) | n=8, effect_r=-0.167, p=0.7422 | n=8, effect_r=-0.167, p=0.7422 | `COMPARISON_PROVENANCE.md` | AGREES |
 | H1 Test 1 robustness (thin-filtered) | n=6, effect_r=-1.000, p=0.0312 | n=6, effect_r=-1.000, p=0.0312 | same | AGREES |
@@ -148,7 +148,7 @@ data-landing entries make the same claim. None of these have been
 refreshed since the crawl completed four days later. **The workbook is a
 faithful mirror of what the repo's own hand-written docs currently say —
 the repo's own hand-written docs are what's now stale**, confirmed
-directly against this session's live Phase 0 rebuild.
+directly against this pass's live Phase 0 rebuild.
 
 ## 4. Internal consistency — within the workbook
 
@@ -175,15 +175,13 @@ Material findings that exist in the repo but that a reader relying only
 on the workbook would not learn:
 
 1. **The sanitizer-repair sensitivity of the coverage-adjusted
-   correlation.** `RQ5_SANITIZER_SENSITIVITY.md` (fresh, this session):
+   correlation.** `RQ5_SANITIZER_SENSITIVITY.md` (fresh, this pass):
    the coverage-adjusted Dynamic↔ULT τ=0.944 the workbook cites (correctly)
    drops to **τ=0.889** if mechanically-repaired rows are excluded
    entirely — still significant (perm p=0.0003), but the workbook presents
-   0.944 as if it were the only reading. Given 0.889 is itself one of the
-   numbers your own audit brief flagged as worth checking, and it only
-   exists as a *robustness* variant of the 0.944 figure the workbook
-   already reports, this is worth a one-line caveat wherever 0.944 is
-   quoted going forward.
+   0.944 as if it were the only reading. Since 0.889 is a *robustness*
+   variant of the 0.944 figure the workbook already reports, this is
+   worth a one-line caveat wherever 0.944 is quoted going forward.
 2. **Two of the 7 cross-family BigCodeBench correlation points are
    individually thin-cell** (CodeLlama-13B: ULT n_defined=8; Mistral-7B:
    Dynamic n_defined=5, ULT n_defined=1 — both below this project's own
@@ -191,14 +189,14 @@ on the workbook would not learn:
    the cross-family n=7 correlation elsewhere in `analysis/`
    (`METRICS_AND_FINDINGS_EXPLAINED.md`), but the workbook's H6 rows
    (which are exactly the rows citing that n=7 correlation) don't mention
-   it. Relevant directly to task 8's request for CIs at n=7 — the CIs
-   themselves are wide partly because of this.
+   it. Relevant to reporting CIs at n=7 — the CIs themselves are wide
+   partly because of this.
 3. **StarCoder2's non-identical prompt delivery and 2 models' chat-template
    date drift** (cross-family limitations, `RQ5_INTERPRETATION.md`) — same
    category as #2, a caveat that belongs with any citation of the n=7/n=13
    cross-family figures the workbook already reports.
 4. **The `analysis/TIER_SYMMETRY_AUDIT.md` figure defect** (delivered
-   earlier this session, uncommitted pending your review): the
+   earlier this pass, not yet committed): the
    `ranking_matrix_heatmap.pdf` figure has no "(pooled)" disclosure,
    unlike every other RQ5 figure. Not a hypothesis-verification finding
    per se, but relevant if that figure is the one used to illustrate H6 in
@@ -224,7 +222,7 @@ correctly-flagged interpretive choice.
 While generating `docs/RESEARCH_QUESTIONS.md` (Phase 3, task 10), a second
 instance of the same stale-model-name issue flagged in §4 (Sheet2 N7) was
 found in **Sheet2 C8** (RQ4.4's own research-question description),
-missed by the original consistency pass since I had only checked N7 at
+missed by the original consistency pass, which had only checked N7 at
 the time: "Compare the three frontier-tier slots (GPT-5.4, Claude Sonnet
 4.6, Gemini 2.5 Pro)... GPT-5.4 mini, Claude Haiku 4.5, Gemini 2.5 Flash."
 Same category, same root cause (both are RQ4-family cells never updated
@@ -235,7 +233,7 @@ what was found first.
 
 ## 6. What this means for Phase 2
 
-Per your instruction 5: **reporting before proceeding**, since two figures
+**Reporting before proceeding**, since two figures
 disagree materially (§0). Neither disagreement changes a hypothesis's
 qualitative verdict — H5 is THRESHOLD NOT MET either way (0.667 or 0.583,
 both below 0.7), and the RQ5 decomposition's qualitative story ("baseline
@@ -253,5 +251,5 @@ ones in the "Live repo value" column above, not the workbook's), and
 include refreshing `STABILITY_INTERPRETATION.md`'s and
 `RQ5_INTERPRETATION.md`'s own stale citations (§3) as part of Phase 3's
 reference-artifact update, since they're the actual source of the
-workbook's staleness, not just the workbook itself. Waiting for your
-go-ahead before touching anything.
+workbook's staleness, not just the workbook itself. Held for explicit
+sign-off before touching anything.

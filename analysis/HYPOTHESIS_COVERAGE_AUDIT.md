@@ -18,7 +18,7 @@ tracked here.
 For each approved hypothesis/test: (i) implemented, (ii) run against
 current data, (iii) written interpretation, (iv) **final verdict** — one
 of SUPPORTED / NOT SUPPORTED / THRESHOLD NOT MET / DROPPED-UNTESTABLE /
-MIXED, per your instruction that none may be left ambiguous. Full
+MIXED, since none may be left ambiguous. Full
 reasoning, verbatim approved wording, and paper-ready sentences for every
 row: `analysis/HYPOTHESIS_DEVIATIONS.md`. This file's job is narrower —
 confirm the pipeline (code exists, ran, is interpreted) and state the
@@ -118,7 +118,7 @@ verdict, not re-derive it.
   this file's own headline number, 0.667, is stale as of this pass — see
   "Open item" below).
 - (iv) **Verdict: THRESHOLD NOT MET.** Mean pairwise τ = **0.583** at the
-  N=4 headline scope (live, this session's rebuild — corrected from a
+  N=4 headline scope (live, this pass's rebuild — corrected from a
   stale 0.667, `analysis/WORKBOOK_VERIFICATION.md`), below the approved
   0.7 criterion. Only 1 of 6 N=4-scope pairs individually exceeds 0.7,
   and it is the only one to survive Holm-Bonferroni correction within the
@@ -168,7 +168,7 @@ verdict, not re-derive it.
 - **RQ3 (H4): n/a — not built, nothing to correct.**
 - **RQ4 (H5): real, current exposure, unchanged in kind by this pass.**
   6 (N=4 set) + 10 (all-pairs) pairwise Kendall τ tests, each corrected
-  within its own family. Live numbers (`STABILITY.md`, this session):
+  within its own family. Live numbers (`STABILITY.md`, this pass):
   3/6 and 4/10 raw-significant, 1/6 and 2/10 survive Holm.
 - **RQ5 (H6): the largest real exposure, unchanged in kind by this pass.**
   Up to 12 headline correlation tests (`RQ5_CROSS_FAMILY_PROVENANCE.md`'s

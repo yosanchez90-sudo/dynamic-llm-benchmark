@@ -190,7 +190,7 @@ Sources: `https://help.openai.com/en/articles/8264778-what-is-prepaid-billing`,
    Batch FAQ states unambiguously that on expiry or cancellation, "any
    already completed work" is charged and the rest is dropped — so a
    batch does **not** silently fail-open into unpaid inference. **However,
-   I could not find an official OpenAI page stating explicitly whether
+   no official OpenAI page was found stating explicitly whether
    charging happens incrementally as sub-requests complete, at full-batch
    completion, or via a hold placed at submission** — this is disclosed as
    unverified rather than guessed. The practically safe conclusion either
@@ -207,8 +207,8 @@ tier a $5+ prepaid account is on). Independently corroborated by an OpenAI
 staff forum post (`community.openai.com/t/increased-gpt-5-and-gpt-5-mini-rate-limits/1357840`)
 announcing these exact figures.
 
-**Unresolved, disclosed rather than assumed**: I could not find an OpenAI
-doc that states precisely what counts toward this limit — total *enqueued
+**Unresolved, disclosed rather than assumed**: no OpenAI doc was found
+that states precisely what counts toward this limit — total *enqueued
 input* tokens, or *reserved capacity* (input + each request's
 `max_completion_tokens`, since actual output isn't knowable at submission
 time). The two prepared batches use `max_completion_tokens` of 16,384
@@ -241,7 +241,7 @@ Splitting is a mechanical `jsonl` line-slice (custom_ids don't need to
 change; each chunk gets its own `create_batch.py`-style state file with a
 distinct timestamp) — **not built in this pass** (no submission happens in
 this pass at all), but the chunk boundaries above are ready to apply
-directly if the first real submission attempt (after the user's go-ahead)
+directly if the first real submission attempt (after an explicit go-ahead)
 confirms the conservative interpretation was necessary. If OpenAI accepts
 a larger single submission than planned, chunks can simply be coalesced —
 losing nothing by having over-split.
@@ -308,9 +308,9 @@ live instructions to re-execute).
   now defaults safe, `--submit` is the explicit spend action.
 - **Nothing in this document authorizes a submission.** Part 2 (pre-flight
   verification) and the final GO/NO-GO checklist still need to run before
-  that decision point, and per the user's explicit instruction this pass
-  stops there regardless: no batch is submitted and no money is spent
-  until the user has topped up credits and given an explicit go-ahead.
+  that decision point, and this pass stops there regardless, by design:
+  no batch is submitted and no money is spent until credits are topped
+  up and an explicit go-ahead is given.
 
 ## Addendum, 2026-08-07 — real submission complete, cost reconciled, a second pricing bug found
 

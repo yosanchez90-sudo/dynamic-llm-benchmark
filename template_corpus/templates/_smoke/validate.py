@@ -56,7 +56,11 @@ def validate_one(path: Path):
         except TypeError as e:
             errors.append(f"oracle failed on smoke {smoke}: {e}")
         except Exception as e:
-            # exception-raising on edge cases is allowed per your decision
+            # Only TypeError (an argument/signature mismatch between the
+            # smoke input and the oracle) is treated as a validation
+            # failure; any other exception on an edge-case smoke input is
+            # assumed to be legitimate oracle behaviour, not a template
+            # defect.
             pass
 
     return errors

@@ -4,7 +4,7 @@ For each of the six supervisor-approved hypotheses (`docs/Approved_Hypotheses.md
 — quoted verbatim below, this is the governing document for wording):
 what the approved text says, what was actually executed, why it differs
 (if it does), and a paper-ready sentence. Numbers are live as of the
-Phase 0 rebuild this session (`analysis/WORKBOOK_VERIFICATION.md` has the
+Phase 0 rebuild this pass (`analysis/WORKBOOK_VERIFICATION.md` has the
 full verification trail — two figures below were corrected from a stale
 2026-08-07 snapshot as part of that pass: H5's mean pairwise τ and H3's
 downstream per-model magnitudes both reflect Gemini 3.1 Pro Preview's
@@ -282,7 +282,7 @@ with different random seeds."
 **What was executed**: Pairwise Kendall's τ between per-instantiation
 model rankings (`scripts/analyze_stability.py`). **N=4 headline scope**
 (2 of 9 canonical models — both Gemini — never reached the approved N=5).
-**Mean pairwise τ = 0.583** at N=4 (live, this session's rebuild —
+**Mean pairwise τ = 0.583** at N=4 (live, this pass's rebuild —
 corrected from a stale 0.667 that predates the Gemini crawl's completion;
 see `analysis/WORKBOOK_VERIFICATION.md`); **0.569 all-pairs** (including
 instantiation 5, which exists for 7 of the 9 canonical models — every
@@ -316,8 +316,7 @@ model except the two Geminis).
    approved hypothesis of their own and are reported descriptively, not
    as a gap.
 
-**Per-pair breakdown** (more informative than the mean alone, per your
-instruction) — N=4 set, 6 pairs:
+**Per-pair breakdown** (more informative than the mean alone) — N=4 set, 6 pairs:
 
 | Pair | n_models | τ | raw p | Holm p | >0.7? | Survives Holm? |
 |---|---|---|---|---|---|---|

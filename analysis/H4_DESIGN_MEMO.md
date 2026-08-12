@@ -17,9 +17,9 @@ accurate evidence regardless of which of (b)/(c) was ultimately chosen.
 ---
 
 **Decision memo only — nothing for H4 is implemented in this document or
-alongside it.** Per instruction: the user decides which option to pursue,
-and it goes to the supervisor before anything is built. This memo exists
-to make that decision informed, not to pre-empt it.
+alongside it.** Selecting an option and implementing it are deliberately
+deferred until the choice has supervisor sign-off. This memo exists to
+make that decision informed, not to pre-empt it.
 
 ## Does an earlier H4a/H4b split already govern this?
 
@@ -175,5 +175,5 @@ adopting it.** Reasoning:
 **If the cost of adding a mixed-model dependency and the reshaping work is
 judged not worth it relative to H3's already-strong, unanimous result**,
 option (c) is the defensible fallback — but that is a cost/benefit call
-for the user and supervisor to make explicitly, not a default this memo
+to be made explicitly, with supervisor sign-off, not a default this memo
 assumes.

@@ -1026,7 +1026,7 @@ precisely because it was the emptiest tier. Current real state
 (`scripts/check_gemini_pro_crawl_done.py`): **38 of 300 target L4 rows
 landed so far** (all from instantiation 1; instantiations 2-4 still 0/75
 each), all 38 baseline-passing. ULT (101/400) and PLT (116/400) are
-unaffected by this session's Gemini work and remain exactly as before —
+unaffected by this pass's Gemini work and remain exactly as before —
 separate, still-incomplete gaps. Effects, traced explicitly:
 
 1. **Comparison A**: **now included** (n_models=8, up from excluded

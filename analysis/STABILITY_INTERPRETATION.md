@@ -128,7 +128,7 @@ one instantiation's pooled ordering, which perturbs *every pairwise
 Kendall tau comparison Gemini Pro Preview participates in*, not just the
 pairs directly involving whichever instantiation moved. This is exactly
 the failure mode `analysis/RQ5_DIAGNOSTICS.md`'s noise-floor audit
-predicts in general: as of this session's live rebuild, the largest run
+predicts in general: as of this pass's live rebuild, the largest run
 of adjacent, hard-to-separate models (gpt-5-mini-2025-08-07 >
 claude-haiku-4-5-20251001 > Qwen 32B > claude-sonnet-4-6 >
 gemini-3.1-flash-lite) sit within a pooled spread of **0.005** — smaller
@@ -197,7 +197,7 @@ answers differently:
 into one verdict.** The dynamic benchmark's *scores* are trustworthy and
 reproducible; its *rankings*, specifically among the models clustered in
 the noise floor, are not currently distinguishable from the reordering
-you'd expect from remeasurement noise alone — a fact about this
+one would expect from remeasurement noise alone — a fact about this
 particular model population's tight clustering on this metric, established
 directly (`RQ5_DIAGNOSTICS.md` sec 2b), not inferred from the tau movement
 alone.

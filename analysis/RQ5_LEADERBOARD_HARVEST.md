@@ -70,8 +70,8 @@ model's Hugging Face commit history:
 
 **Not independently verified in this pass** — both leaderboards are
 JS-rendered Spaces that a static fetch cannot read (confirmed for
-EvalPlus), and I did not locate an equivalent static results-dataset
-repository for either within this session's time budget. Flagged as
+EvalPlus), and no equivalent static results-dataset repository was
+located for either within this pass's time budget. Flagged as
 follow-up work, not fabricated or estimated. Given BigCodeBench (the
 primary) already has solid matched numbers for exactly the models that
 matter (the 3 Qwen sizes), this gap is lower priority than it would
@@ -85,8 +85,8 @@ changes Part 3 from "propose and estimate a self-run" to "use the numbers
 above; no GPU time, no STOP gate needed." The six API models remain
 unavailable regardless of any self-run decision (self-running BigCodeBench
 against them would mean calling the actual frontier APIs for ~1,140
-problems each — real spend, and out of this prompt's stated scope, which
-named only "the 3 local Qwen sizes" for a possible self-run). The
+problems each — real spend, and out of scope for this pass, which
+covers only "the 3 local Qwen sizes" for a possible self-run). The
 Dynamic↔public and ULT↔public correlations are therefore **N=3** — see
 `analysis/RQ5_INTERPRETATION.md` for why this is reported as a strictly
 qualitative/directional read, not a statistical test.

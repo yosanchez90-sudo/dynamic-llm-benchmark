@@ -122,9 +122,8 @@ corpus drift, no double-pay risk, ingestion path verified end-to-end,
 snapshots confirmed live, cost is bounded and (once the pricing-table bug
 fix lands) noticeably cheaper than previously thought.
 
-**The remaining gate is not technical — it's the one the user set
-explicitly: credits must be topped up and explicit go-ahead given before
-anything is submitted.**
+**The remaining gate is not technical: credits must be topped up and
+explicit go-ahead given before anything is submitted.**
 
 **STOP HERE.** No batch has been submitted, no file has been uploaded to
 OpenAI, and no money has been spent at any point in this pass. Submission
@@ -132,7 +131,7 @@ requires: (1) the setup steps in §6 above, then (2) either
 `python scripts/create_batch.py <configs> --submit` (uploads and submits
 for real — the explicit opt-in, safe-by-default as of this pass) or the
 manual upload/create flow in `SUPERVISOR_HANDOFF_SUBMIT_ALL.md` — only
-after the user's explicit go-ahead.
+after an explicit go-ahead.
 
 ## Addendum, 2026-08-06 — submission attempted, one real gap in this checklist found and fixed
 

@@ -135,7 +135,7 @@ has `baseline_passed=True` for only **1/112 (0.9%)** of the seen subset and
 **7/288 (2.4%)** of the unseen subset. Mutation score is therefore defined for
 essentially none of core_400 ULT pre-fine-tune — a base 1.5B model struggling at
 CC≥8 (consistent with the same model's near-zero L4 Dynamic mutation-score
-coverage noted in this session's Part-1 status check). This is *why* the primary
+coverage noted in this pass's Part-1 status check). This is *why* the primary
 metric recommendation above is baseline_pass_rate, not Mut@K: an n_problems=1 PRE cell
 makes any Mut@K-based gain estimate for seen-ULT close to undefined, regardless of
 how POST turns out.
