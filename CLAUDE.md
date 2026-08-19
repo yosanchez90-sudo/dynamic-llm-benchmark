@@ -34,6 +34,18 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   had actually flipped sign, not just drifted, after Gemini Pro Preview's
   L4 crawl completed — a plain diff would not have caught this, only
   re-deriving the number from live data did).
+- **The LaTeX in `paper/` is the single source of truth for the paper. Any
+  `.docx` is a rendering of it, never an editing base.** Never hand-edit
+  `paper/paper.docx` (or any generated `.docx`) and treat those edits as
+  the record — apply changes to the `.tex` sources and regenerate the docx
+  from them if a docx is needed at all. Confirmed 2026-08-19: `paper/`'s
+  LaTeX was drafted from an earlier version of `paper.docx` and never
+  re-synced after a manual review pass was done directly in the docx;
+  14 of 32 references and several paragraphs of restored prose (the
+  Acknowledgment section entirely) existed only in the docx and had to be
+  recovered via a full three-way merge (docx vs. pre-merge LaTeX vs. the
+  fixes already agreed in chat) — a slow, error-prone recovery that a
+  single source of truth would have made unnecessary.
 - **`scripts/process_batch.py`'s `cost_usd` never applied OpenAI's 50% Batch
   API discount** (found 2026-08-07) — `compute_cost()` (`src/pricing.py`)
   only knows the standard real-time rate; every row this script has ever
