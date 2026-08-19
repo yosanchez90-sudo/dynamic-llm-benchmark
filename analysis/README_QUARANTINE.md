@@ -30,7 +30,22 @@ same problems, setting removed).
 
 ## Corrected per-file classification (evidence-based, see below)
 
-| File | mtime | Status |
+**Path, not just basename: every file in the table below is
+`analysis/epoch_perf_finetune_*_30ep.csv` (this directory).** A second,
+identically-named set exists at `data/results/finetune_rebuild/
+epoch_perf_finetune_*_30ep.csv` (all six files, mtime 2026-07-14 ~22:30)
+-- that is the corrected, post-rebuild set this document's own "Where the
+corrected data lives" section already names as authoritative, and it does
+NOT reproduce the collapses below (confirmed directly, 2026-08-19: the
+`analysis/` copy of `..._qwen1_5b_bp_own_30ep.csv` shows exec_rate=0.0/
+baseline_pass=0.0 at epoch 30 exactly as this table states, while the
+`data/results/finetune_rebuild/` copy of the same basename shows
+exec_rate 0.83-0.97 at every epoch-30 row -- two distinct files, not one
+file that changed). Confusing the two paths reads as this document being
+stale when it is not; it is describing the contaminated set on purpose,
+as the record of what the bug did.
+
+| File (`analysis/`) | mtime | Status |
 |---|---|---|
 | `epoch_perf_finetune_qwen1_5b_inst1_30ep.csv` | 2026-06-30 02:51 | Unaffected — predates the bug (2026-07-07) by a week |
 | `epoch_perf_finetune_qwen7b_inst1_30ep.csv` | 2026-06-29 19:24 | Unaffected — predates the bug by more than a week |

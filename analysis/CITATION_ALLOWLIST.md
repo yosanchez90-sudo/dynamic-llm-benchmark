@@ -51,7 +51,6 @@ this table was created):
 | H3_INTERPRETATION.md | 91 | spearman_rho | -0.361 | historical — "corrected from rho=-0.361/n=4,925" |
 | HYPOTHESIS_DEVIATIONS.md | 235 | pp | 0.5 | verified-current — GPT-5's L1->L2 rebound, 0.985487->0.990774 = +0.5287pp, rounds to 0.5pp; H3's per-tier score deltas were never in scope for the "pp" reference corpus (that's DiD gain columns only) |
 | HYPOTHESIS_DEVIATIONS.md | 235 | pp | 0.8 | verified-current — GPT-5-mini's L1->L2 rebound, 0.982875->0.990388 = +0.7513pp, rounds to 0.8pp; same scope gap as above |
-| HYPOTHESIS_COVERAGE_AUDIT.md | 180 | kendall_tau | 0.667 | historical — self-referential mention of another document's stale figure ("...still cites the stale tau=0.667 stability figure"), not asserted as true here |
 | OPEN_ITEMS.md | 43 | kendall_tau | 0.569 | verified-current — same bare-"tau" phrasing gap as STABILITY_INTERPRETATION.md:228 |
 | OPEN_ITEMS.md | 54 | n_models | 5 | historical — "grew this from n_models=5 to n_models=9" |
 | OPEN_ITEMS.md | 79 | n_models | 5 | historical — "grew from n_models=5 to n_models=8" |

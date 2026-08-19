@@ -76,6 +76,41 @@ verdict, not re-derive it.
   p-value by design (effect sizes + CIs); contributes nothing to RQ1's
   Holm-Bonferroni family.
 
+## H2-supplementary (RQ1) — post-hoc, not part of the approved six
+
+Not one of the six pre-registered hypotheses; recorded here for the same
+coverage discipline this file applies to the approved set, not because it
+carries the same evidentiary weight. Tracked separately in
+`docs/Research_questions.xlsx`'s `Hypotheses`/`Results` sheets and
+`PROJECT_BRIEF.md` §3.1, both marked post-hoc.
+
+- (i) Implemented: yes — `scripts/build_finetune_endpoint_table.py`
+  (`baseline_pass_rate`, seen vs fresh) and
+  `scripts/build_finetune_decline_table.py` (`exec_rate` held-out
+  trajectory, epoch 0 vs 30).
+- (ii) Run: yes — `analysis/finetune_endpoint_table.csv`,
+  `analysis/finetune_decline_table.csv`, both from
+  `data/results/finetune_rebuild/epoch_perf_*.csv` (the corrected,
+  post-`no_repeat_ngram_size`-fix set — see `analysis/README_QUARANTINE.md`
+  for why the un-prefixed `analysis/epoch_perf_finetune_*.csv` files are a
+  different, intentionally-preserved contaminated set, not a duplicate).
+- (iii) Interpreted: yes — `analysis/FINETUNE_ENDPOINT_PROVENANCE.md`.
+- (iv) **Verdict: SUPPLEMENTARY (POST-HOC).** Two Qwen models (1.5B, 7B),
+  each fine-tuned three ways on dynamic-benchmark instantiation 1: on
+  their own prior generations (self-contamination), on GPT-5's
+  generations on the same instantiation (cross-model contamination), and
+  on instantiation 1's reference outputs filtered only by whether they
+  execute, not whether they are correct (non-leaked control). Both leaked
+  conditions show a seen-vs-fresh `baseline_pass_rate` gap at both sizes
+  (self: 8.7pp / 4.7pp; cross-model: 52.7pp / 68.0pp); the non-leaked
+  control shows none (2.3pp / -2.3pp, noise). The cross-model conditions
+  additionally show a held-out `exec_rate` decline by epoch 30 (1.5B:
+  92.7%→63.3%; 7B: 99.7%→85.3%) that the self-contamination conditions do
+  not, so part of the cross-model gap reflects a general capability cost
+  specific to training on another model's outputs, not memorisation
+  alone. No control-relative gain is computed (unlike Comparison C); each
+  condition's seen/fresh/gap is reported directly.
+
 ## H3 (RQ2) — Spearman ρ, tier index vs mutation score
 
 - (i) Implemented: yes — `scripts/analyze_h3_tier_gradient.py`,
@@ -177,7 +212,7 @@ verdict, not re-derive it.
 ## Open item carried into Phase 4
 
 `analysis/STABILITY_INTERPRETATION.md` (hand-written) still cites the
-stale τ=0.667 stability figure, and `analysis/RQ5_INTERPRETATION.md`
+stale τ=0.667 stability figure <!-- cite:historical -->, and `analysis/RQ5_INTERPRETATION.md`
 still cites τ=0.333 in the dozen-plus places it appeared before this
 pass (both superseded by this pass's live rebuild — τ=0.583 and τ=0.278
 respectively). This pass added a new, fully-live H6 clause 2 section to
