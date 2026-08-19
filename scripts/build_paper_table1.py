@@ -98,7 +98,7 @@ def main() -> None:
 % Compact hypothesis/prediction/verdict table. Predictions are fixed
 % paraphrases (see script docstring); verdicts are read live from
 % docs/Research_questions.xlsx's Hypotheses sheet.
-\\begin{{table}}[t]
+\\begin{{table}}[b]
 \\caption{{Pre-registered hypotheses, predictions, and verdicts}}
 \\label{{tab:hypotheses}}
 \\centering
