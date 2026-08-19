@@ -463,3 +463,240 @@ entries:
 # literature its methodology draws from directly (in [14] MuCoCo's case,
 # a near-exact methodological parallel: mutation analysis to test code-LLM
 # behavior). None read as padding.
+  - key: carlini2023quantifying
+    authors:
+      - "Nicholas Carlini"
+      - "Daphne Ippolito"
+      - "Matthew Jagielski"
+      - "Katherine Lee"
+      - "Florian Tramèr"
+      - "Chiyuan Zhang"
+    title: "Quantifying Memorization Across Neural Language Models"
+    venue: "The Eleventh International Conference on Learning Representations (ICLR 2023)"
+    year: 2023
+    arxiv: "2202.07646"
+    url: "https://arxiv.org/abs/2202.07646"
+    status: COMPLETE
+    source_used: "Confirmed directly via arXiv abstract page; cross-checked against dblp (conf/iclr/CarliniIJLTZ23) and ICLR's own virtual proceedings page. All fields match."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- supplies the memorisation mechanism (LLMs reproduce training sequences at rates growing with model scale and duplication) that Section II's contamination-evidence paragraph and, by extension, H2's entire causal result rest on. Present in the docx manual-review draft, never carried into the LaTeX rewrite."
+
+  - key: jain2025livecodebench
+    authors:
+      - "Naman Jain"
+      - "King Han"
+      - "Alex Gu"
+      - "Wen-Ding Li"
+      - "Fanjia Yan"
+      - "Tianjun Zhang"
+      - "Sida Wang"
+      - "Armando Solar-Lezama"
+      - "Koushik Sen"
+      - "Ion Stoica"
+    title: "LiveCodeBench: Holistic and Contamination Free Evaluation of Large Language Models for Code"
+    venue: "The Thirteenth International Conference on Learning Representations (ICLR 2025)"
+    year: 2025
+    arxiv: "2403.07974"
+    url: "https://arxiv.org/abs/2403.07974"
+    status: COMPLETE
+    source_used: "Confirmed via arXiv abstract page and dblp (conf/iclr/JainHGLYZWSSS25); ICLR 2025 venue confirmed via OpenReview forum (id chfJJYC3iL) and proceedings.iclr.cc. Full 10-author list obtained (docx spec had 'et al.' after the first 3)."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the code-specific dynamic benchmark closest in design to this study's own, cited in Related Work's 'Dynamic and contamination-aware benchmarking for code' paragraph. Present in the docx manual-review draft, never carried into the LaTeX rewrite."
+
+  - key: fraser2011evosuite
+    authors:
+      - "Gordon Fraser"
+      - "Andrea Arcuri"
+    title: "EvoSuite: Automatic Test Suite Generation for Object-Oriented Software"
+    venue: "Proceedings of the 19th ACM SIGSOFT Symposium and the 13th European Conference on Foundations of Software Engineering (ESEC/FSE 2011)"
+    year: 2011
+    doi: "10.1145/2025113.2025179"
+    url: "https://doi.org/10.1145/2025113.2025179"
+    status: COMPLETE
+    source_used: "ACM DL returned HTTP 403 to direct fetch; title/authors/venue/pages/DOI independently corroborated via dblp, the publisher's own PDF citation trail, and Semantic Scholar."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- one of the two canonical search-based automated test-generation tools (with Pynguin) the LaTeX rewrite's Related Work section omitted entirely, a visible gap in a test-generation paper's own related work. Present in the docx manual-review draft."
+
+  - key: lukasczyk2022pynguin
+    authors:
+      - "Stephan Lukasczyk"
+      - "Gordon Fraser"
+    title: "Pynguin: Automated Unit Test Generation for Python"
+    venue: "Proceedings of the 44th International Conference on Software Engineering: Companion Proceedings (ICSE-Companion 2022)"
+    year: 2022
+    doi: "10.1145/3510454.3516829"
+    url: "https://doi.org/10.1145/3510454.3516829"
+    status: COMPLETE
+    source_used: "ACM DL returned HTTP 403 to direct fetch; confirmed via conf.researchr.org's official ICSE 2022 demo listing (title, authors, DOI, arXiv preprint 2202.05218 all match) and independent corroboration of the pp. 168-172 range."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the other canonical search-based automated test-generation tool (with EvoSuite), specific to Python, this study's own target language. Present in the docx manual-review draft."
+
+  - key: schafer2024empirical
+    authors:
+      - "Max Schäfer"
+      - "Sarah Nadi"
+      - "Aryaz Eghbali"
+      - "Frank Tip"
+    title: "An Empirical Evaluation of Using Large Language Models for Automated Unit Test Generation"
+    venue: "IEEE Transactions on Software Engineering"
+    volume: 50
+    issue: 1
+    pages: "85-105"
+    year: 2024
+    doi: "10.1109/TSE.2023.3334955"
+    url: "https://doi.org/10.1109/TSE.2023.3334955"
+    status: COMPLETE
+    source_used: "IEEE Xplore returned HTTP 418 to direct fetch. Volume/issue/pages (50(1), 85-105) independently corroborated across multiple sources. Publication month ('Jan. 2024') is inferred from TSE's standard monthly issue numbering for no. 1, not seen printed verbatim on any accessible source -- flagged, not silently asserted."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- a direct predecessor evaluating LLMs on unit-test generation specifically, the closest prior empirical study to this dissertation's own task. Present in the docx manual-review draft."
+
+  - key: siddiq2024junit
+    authors:
+      - "Mohammed Latif Siddiq"
+      - "Joanna Cecilia da Silva Santos"
+      - "Ridwanul Hasan Tanvir"
+      - "Noshin Ulfat"
+      - "Fahmid Al Rifat"
+      - "Vinícius Carvalho Lopes"
+    title: "Using Large Language Models to Generate JUnit Tests: An Empirical Study"
+    venue: "Proceedings of the 28th International Conference on Evaluation and Assessment in Software Engineering (EASE 2024)"
+    year: 2024
+    pages: "313-322"
+    doi: "10.1145/3661167.3661216"
+    url: "https://doi.org/10.1145/3661167.3661216"
+    status: COMPLETE
+    source_used: "ACM DL returned HTTP 403 to direct fetch; confirmed via dblp author page (exact title/authors/venue/pages) plus independent corroboration of EASE 2024 location and dates (Salerno, Italy, Jun. 18-21 2024)."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the other direct LLM-unit-test-generation predecessor named alongside Schafer et al. Present in the docx manual-review draft, explicitly named in the user's own high-priority missing-reference list."
+
+  - key: mccabe1976complexity
+    authors:
+      - "T. J. McCabe"
+    title: "A Complexity Measure"
+    venue: "IEEE Transactions on Software Engineering"
+    volume: "SE-2"
+    issue: 4
+    pages: "308-320"
+    year: 1976
+    doi: "10.1109/TSE.1976.233837"
+    url: "https://doi.org/10.1109/TSE.1976.233837"
+    status: COMPLETE
+    source_used: "IEEE Xplore returned HTTP 418 to direct fetch; corroborated via independent search results and the paper's own PDF header ('IEEE TRANSACTIONS ON SOFTWARE ENGINEERING, VOL. SE-2, NO.4, DECEMBER 1976')."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the origin of the cyclomatic-complexity measure the entire L1-L4 tier system is built on, cited nowhere in the LaTeX rewrite despite the tiers being named after it throughout Methods. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+
+  - key: demillo1978hints
+    authors:
+      - "R. A. DeMillo"
+      - "R. J. Lipton"
+      - "F. G. Sayward"
+    title: "Hints on Test Data Selection: Help for the Practicing Programmer"
+    venue: "Computer"
+    volume: 11
+    issue: 4
+    pages: "34-41"
+    year: 1978
+    doi: "10.1109/C-M.1978.218136"
+    url: "https://doi.org/10.1109/C-M.1978.218136"
+    status: COMPLETE
+    source_used: "IEEE Xplore returned HTTP 418 to direct fetch; corroborated via dblp (journals/computer/DeMilloLS78) and ACM DL's mirror listing, both matching vol/no/pages exactly."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- one of the two foundational mutation-testing papers underpinning Mut@K as the primary metric, cited nowhere in the LaTeX rewrite despite mutation testing being this study's central methodology. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+
+  - key: jia2011mutation
+    authors:
+      - "Yue Jia"
+      - "Mark Harman"
+    title: "An Analysis and Survey of the Development of Mutation Testing"
+    venue: "IEEE Transactions on Software Engineering"
+    volume: 37
+    issue: 5
+    pages: "649-678"
+    year: 2011
+    doi: "10.1109/TSE.2010.62"
+    url: "https://doi.org/10.1109/TSE.2010.62"
+    status: COMPLETE
+    source_used: "IEEE Xplore returned HTTP 418 to direct fetch; corroborated by multiple independent citation sources all matching vol. 37, no. 5, pp. 649-678, 2011."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the other foundational mutation-testing paper underpinning Mut@K, a survey covering the field's development. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+
+  - key: andrews2005mutation
+    authors:
+      - "James H. Andrews"
+      - "Lionel C. Briand"
+      - "Yvan Labiche"
+    title: "Is Mutation an Appropriate Tool for Testing Experiments?"
+    venue: "Proceedings of the 27th International Conference on Software Engineering (ICSE 2005)"
+    year: 2005
+    pages: "402-411"
+    doi: "10.1145/1062455.1062530"
+    url: "https://doi.org/10.1145/1062455.1062530"
+    status: COMPLETE
+    source_used: "ACM DL returned HTTP 403 to direct fetch (redirects to a legacy portal.cfm URL); confirmed via dblp record (exact title, authors, pages) and independent corroboration of ICSE 2005 dates/location."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the empirical basis for mutation score as a proxy for a suite's fault-detection ability, the specific claim this study's Methods section makes about Mut@K. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+
+  - key: hui2024qwen25coder
+    authors:
+      - "Binyuan Hui"
+      - "Jian Yang"
+      - "Zeyu Cui"
+      - "Jiaxi Yang"
+      - "Dayiheng Liu"
+      - "Lei Zhang"
+      - "Tianyu Liu"
+      - "Jiajun Zhang"
+      - "Bowen Yu"
+      - "Keming Lu"
+      - "Kai Dang"
+      - "Yang Fan"
+      - "Yichang Zhang"
+      - "An Yang"
+      - "Rui Men"
+      - "Fei Huang"
+      - "Bo Zheng"
+      - "Yibo Miao"
+      - "Shanghaoran Quan"
+      - "Yunlong Feng"
+      - "Xingzhang Ren"
+      - "Xuancheng Ren"
+      - "Jingren Zhou"
+      - "Junyang Lin"
+    title: "Qwen2.5-Coder Technical Report"
+    venue: "arXiv preprint"
+    year: 2024
+    arxiv: "2409.12186"
+    url: "https://arxiv.org/abs/2409.12186"
+    status: COMPLETE
+    source_used: "Confirmed directly via arXiv abstract page. Full 24-author list obtained (docx spec had 'et al.' after the first 3); >10-author et-al. truncation applied at bibliography-render time only (scripts/build_paper_bib.py), not in this record."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the model family this study both evaluates (32B/7B/1.5B scaling sweep) and fine-tunes (1.5B, Comparison C), cited nowhere in the LaTeX rewrite. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+
+  - key: angrist2009mostly
+    authors:
+      - "Joshua D. Angrist"
+      - "Jörn-Steffen Pischke"
+    title: "Mostly Harmless Econometrics: An Empiricist's Companion"
+    venue: "Princeton University Press"
+    year: 2009
+    doi: "10.1515/9781400829828"
+    url: "https://doi.org/10.1515/9781400829828"
+    status: COMPLETE
+    source_used: "Confirmed via Crossref API metadata directly (authoritative): title, both authors, publisher Princeton University Press, year 2009 all match exactly. No discrepancy found."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the methodological reference for the difference-in-differences design underlying H2/Comparison C, named throughout Section III-E and IV-A with no citation attached before this pass. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+
+  - key: efron1993bootstrap
+    authors:
+      - "Bradley Efron"
+      - "R. J. Tibshirani"
+    title: "An Introduction to the Bootstrap"
+    venue: "Chapman and Hall/CRC"
+    year: 1994
+    doi: "10.1201/9780429246593"
+    url: "https://doi.org/10.1201/9780429246593"
+    status: COMPLETE
+    source_used: "The docx transcription gave '1993, Chapman & Hall, New York' -- the near-universal citation form for this classic text, and how the original print edition is conventionally cited. However, the DOI 10.1201/9780429246593's own Crossref record gives 'published 1994-05-15, publisher Chapman and Hall/CRC', not 1993/Chapman & Hall -- almost certainly a later CRC Press digital-reissue DOI retrofitted onto the book, a common pattern for older texts. Flagged explicitly to the user rather than silently resolved either way; user's ruling (2026-08-19): keep the DOI, cite the year/publisher the DOI's own record actually states (1994, Chapman and Hall/CRC) rather than the conventional-but-DOI-unverifiable 1993/Chapman & Hall form."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- every confidence interval in the paper is a bootstrap CI (H2/Comparison C); the estimator was never cited before this pass. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+
+  - key: holm1979simple
+    authors:
+      - "Sture Holm"
+    title: "A Simple Sequentially Rejective Multiple Test Procedure"
+    venue: "Scandinavian Journal of Statistics"
+    volume: 6
+    issue: 2
+    pages: "65-70"
+    year: 1979
+    url: "https://www.jstor.org/stable/4615733"
+    status: COMPLETE
+    source_used: "No DOI exists for this article (pre-DOI era, 1979); JSTOR stable URL confirmed via independent search corroboration (multiple citation aggregators giving identical vol/no/pages). JSTOR page itself not directly fetched (paywalled by design); stable ID cross-checked instead."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- 'Holm-Bonferroni' is named four times across the Results section (H1 Test 2, H3, H5, H6) with no citation attached anywhere before this pass. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
