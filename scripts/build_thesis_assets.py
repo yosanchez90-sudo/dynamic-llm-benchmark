@@ -42,6 +42,8 @@ STEPS: list[tuple[str, str, str]] = [
      "StableMut@K + pairwise Kendall tau (RQ4.1)"),
     ("finetune_endpoint", "scripts/build_finetune_endpoint_table.py",
      "Supplementary study endpoint table (greedy + R=3 sampling)"),
+    ("finetune_decline", "scripts/build_finetune_decline_table.py",
+     "Supplementary study held-out exec_rate decline table (epoch 0 vs 30)"),
     ("comparison_c", "scripts/analyze_comparison_c.py",
      "Comparison C canonical 2x3 DiD + gradient + Mut@K tables"),
     ("comparison_c_figure", "scripts/plot_comparison_c_onset_curve.py",
@@ -72,6 +74,8 @@ STEPS: list[tuple[str, str, str]] = [
      "docs/RESEARCH_QUESTIONS.md: diffable markdown mirror of docs/Research_questions.xlsx"),
     ("paper_bib", "scripts/build_paper_bib.py",
      "paper/references.bib: generated from paper/references.yaml"),
+    ("paper_table1", "scripts/build_paper_table1.py",
+     "paper/table1.tex: compact hypothesis/prediction/verdict table, read live from docs/Research_questions.xlsx"),
     ("paper_values", "scripts/build_paper_values.py",
      "paper/values.tex: every quantitative value the paper cites, as LaTeX "
      "macros read live from analysis/*.csv"),

@@ -98,6 +98,8 @@ REFERENCE_FILES = [
     "analysis/comparison_c_did.csv",
     "analysis/comparison_c_gradient.csv",
     "analysis/comparison_c_mutk.csv",
+    "analysis/finetune_endpoint_table.csv",
+    "analysis/finetune_decline_table.csv",
     "analysis/rq5_model_ranking.csv",
     "analysis/rq5_cross_family_model_ranking.csv",
     "analysis/rq5_correlations.csv",
@@ -259,11 +261,19 @@ COLUMN_KIND_MAP = {
     "p_value_holm": "p_value",
     "n_models": "n_models",
     "n_defined": "n_defined",
+    # H2-supplementary's endpoint/decline tables are already on a 0-100
+    # percentage(-point) scale (unlike PP_SCALE_COLUMNS' 0-1 fractions
+    # below), so these map straight to "pp" with no rescaling.
+    "baseline_pass_greedy_pct": "pp",
+    "baseline_pass_gap_pp_greedy": "pp",
+    "exec_rate_unseen_epoch0_greedy_pct": "pp",
+    "exec_rate_unseen_epoch30_greedy_pct": "pp",
 }
 # Columns on a 0-1 fraction scale that hand-written docs cite as "+X.Xpp" --
 # multiply by 100 and tag as "pp" in addition to any other tagging.
 PP_SCALE_COLUMNS = {"gain", "did", "delta", "control_delta",
-                     "gain_ci_lo", "gain_ci_hi", "did_ci_lo", "did_ci_hi"}
+                     "gain_ci_lo", "gain_ci_hi", "did_ci_lo", "did_ci_hi",
+                     "pre_mean", "post_mean"}
 
 
 def _norm_header(h: str) -> str:
@@ -434,6 +444,13 @@ MACRO_SUFFIX_KIND = [
     ("Rho", "spearman_rho"),
     ("Gain", "pp"),
     ("Did", "pp"),
+    ("DeclineEpochZero", "pp"),
+    ("DeclineEpochThirty", "pp"),
+    ("Seen", "pp"),
+    ("Fresh", "pp"),
+    ("Gap", "pp"),
+    ("Pre", "pp"),
+    ("Post", "pp"),
     ("HolmP", "p_value"),
     ("P", "p_value"),
     ("N", "n_models"),

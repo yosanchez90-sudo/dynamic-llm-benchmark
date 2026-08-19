@@ -30,7 +30,18 @@ YAML_PATH = ROOT / "paper" / "references.yaml"
 BIB_PATH = ROOT / "paper" / "references.bib"
 
 
+# references.yaml keeps every author on every entry -- the full record is
+# the point of that file. Rendering all of them in the printed bibliography
+# is standard for most entries but genuinely costly for a handful of very-
+# large-team papers (e.g. Codex/HumanEval's 58 authors); IEEE convention
+# for these is "First Author et al.", triggered in (IEEEtran and most
+# other) .bst styles by ending the BibTeX author field with "and others".
+ET_AL_THRESHOLD = 10
+
+
 def _bibtex_authors(authors: list[str]) -> str:
+    if len(authors) > ET_AL_THRESHOLD:
+        return f"{authors[0]} and others"
     return " and ".join(authors)
 
 

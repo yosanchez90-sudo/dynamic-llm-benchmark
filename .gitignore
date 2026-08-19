@@ -53,6 +53,7 @@ analysis/figures/
 # normally. `make` regenerates everything below from source before compiling.
 paper/references.bib
 paper/values.tex
+paper/table1.tex
 paper/*.pdf
 paper/*.docx
 paper/*.aux

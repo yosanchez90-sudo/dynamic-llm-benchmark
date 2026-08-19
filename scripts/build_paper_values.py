@@ -105,6 +105,19 @@ def main() -> None:
     pp("HTwoUnseenGain", unseen["gain"])
     raw("HTwoSeenN", f"{int(seen['n_pre'])}")
 
+    # Endpoint table (population, n, pre, post, gain, CI) -- five
+    # populations, one row per benchmark in comparison_c_gradient.csv.
+    # Kind-suffix at the very end of each name (N/Pre/Post), matching this
+    # file's own \Num<Hyp><Quantity> convention, so check_doc_citations.py's
+    # suffix matching (which reads right-to-left) tags each correctly.
+    for label, row in (
+        ("Seen", seen), ("Unseen", unseen), ("Plt", plt_row),
+        ("LFour", dyn_l4), ("LOneLThree", dyn_l1l3),
+    ):
+        raw(f"HTwoEndpoint{label}N", f"{int(row['n_pre'])}")
+        pp(f"HTwoEndpoint{label}Pre", row["pre_mean"])
+        pp(f"HTwoEndpoint{label}Post", row["post_mean"])
+
     def did_row(control: str, benchmark: str) -> pd.Series:
         return did[(did["control"] == control) & (did["benchmark"] == benchmark)].iloc[0]
     plt_did = did_row("dynamic_l1l3", "plt")
@@ -136,6 +149,43 @@ def main() -> None:
                 raw(f"HTwoValidated{name}MutKCI",
                     f"[{row['mut_at_k_validated_boot_lo']:.3f}, {row['mut_at_k_validated_boot_hi']:.3f}]")
             num(f"HTwoValidated{name}EquivRate", row["equivalent_rate"], ".3f")
+
+    # ---------------------------------------------------- H2-supplementary
+    # Post-hoc, not one of the six pre-registered hypotheses -- see
+    # analysis/HYPOTHESIS_COVERAGE_AUDIT.md's H2-supplementary section.
+    # Metric: baseline_pass_rate (seen vs fresh instantiation), greedy
+    # primary with R=3 sampling mean+-SD as a robustness note -- same
+    # convention as build_finetune_endpoint_table.py itself.
+    endpoint = pd.read_csv(ANALYSIS / "finetune_endpoint_table.csv")
+
+    def endpoint_cell(model: str, condition: str, split: str) -> pd.Series:
+        return endpoint[
+            (endpoint["model"] == model) & (endpoint["condition"] == condition)
+            & (endpoint["split"] == split)
+        ].iloc[0]
+
+    supp_model_tag = {"Qwen 1.5B": "OneFiveB", "Qwen 7B": "SevenB"}
+    supp_cond_tag = {"inst1": "Control", "bp_own": "Self", "bp_gpt5": "Cross"}
+    for model, mtag in supp_model_tag.items():
+        for cond, ctag in supp_cond_tag.items():
+            seen = endpoint_cell(model, cond, "seen (inst1)")
+            fresh = endpoint_cell(model, cond, "unseen (mean inst2/3)")
+            num(f"HSupp{mtag}{ctag}Seen", seen["baseline_pass_greedy_pct"], ".1f")
+            num(f"HSupp{mtag}{ctag}Fresh", fresh["baseline_pass_greedy_pct"], ".1f")
+            num(f"HSupp{mtag}{ctag}Gap", seen["baseline_pass_gap_pp_greedy"], ".1f")
+
+    # Held-out exec_rate decline (cross-model conditions only show a real
+    # one; self-contamination and control do not -- see
+    # analysis/finetune_decline_table_PROVENANCE.md).
+    decline = pd.read_csv(ANALYSIS / "finetune_decline_table.csv")
+
+    def decline_cell(model: str, condition: str) -> pd.Series:
+        return decline[(decline["model"] == model) & (decline["condition"] == condition)].iloc[0]
+
+    for model, mtag in supp_model_tag.items():
+        row = decline_cell(model, "bp_gpt5")
+        num(f"HSupp{mtag}DeclineEpochZero", row["exec_rate_unseen_epoch0_greedy_pct"], ".1f")
+        num(f"HSupp{mtag}DeclineEpochThirty", row["exec_rate_unseen_epoch30_greedy_pct"], ".1f")
 
     # -------------------------------------------------------------------- H3
     all_tier = pd.read_csv(ANALYSIS / "h3_tier_gradient_all_tier.csv")
@@ -189,6 +239,7 @@ def main() -> None:
 
     dyn_ult_adj_cf = cf_row("Dynamic(pooled) <-> ULT [coverage-adjusted]", "canonical-only")
     num("HSixAdjTau", dyn_ult_adj_cf["kendall_tau"], ".3f")
+    num("HSixAdjHolmP", dyn_ult_adj_cf["kendall_p_perm_holm"], ".4f")
 
     dyn_bcb_raw_cf = cf_row("Dynamic(pooled) <-> public (Complete-split/Instruct) [raw Mut@K]", "canonical+cross-family")
     dyn_bcb_adj_cf = cf_row("Dynamic(pooled) <-> public (Complete-split/Instruct) [coverage-adjusted]", "canonical+cross-family")
