@@ -62,3 +62,5 @@ paper/*.blg
 paper/*.log
 paper/*.out
 paper/*.toc
+paper/*.fls
+paper/*.fdb_latexmk

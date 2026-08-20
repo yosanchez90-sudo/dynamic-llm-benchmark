@@ -56,7 +56,7 @@ entries:
     title: "NLP Evaluation in Trouble: On the Need to Measure LLM Data Contamination for each Benchmark"
     venue: "Findings of the Association for Computational Linguistics: EMNLP 2023"
     year: 2023
-    url: "https://aclanthology.org/2023.findings-emnlp.722.pdf"
+    url: "https://doi.org/10.18653/v1/2023.findings-emnlp.722"
     status: COMPLETE
     source_used: "spec (as pasted, unchanged)"
 
@@ -70,7 +70,7 @@ entries:
     title: "Leak, Cheat, Repeat: Data Contamination and Evaluation Malpractices in Closed-Source LLMs"
     venue: "Proceedings of EACL 2024"
     year: 2024
-    url: "https://aclanthology.org/2024.eacl-long.5.pdf"
+    url: "https://aclanthology.org/2024.eacl-long.5/"
     status: COMPLETE
     source_used: "spec (as pasted, unchanged)"
 
@@ -87,7 +87,7 @@ entries:
     venue: "International Conference on Learning Representations (ICLR 2024)"
     year: 2024
     arxiv: "2309.17167"
-    url: "https://arxiv.org/pdf/2309.17167"
+    url: "https://arxiv.org/abs/2309.17167"
     status: COMPLETE
     source_used: "spec (as pasted, unchanged)"
 
@@ -102,7 +102,7 @@ entries:
     venue: "arXiv preprint"
     year: 2025
     arxiv: "2510.05962"
-    url: "https://arxiv.org/pdf/2510.05962"
+    url: "https://arxiv.org/abs/2510.05962"
     status: COMPLETE
     source_used: "arxiv.org/abs/2510.05962 (fetched directly, was reachable)"
     note: "Lead author Pinzhen Chen shares a name with this project's supervisor -- verified this is the correct arXiv ID/paper as given in the spec, not assumed from the name coincidence."
@@ -152,7 +152,7 @@ entries:
     venue: "International Conference on Learning Representations (ICLR 2025, Spotlight)"
     year: 2025
     arxiv: "2406.19314"
-    url: "https://arxiv.org/pdf/2406.19314"
+    url: "https://arxiv.org/abs/2406.19314"
     status: COMPLETE
     source_used: "arxiv.org/abs/2406.19314 (fetched directly, checked twice)"
     title_correction: "Spec gave 'Contamination-Free' -- the actual title (verified twice, exact quote from the arXiv page both times) is 'Contamination-Limited'. Likely a paraphrase-from-memory error in the spec rather than a real title change between versions, but corrected from the verified current text either way."
@@ -169,7 +169,7 @@ entries:
     title: "LLM-as-an-Interviewer: Beyond Static Testing Through Dynamic LLM Evaluation"
     venue: "Findings of the Association for Computational Linguistics: ACL 2025"
     year: 2025
-    url: "https://aclanthology.org/2025.findings-acl.1357.pdf"
+    url: "https://doi.org/10.18653/v1/2025.findings-acl.1357"
     status: COMPLETE
     source_used: "aclanthology.org PDF, downloaded successfully and read directly (title page) -- the URL itself is reachable, only WebFetch's own text-extraction on raw PDF bytes failed, so this needed a direct PDF read rather than a second URL"
 
@@ -287,7 +287,7 @@ entries:
     venue: "arXiv preprint"
     year: 2021
     arxiv: "2107.03374"
-    url: "https://arxiv.org/pdf/2107.03374"
+    url: "https://arxiv.org/abs/2107.03374"
     status: COMPLETE
     source_used: "arxiv.org/abs/2107.03374 (fetched directly) -- full 70-author list confirmed against the arXiv listing page. Note for the paper's own reference-list rendering: IEEE style commonly truncates author lists this long to the first author + 'et al.' for display; this YAML entry stores the complete data regardless, truncation (if applied) is a render-time formatting choice, not a data-completeness one."
 
@@ -313,7 +313,7 @@ entries:
     accepted: "2026-02-25"
     published_online: "2026-03-28"
     doi: "10.1145/3805043"
-    url: "https://dl.acm.org/doi/epdf/10.1145/3805043"
+    url: "https://doi.org/10.1145/3805043"
     arxiv: "2508.00408"
     arxiv_url: "https://arxiv.org/abs/2508.00408"
     source_repo: "https://github.com/huangd1999/UnLeakedTestBench"
@@ -332,7 +332,7 @@ entries:
     venue: "arXiv preprint"
     year: 2026
     arxiv: "2603.23443v1"
-    url: "https://arxiv.org/pdf/2603.23443v1"
+    url: "https://arxiv.org/abs/2603.23443"
     data_url: "https://zenodo.org/records/18898624"
     status: COMPLETE
     source_used: "arxiv.org/abs/2603.23443 (fetched directly)"
@@ -348,7 +348,7 @@ entries:
     venue: "arXiv preprint"
     year: 2026
     arxiv: "2604.19086"
-    url: "https://arxiv.org/pdf/2604.19086"
+    url: "https://arxiv.org/abs/2604.19086"
     status: COMPLETE
     source_used: "arxiv.org/abs/2604.19086 (fetched directly)"
     provisional_check: "Confirmed NOT provisional -- full abstract, author info, submission metadata (submitted 2026-04-21), and PDF/HTML/TeX access all present."
@@ -369,6 +369,7 @@ entries:
     venue: "arXiv preprint"
     year: 2024
     arxiv: "2406.04531"
+    url: "https://arxiv.org/abs/2406.04531"
     status: COMPLETE
     source_used: "spec (as pasted, unchanged)"
 
@@ -387,6 +388,7 @@ entries:
     venue: "IEEE Transactions on Software Engineering (early access)"
     year: 2026
     doi: "10.1109/TSE.2026.3713834"
+    url: "https://doi.org/10.1109/TSE.2026.3713834"
     status: PARTIALLY_VERIFIED
     source_used: "Attempted independent verification 2026-08-12, genuine effort, incomplete result -- report this honestly rather than upgrading confidence without real confirmation. CONFIRMED: the DOI mechanically resolves (302 redirect) to a real, specific IEEE Xplore document (ieeexplore.ieee.org/document/11611921) -- this is not a dead or fabricated DOI. NOT CONFIRMED: the exact title, full author list, and venue details as given here -- IEEE Xplore's own page returned no extractable content on two attempts (consistent with this file's earlier-noted pattern of dl.acm.org/openreview.net blocking scraping), and neither web search nor dblp.org (Yihong Dong's own author page, which is normally comprehensive and fast to index IEEE TSE) surfaced a matching 2025-2026 Dong publication titled anything close to this. The closest match found by every search is a DIFFERENT, confirmed-real paper by an overlapping but non-identical author team: Dong, Jiang, Liu, Jin, Gu, Yang, Li (7 authors, no Zhang), 'Generalization or Memorization: Data Contamination and Trustworthy Evaluation for Large Language Models', ACL Findings 2024, arXiv 2402.15938 -- plausibly this entry's TSE 2026 version is a real, later, code-generation-focused extension of that same paper by the same core team plus one added author, not yet indexed by dblp/search because it is genuinely early-access (dblp coverage of very recent early-access IEEE articles can lag by weeks) -- but this is the most likely explanation, not a confirmed one. Recommend a direct IEEE Xplore check with institutional access before this entry is finalised for submission, since it could not be completed here."
 

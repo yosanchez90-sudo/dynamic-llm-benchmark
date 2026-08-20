@@ -86,7 +86,7 @@ def build_entry(e: dict) -> str:
     if e.get("arxiv"):
         lines.append(f"  eprint = {{{e['arxiv']}}},")
         lines.append("  archivePrefix = {arXiv},")
-    if e.get("url") and entry_type == "misc":
+    if e.get("url"):
         lines.append(f"  url = {{{e['url']}}},")
     lines.append("}")
     return "\n".join(lines)
