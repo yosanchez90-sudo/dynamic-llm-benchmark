@@ -64,3 +64,11 @@ paper/*.out
 paper/*.toc
 paper/*.fls
 paper/*.fdb_latexmk
+
+# Same convention for the supporting report and slide deck: the markdown
+# source (REPORT.md) and the build scripts are tracked; the rendered
+# .docx/.pptx/.pdf outputs regenerate from them and are not.
+paper/supporting_report/*.docx
+paper/supporting_report/*.pdf
+paper/slides/*.pptx
+paper/slides/*.pdf

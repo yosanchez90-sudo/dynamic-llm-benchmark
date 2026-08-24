@@ -70,6 +70,11 @@ STEPS: list[tuple[str, str, str]] = [
      "Noise floor by metric and Dynamic tier figure"),
     ("collapse_vs_survival_figure", "scripts/plot_collapse_vs_survival.py",
      "Collapse vs survival figure (raw vs coverage-adjusted Mut@K at n=3 vs n=7)"),
+    ("flow_diagram_figure", "scripts/plot_flow_diagram.py",
+     "End-to-end pipeline flow diagram (template to hypothesis test), for the "
+     "supporting report and slide deck -- structural, not data-derived"),
+    ("contamination_loop_figure", "scripts/plot_contamination_loop.py",
+     "Three-step contamination-loop diagram, for the slide deck -- structural, not data-derived"),
     ("research_questions_md", "scripts/build_research_questions_md.py",
      "docs/RESEARCH_QUESTIONS.md: diffable markdown mirror of docs/Research_questions.xlsx"),
     ("paper_bib", "scripts/build_paper_bib.py",
@@ -79,6 +84,11 @@ STEPS: list[tuple[str, str, str]] = [
     ("paper_values", "scripts/build_paper_values.py",
      "paper/values.tex: every quantitative value the paper cites, as LaTeX "
      "macros read live from analysis/*.csv"),
+    ("supporting_report_docx", "scripts/build_supporting_report_docx.py",
+     "paper/supporting_report/SUPPORTING_REPORT.docx: formatted from the "
+     "citation-gated markdown source, paper/supporting_report/REPORT.md"),
+    ("slides_pptx", "scripts/build_slides.py",
+     "paper/slides/SLIDES.pptx: the sixteen-slide ECS8056 presentation deck"),
     ("check_doc_citations", "scripts/check_doc_citations.py",
      "GATE: scan hand-written analysis/*.md docs for numeric claims that no "
      "longer match any live provenance source. Fails the build (nonzero "
