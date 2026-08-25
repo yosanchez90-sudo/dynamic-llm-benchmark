@@ -1,4 +1,4 @@
-"""Phase-1c follow-up (user-requested): (1) fill the missing
+"""Phase-1c follow-up: (1) fill the missing
 greedy + no_repeat_ngram_size=4 cell for factorial completeness; (2) measure
 per-generation wall-clock time, specifically for generations that run to the
 full max_new_tokens=2048 (the worst case), to size the wall-clock guard

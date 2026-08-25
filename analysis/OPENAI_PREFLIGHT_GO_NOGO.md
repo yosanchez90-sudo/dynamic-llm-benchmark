@@ -135,7 +135,7 @@ after an explicit go-ahead.
 
 ## Addendum, 2026-08-06 — submission attempted, one real gap in this checklist found and fixed
 
-The user gave explicit go-ahead and loaded credits. Submission used the
+Explicit go-ahead was given and credits were loaded. Submission used the
 direct upload/create path (`SUPERVISOR_HANDOFF_SUBMIT_ALL.md`'s pattern,
 applied to the exact three audited files) rather than regenerating via
 `create_batch.py --submit`, specifically so the artifacts already

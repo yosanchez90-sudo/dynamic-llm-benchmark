@@ -5,7 +5,7 @@ so we don't pay the 14GB reload cost at every epoch. Only runs exec gate +
 baseline pass — mutation scoring is skipped to keep runtime tractable
 (~15 min per checkpoint × 3 instantiations vs ~6h with mutation).
 
-MEASUREMENT POLICY (fixed 2026-07-12 after a multi-session investigation —
+MEASUREMENT POLICY (fixed 2026-07-12 after an extended investigation —
 see PROJECT_BRIEF-adjacent notes / analysis/README.md — into a false
 "collapse" in three of six fine-tuning conditions):
   - no_repeat_ngram_size is NEVER used here. It was added 2026-07-07 to

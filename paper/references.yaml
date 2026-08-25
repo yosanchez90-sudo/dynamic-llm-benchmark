@@ -563,7 +563,7 @@ entries:
     url: "https://doi.org/10.1145/3661167.3661216"
     status: COMPLETE
     source_used: "ACM DL returned HTTP 403 to direct fetch; confirmed via dblp author page (exact title/authors/venue/pages) plus independent corroboration of EASE 2024 location and dates (Salerno, Italy, Jun. 18-21 2024)."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the other direct LLM-unit-test-generation predecessor named alongside Schafer et al. Present in the docx manual-review draft, explicitly named in the user's own high-priority missing-reference list."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the other direct LLM-unit-test-generation predecessor named alongside Schafer et al. Present in the docx manual-review draft and flagged as a high-priority missing reference."
 
   - key: mccabe1976complexity
     authors:
@@ -578,7 +578,7 @@ entries:
     url: "https://doi.org/10.1109/TSE.1976.233837"
     status: COMPLETE
     source_used: "IEEE Xplore returned HTTP 418 to direct fetch; corroborated via independent search results and the paper's own PDF header ('IEEE TRANSACTIONS ON SOFTWARE ENGINEERING, VOL. SE-2, NO.4, DECEMBER 1976')."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the origin of the cyclomatic-complexity measure the entire L1-L4 tier system is built on, cited nowhere in the LaTeX rewrite despite the tiers being named after it throughout Methods. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the origin of the cyclomatic-complexity measure the entire L1-L4 tier system is built on, cited nowhere in the LaTeX rewrite despite the tiers being named after it throughout Methods. Present in the docx manual-review draft and flagged as a high-priority missing reference."
 
   - key: demillo1978hints
     authors:
@@ -595,7 +595,7 @@ entries:
     url: "https://doi.org/10.1109/C-M.1978.218136"
     status: COMPLETE
     source_used: "IEEE Xplore returned HTTP 418 to direct fetch; corroborated via dblp (journals/computer/DeMilloLS78) and ACM DL's mirror listing, both matching vol/no/pages exactly."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- one of the two foundational mutation-testing papers underpinning Mut@K as the primary metric, cited nowhere in the LaTeX rewrite despite mutation testing being this study's central methodology. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- one of the two foundational mutation-testing papers underpinning Mut@K as the primary metric, cited nowhere in the LaTeX rewrite despite mutation testing being this study's central methodology. Present in the docx manual-review draft and flagged as a high-priority missing reference."
 
   - key: jia2011mutation
     authors:
@@ -611,7 +611,7 @@ entries:
     url: "https://doi.org/10.1109/TSE.2010.62"
     status: COMPLETE
     source_used: "IEEE Xplore returned HTTP 418 to direct fetch; corroborated by multiple independent citation sources all matching vol. 37, no. 5, pp. 649-678, 2011."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the other foundational mutation-testing paper underpinning Mut@K, a survey covering the field's development. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the other foundational mutation-testing paper underpinning Mut@K, a survey covering the field's development. Present in the docx manual-review draft and flagged as a high-priority missing reference."
 
   - key: andrews2005mutation
     authors:
@@ -626,7 +626,7 @@ entries:
     url: "https://doi.org/10.1145/1062455.1062530"
     status: COMPLETE
     source_used: "ACM DL returned HTTP 403 to direct fetch (redirects to a legacy portal.cfm URL); confirmed via dblp record (exact title, authors, pages) and independent corroboration of ICSE 2005 dates/location."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the empirical basis for mutation score as a proxy for a suite's fault-detection ability, the specific claim this study's Methods section makes about Mut@K. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the empirical basis for mutation score as a proxy for a suite's fault-detection ability, the specific claim this study's Methods section makes about Mut@K. Present in the docx manual-review draft and flagged as a high-priority missing reference."
 
   - key: hui2024qwen25coder
     authors:
@@ -661,7 +661,7 @@ entries:
     url: "https://arxiv.org/abs/2409.12186"
     status: COMPLETE
     source_used: "Confirmed directly via arXiv abstract page. Full 24-author list obtained (docx spec had 'et al.' after the first 3); >10-author et-al. truncation applied at bibliography-render time only (scripts/build_paper_bib.py), not in this record."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the model family this study both evaluates (32B/7B/1.5B scaling sweep) and fine-tunes (1.5B, Comparison C), cited nowhere in the LaTeX rewrite. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the model family this study both evaluates (32B/7B/1.5B scaling sweep) and fine-tunes (1.5B, Comparison C), cited nowhere in the LaTeX rewrite. Present in the docx manual-review draft and flagged as a high-priority missing reference."
 
   - key: angrist2009mostly
     authors:
@@ -674,7 +674,7 @@ entries:
     url: "https://doi.org/10.1515/9781400829828"
     status: COMPLETE
     source_used: "Confirmed via Crossref API metadata directly (authoritative): title, both authors, publisher Princeton University Press, year 2009 all match exactly. No discrepancy found."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the methodological reference for the difference-in-differences design underlying H2/Comparison C, named throughout Section III-E and IV-A with no citation attached before this pass. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the methodological reference for the difference-in-differences design underlying H2/Comparison C, named throughout Section III-E and IV-A with no citation attached before this pass. Present in the docx manual-review draft and flagged as a high-priority missing reference."
 
   - key: efron1993bootstrap
     authors:
@@ -686,8 +686,8 @@ entries:
     doi: "10.1201/9780429246593"
     url: "https://doi.org/10.1201/9780429246593"
     status: COMPLETE
-    source_used: "The docx transcription gave '1993, Chapman & Hall, New York' -- the near-universal citation form for this classic text, and how the original print edition is conventionally cited. However, the DOI 10.1201/9780429246593's own Crossref record gives 'published 1994-05-15, publisher Chapman and Hall/CRC', not 1993/Chapman & Hall -- almost certainly a later CRC Press digital-reissue DOI retrofitted onto the book, a common pattern for older texts. Flagged explicitly to the user rather than silently resolved either way; user's ruling (2026-08-19): keep the DOI, cite the year/publisher the DOI's own record actually states (1994, Chapman and Hall/CRC) rather than the conventional-but-DOI-unverifiable 1993/Chapman & Hall form."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- every confidence interval in the paper is a bootstrap CI (H2/Comparison C); the estimator was never cited before this pass. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+    source_used: "The docx transcription gave '1993, Chapman & Hall, New York' -- the near-universal citation form for this classic text, and how the original print edition is conventionally cited. However, the DOI 10.1201/9780429246593's own Crossref record gives 'published 1994-05-15, publisher Chapman and Hall/CRC', not 1993/Chapman & Hall -- almost certainly a later CRC Press digital-reissue DOI retrofitted onto the book, a common pattern for older texts. Flagged rather than silently resolved either way; ruling (2026-08-19): keep the DOI, cite the year/publisher the DOI's own record actually states (1994, Chapman and Hall/CRC) rather than the conventional-but-DOI-unverifiable 1993/Chapman & Hall form."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- every confidence interval in the paper is a bootstrap CI (H2/Comparison C); the estimator was never cited before this pass. Present in the docx manual-review draft and flagged as a high-priority missing reference."
 
   - key: holm1979simple
     authors:
@@ -701,4 +701,4 @@ entries:
     url: "https://www.jstor.org/stable/4615733"
     status: COMPLETE
     source_used: "No DOI exists for this article (pre-DOI era, 1979); JSTOR stable URL confirmed via independent search corroboration (multiple citation aggregators giving identical vol/no/pages). JSTOR page itself not directly fetched (paywalled by design); stable ID cross-checked instead."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- 'Holm-Bonferroni' is named four times across the Results section (H1 Test 2, H3, H5, H6) with no citation attached anywhere before this pass. Present in the docx manual-review draft, explicitly named in the user's own high-priority list."
+    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- 'Holm-Bonferroni' is named four times across the Results section (H1 Test 2, H3, H5, H6) with no citation attached anywhere before this pass. Present in the docx manual-review draft and flagged as a high-priority missing reference."

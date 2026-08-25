@@ -12,7 +12,7 @@ contains real pytest assertions despite the source repo's README claiming
 ground-truth tests are withheld. That discrepancy is exactly what this
 experiment simulates: "the whole static benchmark leaked into training."
 
-Scope (per user's 2026-07-25 default, approved): the FULL effective ULT
+Scope (2026-07-25 supervisor-meeting default, approved): the FULL effective ULT
 (CC>=8 filtered, ~3,676 problems -- same filter src/data/ult_plt.py:load()
 applies for evaluation, so training and eval prompts are byte-identical for
 any shared task_id). core_400 is a subsample of this same pool by

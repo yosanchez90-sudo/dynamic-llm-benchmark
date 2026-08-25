@@ -124,7 +124,7 @@ submission STOP thresholds on a per-job basis; flagging the ~13.2h
 aggregate for transparency since it's an aggregate across jobs, not
 because any single submission approaches the threshold.
 
-**Your call before I submit anything:**
+**Open decisions before submission:**
 1. Which candidates — all 4 (+ optional Mistral-7B, 5 total), or a subset?
 2. Dynamic only (cheaper, directly answers the Dynamic↔ULT n_models=7 question
    with more cross-family points) or Dynamic + ULT (fuller picture, lets

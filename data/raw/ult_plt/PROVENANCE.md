@@ -20,7 +20,7 @@ contains a `tests` field (5 pytest-style assertions per function) and
 `ULT_Lite.jsonl` contains `test_list`. Only `PLT.jsonl`'s `test_input` field
 lacks real assertions (bare call expressions only).
 
-**Decision (2026-07-08, confirmed with the user):** this project's loader
+**Decision (2026-07-08):** this project's loader
 (`src/data/ult_plt.py`) does not read or use `tests`/`test_input`/`test_list`
 at all — Exec@K/Cov/Mut@K only need `code` (the reference implementation) plus
 this project's own mutation engine, exactly as for the Dynamic benchmark. The
@@ -180,7 +180,7 @@ full effective-ULT (3,676) — **90% core_400 coverage is not achievable within 
 design's constraints, not just not-yet-achieved.** This is now itself a reportable
 methodological finding (real-world scraped-benchmark ground truth is largely
 internally inconsistent even for the dataset's own answers), not only a blocker —
-flagged for the user/supervisor before proceeding past this point.
+flagged for supervisor review before proceeding past this point.
 
 **Confounder audit: seen (n=112) vs unseen (n=288)** — full prose interpretation in
 `analysis/COMPARISON_C_ANALYSIS_PLAN.md`; table reproduced here so it lives
@@ -228,7 +228,7 @@ crashing — and (b) switching to incremental, flushed-per-record writes so a fu
 edge case can't erase completed work. See `scripts/repair_ult_ground_truth.py`'s
 module docstring and commit `2c5a2c3`.
 
-## Tier / CC scoping — confirmed with the user (2026-07-08)
+## Tier / CC scoping — confirmed 2026-07-08
 
 - ULT is CC-filtered by its own authors to **CC >= 10 exclusively** (min 10,
   max 82, mean 14.87 — **this is the paper/vendor's own claimed CC field**,
@@ -305,7 +305,7 @@ projection from measured L1 latency + GPT-5's real per-tier token growth,
 ~112h, 7B ~94h, 32B ~293h) — every size individually exceeds this project's
 12h per-submission approval threshold, and 32B needs the already-contended
 `k2-gpu-a100`/`k2-gpu-h100` partitions across ~4 sharded 3-day jobs.
-Decided (with the user) to scope down instead:
+Scoped down instead:
 
   (a) every cross-model statistical test is already capped at `core_400`
       (closed-source models cannot exceed N=400/bench), so full-set Qwen

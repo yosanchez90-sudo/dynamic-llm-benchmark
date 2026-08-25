@@ -2,9 +2,9 @@
 shipped `code` field? A pre-flight check for the canonical Comparison C
 training-pair build (scripts/build_ult_training_pairs.py) -- STOP GATE A's
 5-sample preview found 0/5 samples fully passing, which is unexpected enough
-(session rule: ambiguous/contradicts-expectations evidence gets a full
-check, not a shrug) to need a real denominator across the whole corpus
-before anyone decides what to do about it.
+to warrant a full check rather than a shrug: a real denominator across the
+whole corpus, not a 5-sample impression, is what the scope-down decision
+below is actually based on.
 
 Runs each record's ground-truth test functions in a forked subprocess
 (timeout-guarded, since some real-world ULT functions loop/print heavily)

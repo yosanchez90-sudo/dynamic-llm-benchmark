@@ -24,7 +24,8 @@ from src.pricing import compute_cost
 # the SDK's own internal retry wasn't enough to ride it out and crashed the
 # whole job with 25/75 problems done). Everything else (400 bad request, 404
 # model not found, etc.) is a permanent error — retrying wastes time hitting
-# the same wall, per session decision not to build batch infra for Gemini.
+# the same wall. Gemini has no batch API equivalent to OpenAI's, so this
+# retry loop is the only mitigation rather than a stopgap before batch infra.
 _RETRYABLE_CODES = {429, 500, 502, 503, 504}
 _MAX_RETRIES = 5
 _BASE_BACKOFF_SECONDS = 2.0

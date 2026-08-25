@@ -391,7 +391,7 @@ def main() -> None:
         print(f"\ncore_400 ULT coverage: {len(covered)}/{len(core_400_ids)} ({pct:.1f}%) "
               f"have a verified seen-in-training pair")
         if pct < 90:
-            print("WARNING: core_400 coverage below 90% -- flagged per user's threshold.")
+            print("WARNING: core_400 coverage below 90% -- flagged per the 90% target threshold.")
 
 
 if __name__ == "__main__":

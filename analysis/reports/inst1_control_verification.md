@@ -261,7 +261,7 @@ Adapter hashes used (also now the exact values that would be logged by the schem
 
 Sanity cross-check: among token-identical rows, `baseline_passed` in the fresh generation is 9/108 (1.5B) and 47/147 (7B) — the 7B figure matches the 47/149 "also baseline_passed" count from the memorization-ceiling calculation in §G exactly, as it must: reproducing a training target verbatim reproduces its correctness (or lack of it) too.
 
-Spot-read (as requested, to confirm real generation differences rather than artifacts):
+Spot-read to confirm real generation differences rather than artifacts:
 - **Near-identical case** (1.5B, `L2-bucket-001`/1103, normalized edit distance 0.0035): generated and target text match character-for-character for the first 300+ characters checked; the tiny remaining diff is a minor formatting/wording difference later in the file, not a structural change.
 - **Substantially different case** (1.5B, `L1-arithmetic-002`/1105, normalized edit distance 0.77): generated output uses a different test structure entirely (bare `normal_cases`/`edge_cases` lists, no `pytest.mark.parametrize`, different — and arithmetically inconsistent — expected values in the comments) versus the target's `@pytest.mark.parametrize`-based test with different numbers. These are genuinely different generations, not a truncation or extraction artifact.
 
