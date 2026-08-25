@@ -1,33 +1,32 @@
 # Contamination notice: `epoch_perf_finetune_*.csv`
 
-**Corrected 2026-07-14 — see `analysis/README_QUARANTINE.md` for the
-evidence trail; that file is authoritative for the per-file classification
-below, this file's prose is kept in sync with it.**
+**Corrected 2026-07-14. See `analysis/README_QUARANTINE.md` for the
+evidence trail. That file is authoritative for the per-file classification
+below. This file's prose is kept in sync with it.**
 
 **Three of the six files in this directory were measured under a generation
 config that fabricated a near-total collapse (one of the three only
-partially — see table). Do not use the contaminated files as the
-"post-fine-tune" numbers for Comparison C. Do not edit or delete them —
-append-only applies to this quarantine too — this notice is the correction,
-not a rewrite of the data.**
+partially). Do not use the contaminated files as the "post-fine-tune"
+numbers for Comparison C. Do not edit or delete them. Append-only applies
+to this quarantine too. This notice is the correction, not a rewrite of
+the data.**
 
 ## Which files, and why
 
-Paths below are `analysis/epoch_perf_finetune_*.csv` — the pre-fix,
+Paths below are `analysis/epoch_perf_finetune_*.csv`, the pre-fix,
 quarantined set this notice describes. The corrected replacement set lives
-at a different path entirely, `data/results/finetune_rebuild/epoch_perf_*.csv`
-(see "Where the corrected data lives" below); the two are never the same
-file under two names.
+at a different path entirely, `data/results/finetune_rebuild/epoch_perf_*.csv`.
+The two are never the same file under two names.
 
 | File | Status |
 |---|---|
-| `epoch_perf_finetune_qwen1_5b_bp_own_30ep.csv` | **Contaminated, partially** — epochs 1–20 read healthy (exec_rate 0.90–0.99); epoch 25 (inst2/3) and epoch 30 (all insts) collapse to 0.0 |
-| `epoch_perf_finetune_qwen1_5b_bp_gpt5_30ep.csv` | **Contaminated** — collapses from epoch 3 onward |
-| `epoch_perf_finetune_qwen7b_bp_own_30ep.csv` | Unaffected — mtime 2026-07-06 03:18 predates the bug (2026-07-07) by ~1 day; every row is healthy (exec_rate 0.987–1.0, all 30 epochs, all 3 insts). Previously mislabeled "Contaminated" here; see README_QUARANTINE.md |
-| `epoch_perf_finetune_qwen7b_bp_gpt5_30ep.csv` | **Contaminated** — collapses from epoch 5 onward |
+| `epoch_perf_finetune_qwen1_5b_bp_own_30ep.csv` | **Contaminated, partially**: epochs 1–20 read healthy (exec_rate 0.90–0.99). Epoch 25 (inst2/3) and epoch 30 (all insts) collapse to 0.0 |
+| `epoch_perf_finetune_qwen1_5b_bp_gpt5_30ep.csv` | **Contaminated**: collapses from epoch 3 onward |
+| `epoch_perf_finetune_qwen7b_bp_own_30ep.csv` | Unaffected: mtime 2026-07-06 03:18 predates the bug (2026-07-07) by ~1 day. Every row is healthy (exec_rate 0.987–1.0, all 30 epochs, all 3 insts). Previously mislabeled "Contaminated" here. See README_QUARANTINE.md |
+| `epoch_perf_finetune_qwen7b_bp_gpt5_30ep.csv` | **Contaminated**: collapses from epoch 5 onward |
 | `epoch_perf_finetune_qwen1_5b_inst1_30ep.csv` | Unaffected (measured 2026-06-30, before the bug existed) |
 | `epoch_perf_finetune_qwen7b_inst1_30ep.csv` | Unaffected (measured 2026-06-29, before the bug existed) |
-| `stability_*.csv` | Unrelated — Dynamic-benchmark data via `src/models/local.py`, which never used the setting below |
+| `stability_*.csv` | Unrelated: Dynamic-benchmark data via `src/models/local.py`, which never used the `no_repeat_ngram_size` setting |
 
 ## Root cause
 
@@ -38,7 +37,7 @@ file under two names.
 included. The system prompt (`src/data/test_gen.py:SYSTEM_INSTRUCTION`)
 contains the literal phrase `` `from under_test import <function_name>` ``
 as a formatting instruction. Any checkpoint that correctly followed that
-instruction had its own mandatory first line corrupted — writing it again
+instruction had its mandatory first line corrupted. Writing it again
 tripped the n-gram repeat ban, forcing a wrong token in its place
 (`from under_testimport format_value`, `from under_test imporformat_value`,
 etc.), which broke the Python syntax and failed the exec gate on nearly
@@ -49,17 +48,16 @@ enabled vs 50/50 with it disabled, reproduced under both greedy and
 sampling decoding, independent of `repetition_penalty`. This single setting
 explains the entire recorded collapse in `bp_gpt5` (both sizes) and the
 late-epoch (25/30) collapse in `qwen1_5b_bp_own`. `qwen7b_bp_own` was never
-actually run under the buggy script at all — its file predates the bug by a
-day — so it was healthy the whole time, but that's a timing accident, not
-evidence the bug is milder for `bp_own` as a condition.
+run under the buggy script. Its file predates the bug by a day, so it was
+healthy the whole time. That's a timing accident, not evidence the bug is
+milder for `bp_own` as a condition.
 
-The wall-clock stopping criteria that was added alongside it (guarding
-against a checkpoint that never emits EOS) was solving a **real** problem —
-job `9315777` (2026-07-05, the original `bp_gpt5`/7B sweep) genuinely hung
-for ~11.5 hours at epoch 5/instantiation 1 before SLURM killed it at the
-12-hour limit — and was kept, with its timeout resized from an inherited
-45s to an empirically-justified 240s (see `scripts/eval_checkpoints.py`'s
-module docstring for the measurement).
+The wall-clock stopping criteria added alongside it (guarding against a
+checkpoint that never emits EOS) was solving a **real** problem. Job
+`9315777` (2026-07-05, the original `bp_gpt5`/7B sweep) hung for ~11.5
+hours at epoch 5/instantiation 1 before SLURM killed it at the 12-hour
+limit. It was kept, with its timeout resized from an inherited 45s to an
+empirically-justified 240s.
 
 ## Date range
 
@@ -76,11 +74,11 @@ guard, full resolved generation config logged into every row, including a
 greedy draw and several sampling draws). `src/Contamination/data.py`
 defaults to this location.
 
-## Why this is here instead of just fixed silently
+## Why this is documented, not just fixed
 
-This quarantine-with-explanation is itself part of the reproducibility
+This quarantine-with-explanation is part of the reproducibility
 record: a measurement artifact was found, explained with evidence
-(including cross-referencing to the exact SLURM job that hung), and
-isolated without touching the original data. See the investigation's
+(including cross-referencing to the SLURM job that hung), and
+isolated without touching the original data. The investigation's
 diagnostic scripts (`scripts/diagnose_collapse*.py`) and their outputs
-(`data/results/debug_collapse/`) for the full evidence chain.
+(`data/results/debug_collapse/`) hold the full evidence chain.

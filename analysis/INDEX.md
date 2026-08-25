@@ -1,15 +1,14 @@
 # analysis/ — document index
 
-107 files directly in `analysis/` (53 `.md`, 47 `.csv`, 6 `.py`, 1 `.xlsx`),
+107 files in `analysis/` (53 `.md`, 47 `.csv`, 6 `.py`, 1 `.xlsx`),
 plus five subdirectories (`derived/`, `diversity/`, `equiv_mutants/`,
 `reports/`, `figures/`) holding another 50. Grouped below by role.
 
-**`analysis/README.md` is not this index** — it's a specific contamination
-notice about six fine-tuning result files (see [Preserved historical
-record](#preserved-historical-record-24-docs) below). This file
-(`analysis/INDEX.md`) is the general index; it lives at a different path so
-that the 13 existing references to `analysis/README.md`'s contamination
-content elsewhere in the codebase don't break.
+**`analysis/README.md` is not this index.** It's a contamination notice
+about six fine-tuning result files. This file (`analysis/INDEX.md`) is the
+index. It lives at a different path so that the 13 existing
+references to `analysis/README.md`'s contamination content elsewhere in the
+codebase don't break.
 
 ## Hand-written interpretation (11 docs)
 
@@ -20,10 +19,10 @@ Prose analysis of a research question, hypothesis, or finding.
 | `COMPARISON_A_INTERPRETATION.md` | Interpretation of Dynamic-L4 vs ULT (H1 Test 1): rank-agreement reading, outlier discussion. |
 | `COMPARISON_C_ANALYSIS_PLAN.md` | Pre-registered plan for the contamination difference-in-differences design (seen/unseen split, estimand). |
 | `COMPARISON_C_INTERPRETATION.md` | Interpretation of the seen/unseen/PLT/Dynamic contamination gradient result. |
-| `FINETUNE_ENDPOINT_PROVENANCE.md` | Methodology and headline verdict for the epoch-30 endpoint table. Despite the "PROVENANCE" name, this is hand-written interpretation, not auto-generated — it has no `Generated:`/`Git commit:` header, and the real auto-generated sidecar (`finetune_endpoint_table_PROVENANCE.md`, below) explicitly calls this file out as "not touched by this script." |
+| `FINETUNE_ENDPOINT_PROVENANCE.md` | Methodology and headline verdict for the epoch-30 endpoint table. Despite the "PROVENANCE" name, this is hand-written interpretation, not auto-generated. It has no `Generated:`/`Git commit:` header, and the auto-generated sidecar (`finetune_endpoint_table_PROVENANCE.md`) calls this file out as "not touched by this script." |
 | `H3_ANALYSIS_PLAN.md` | Pre-registered plan for the tier-vs-mutation-score gradient test (RQ2). |
 | `H3_INTERPRETATION.md` | Interpretation of the 9-model tier-gradient result (H3/RQ2). |
-| `H4_DESIGN_MEMO.md` | Three-option design memo for RQ3/H4, ending in a decision to leave it untested. Dual-natured — also functions as the preserved record of that decision (see historical record below); filed here since it's primarily reasoning, not an incident report. |
+| `H4_DESIGN_MEMO.md` | Three-option design memo for RQ3/H4, ending in a decision to leave it untested. Dual-natured: also functions as the preserved record of that decision. Filed here since it's primarily reasoning, not an incident report. |
 | `METRICS_AND_FINDINGS_EXPLAINED.md` | Self-contained explainer of the metric chain and every finding, with bug history. |
 | `RQ5_ANALYSIS_PLAN.md` | Pre-registered plan for cross-benchmark validity (RQ5/H6). |
 | `RQ5_INTERPRETATION.md` | Interpretation of RQ5/H6 cross-benchmark rank agreement, with correction history. |
@@ -57,43 +56,44 @@ steps in `scripts/build_thesis_assets.py` and reproducible by rerunning it.
 
 ## Auto-generated provenance — data files (47 `.csv` + 1 `.xlsx`)
 
-Each pairs with one of the narrative docs above or with a
-`scripts/build_thesis_assets.py` step directly; not tabulated individually
-here — see the matching narrative doc, or run
-`python scripts/build_thesis_assets.py --list` for the full step registry.
+Each pairs with one of the narrative docs above, or with a
+`scripts/build_thesis_assets.py` step. Not tabulated individually. The
+matching narrative doc has the description. `python
+scripts/build_thesis_assets.py --list` shows the full step registry.
+
 Eleven CSVs (`comparison_c_confounder_audit.csv`,
 `comparison_c_unseen_vs_plt_audit.csv`, `ult_ground_truth_baseline.csv`,
 `ult_ground_truth_taxonomy.csv`, and the six `epoch_perf_finetune_*.csv`
-condition files) are auto-generated but produced by a script outside the
-`build_thesis_assets.py` registry, so they aren't reproduced by a plain
-rerun — see the historical diagnostics that produced them in
-`scripts/README.md`. `rq5_public_scores.csv` is the one exception that's
+condition files) are auto-generated, produced by a script outside the
+`build_thesis_assets.py` registry. They aren't reproduced by a plain rerun.
+The historical diagnostics that produced them are indexed in
+`scripts/README.md`. `rq5_public_scores.csv` is the one exception,
 hand-compiled, not script-generated (published BigCodeBench scores,
-manually researched — see `RQ5_LEADERBOARD_HARVEST.md`).
+manually researched, indexed in `RQ5_LEADERBOARD_HARVEST.md`).
 
 ## Preserved historical record (24 docs)
 
-Records of a specific past incident, correction, or decision, kept for the
-audit trail rather than as current/live guidance.
+Records of a past incident, correction, or decision, kept for the
+audit trail, not as current/live guidance.
 
 | Document | Description |
 |---|---|
 | `EXCLUSIONS.md` | Log of 7 excluded batch requests (transient API errors) for inst1 L3/L4. |
 | `FIGURE_AUDIT.md` | Audit of which figures have provenance sidecars, gaps found/fixed. |
 | `GEMINI_DAILY_CRAWL.md` | Runbook/status for the Gemini Pro Preview daily-crawl coverage gap (now closed). |
-| `GENERATION_CONFIG_GAP_local_qwen.md` | Records an unlogged, silently-inherited `repetition_penalty`/`top_k` default bug. |
+| `GENERATION_CONFIG_GAP_local_qwen.md` | Records a bug from an unlogged, inherited `repetition_penalty`/`top_k` value. |
 | `HYPOTHESIS_COVERAGE_AUDIT.md` | Per-hypothesis pipeline/verdict audit against the six approved hypotheses. |
 | `HYPOTHESIS_DEVIATIONS.md` | Ledger of approved wording vs what was executed, per hypothesis, and why it differs. |
 | `MUTANT_COUNT_SPEC_AUDIT.md` | Discrepancy audit: `PROJECT_BRIEF.md`'s mutant-count spec vs observed data. |
 | `OPENAI_COST_AND_BILLING.md` | Pre-spend cost/billing investigation for GPT-5/-mini batches. |
 | `OPENAI_PREFLIGHT_GO_NOGO.md` | Pre-flight checklist (corpus-drift check) before submitting GPT-5 batches. |
-| `OPEN_ITEMS.md` | Pre-submission checklist (blocking / disclose / future-work items); several entries record already-closed discrepancies with dates, but as of writing some remain live. |
+| `OPEN_ITEMS.md` | Pre-submission checklist (blocking / disclose / future-work items). Several entries record closed discrepancies with dates. As of writing, some remain live. |
 | `README.md` | Contamination notice: which `epoch_perf_finetune_*.csv` files were corrupted, and why. |
-| `README_QUARANTINE.md` | Correction layer on top of `README.md`; documents one discrepancy between the two. |
+| `README_QUARANTINE.md` | Correction layer on top of `README.md`. Documents one discrepancy between the two. |
 | `RQ5_CROSS_DEFINITION_AUDIT.md` | Revision history resolving a Mut@K definition contradiction against the ULT source paper. |
 | `RQ5_CROSS_FAMILY_PROPOSAL.md` | Original proposal for the 4-model cross-family extension, preserved as written. |
 | `RQ5_LEADERBOARD_HARVEST.md` | Dated log of which pinned model snapshots have published BigCodeBench numbers. |
-| `RQ5_SUPERVISOR_SUMMARY_20260729.md` | Dated supervisor-meeting summary; its headline correlation figure is since superseded (see `RQ5_INTERPRETATION.md`). |
+| `RQ5_SUPERVISOR_SUMMARY_20260729.md` | Dated supervisor-meeting summary. Its headline correlation figure is superseded. The current figure is in `RQ5_INTERPRETATION.md`. |
 | `SUPERVISOR_HANDOFF_20260714.md` | Handoff note: GPT-5/-mini Dynamic-benchmark batch requests, ready to submit. |
 | `SUPERVISOR_HANDOFF_SUBMIT_ALL.md` | Consolidated submission summary for all three pending GPT batches. |
 | `SUPERVISOR_HANDOFF_ULT_PLT_20260713.md` | Handoff note: GPT-5/-mini ULT/PLT `core_400` batch, ready to submit. |
@@ -107,22 +107,22 @@ audit trail rather than as current/live guidance.
 
 | Document | Description |
 |---|---|
-| `CITATION_ALLOWLIST.md` | Hand-maintained, actively-edited file feeding `scripts/check_doc_citations.py` — entries tagged historical/verified-current/definitional. Doesn't fit the three roles above cleanly: not prose interpretation, not script output, and not a closed incident. |
+| `CITATION_ALLOWLIST.md` | Hand-maintained, actively-edited file feeding `scripts/check_doc_citations.py`, entries tagged historical/verified-current/definitional. Doesn't fit the three roles above cleanly: not prose interpretation, not script output, and not a closed incident. |
 
 ## Investigation scripts (6 `.py` files)
 
 `inst1_control_analyze_generation.py`, `inst1_control_generate_epoch30.py`,
 `inst1_control_lora_b_norms.py`, `inst1_control_memorization_ceiling.py`,
-`inst1_control_parse_training_logs.py`, `inst1_control_stats.py` — read-only
+`inst1_control_parse_training_logs.py`, `inst1_control_stats.py`: read-only
 helper scripts for one investigation (whether an inst1 LoRA fine-tune was a
-genuine null result). Their write-up is `analysis/reports/inst1_control_verification.md`.
+null result). Their write-up is `analysis/reports/inst1_control_verification.md`.
 
 ## Subdirectories
 
 | Directory | Contents |
 |---|---|
-| `derived/` (8 files) | Auto-generated derived data (epoch-perf gap CSVs, inst1-control generation JSONL/McNemar CSVs); not in the `build_thesis_assets.py` registry. |
-| `diversity/` (9 files) | `README.md` + `thresholds.md` are hand-written methodology/policy; the rest are auto-generated from a SLURM diversity-audit run, also outside the registry. |
-| `equiv_mutants/` (3 files) | `README.md` is hand-written methodology; `inspection_sheet.xlsx` and `sample_manifest.json` are an auto-generated sample pack. |
-| `reports/` (1 file) | `inst1_control_verification.md` — the hand-written write-up for the investigation scripts above. |
+| `derived/` (8 files) | Auto-generated derived data (epoch-perf gap CSVs, inst1-control generation JSONL/McNemar CSVs). Not in the `build_thesis_assets.py` registry. |
+| `diversity/` (9 files) | `README.md` + `thresholds.md` are hand-written methodology/policy. The rest are auto-generated from a SLURM diversity-audit run, also outside the registry. |
+| `equiv_mutants/` (3 files) | `README.md` is hand-written methodology. `inspection_sheet.xlsx` and `sample_manifest.json` are an auto-generated sample pack. |
+| `reports/` (1 file) | `inst1_control_verification.md`: the hand-written write-up for the investigation scripts above. |
 | `figures/` (29 files) | Auto-generated PDF/PNG figures from the `plot_*.py` registry steps, plus a handful of superseded/archived figures kept for the record. |
