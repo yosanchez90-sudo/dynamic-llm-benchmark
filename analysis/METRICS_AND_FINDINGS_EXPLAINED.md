@@ -1,22 +1,22 @@
 # Metrics and findings, explained
 
 **Purpose of this document.** A single, self-contained reference for anyone
-who understands software testing but has never seen this project — how a
+who understands software testing but has never seen this project, how a
 model response turns into a number, what every reported metric actually
 means, why the sample size changes between tables, what the findings are
 and how strong each one really is, what the data does *not* support, and a
 full accounting of every measurement bug found and fixed along the way.
-Written for explaining the work end to end, not as a quick-reference card —
+Written for explaining the work end to end, not as a quick-reference card,
 favours completeness over brevity throughout.
 
 Hand-written, not auto-generated, but every number in it is either quoted
 from an auto-generated table (cited by file) or computed live from raw
 result files while writing this (also cited). Treat any specific point
 estimate as current-as-of 2026-08-10 (refreshed for the 2026-08-07/08 data
-landing — GPT-5/GPT-5-mini's ULT/PLT batches submitted and scored, Claude
+landing, GPT-5/GPT-5-mini's ULT/PLT batches submitted and scored, Claude
 Sonnet/Haiku inst5 completed, Gemini Pro Preview's Dynamic-L4 crawl
-partially landed); re-check the cited source before quoting it in the
-dissertation itself, since several of these numbers have already moved
+partially landed). Re-check the cited source before quoting it in the
+dissertation, since several of these numbers have already moved
 more than once as bugs were found or data landed (§6 documents this
 explicitly).
 
@@ -28,7 +28,7 @@ explicitly).
 
 Before any scoring happens, it matters exactly what the model was shown.
 Quoted **verbatim** from `src/data/test_gen.py`, the single builder every
-problem in this project — Dynamic and ULT/PLT alike — goes through:
+problem in this project, Dynamic and ULT/PLT alike, goes through:
 
 ```python
 SYSTEM_INSTRUCTION = (
@@ -47,13 +47,13 @@ def _build_messages(source, prompting_condition, supports_system_role=True):
     ...
 ```
 
-`source` is the **full function body** — for Dynamic, the complete
-rendered implementation (docstring, control flow, `return`, everything —
-see the `sum_values` worked example in Stage 2 below); for ULT/PLT,
+`source` is the **full function body**: for Dynamic, the complete
+rendered implementation (docstring, control flow, `return`, everything,
+shown in the `sum_values` worked example in Stage 2 below); for ULT/PLT,
 `r["code"]`, the complete shipped implementation from the raw dataset. **This
 is a "generate tests for this implementation" design, not a "generate
-tests from this specification" one** — the model is never asked to write
-tests from a signature-plus-docstring alone; it always sees, and can read,
+tests from this specification" one**. The model is never asked to write
+tests from a signature-plus-docstring alone. It always sees, and can read,
 the real control flow it's being asked to exercise.
 
 **ULT/PLT poses the task identically to Dynamic, confirmed by code, not
@@ -64,37 +64,37 @@ template-rendered function. Same system instruction, same user-message
 template, same full-body framing, same import-line requirement. The two
 benchmarks differ in **where the function came from** (a parameterised
 template vs. real, scraped code) and in the CC/complexity distribution
-that follows from that — not in how the task is posed to the model. This
-is a load-bearing fact for Comparison A specifically: its comparability
+that follows from that, not in how the task is posed to the model. This
+is a load-bearing fact for Comparison A: its comparability
 claim (Dynamic-L4 vs ULT, same model, same prompting structure) depends on
-this, and it now has a direct code citation rather than an assumption.
+this, and it now has a direct code citation, not an assumption.
 
 One conditional wrinkle, already documented elsewhere and repeated here
 for completeness: `supports_system_role=False`
 (`configs/*starcoder2*.yaml`) folds `SYSTEM_INSTRUCTION` into the first
 user turn instead of a separate `role="system"` message, for the one
 model (StarCoder2-15B-Instruct) whose chat template rejects a system role
-outright. The instruction **text** is byte-identical either way — only
+outright. The instruction **text** is byte-identical either way. Only
 its delivery position differs.
 
 Every model response goes through the same three-stage pipeline before it
 produces a single number. All three stages live in
-`src/eval/test_gen_scorer.py`, and the stages are strictly sequential — a
+`src/eval/test_gen_scorer.py`, and the stages are strictly sequential. A
 response that fails stage 1 never reaches stage 2, and a response that
 fails stage 2 never reaches stage 3.
 
 ### Stage 0 (before scoring): extraction and repair
 
 **`extract_test_file()`** (`test_gen_scorer.py:91-101`) pulls a pytest file
-out of the raw model response — prefers a fenced ` ```python ` block, falls
+out of the raw model response, prefers a fenced ` ```python ` block, falls
 back to scanning for the first `import`/`def` line. This is purely
-string-level; nothing is executed yet.
+string-level. Nothing is executed yet.
 
 **`sanitize_test_file()`** (`test_gen_scorer.py:104-147`) then applies two
 mechanical repairs, in order, and records which ones fired:
 
-1. **Strip any reimplementation of the function under test.** Some models —
-   overwhelmingly the smallest, Qwen2.5-Coder-1.5B — write a *second copy*
+1. **Strip any reimplementation of the function under test.** Some models,
+   overwhelmingly the smallest, Qwen2.5-Coder-1.5B, write a *second copy*
    of the function inside the test file instead of importing the real one,
    then test their own reimplementation instead of the function actually
    being evaluated. Any top-level `def <fn_name>(...)` block matching the
@@ -105,7 +105,7 @@ mechanical repairs, in order, and records which ones fired:
 
 Both repairs are logged into the row's `notes` field
 (`src/eval/test_gen_runner.py:266`, `"; ".join(...repairs)`), so any row
-that was mechanically repaired is identifiable after the fact — this is
+that was mechanically repaired is identifiable after the fact. This is
 what powers the sanitizer-sensitivity check in §4.
 
 **Real example** (`data/results/ult/Qwen__Qwen2.5-Coder-1.5B-Instruct__ult__zero_shot__instcore_400__20260713T123923.jsonl`,
@@ -130,14 +130,14 @@ def test_for_S(row, col):
 ```
 
 The sanitizer stripped the fake `for_S` definition and prepended
-`from under_test import for_S`; the row's `notes` field records exactly
+`from under_test import for_S`. The row's `notes` field records exactly
 this: `"suite failed on original; Mut@K excluded; stripped reimplementation
 of 'for_S'; prepended 'from under_test import for_S'"`. Even after the
-repair the test still fails at the baseline gate (stage 2 below) — the
+repair the test still fails at the baseline gate (stage 2 below). The
 sanitizer fixes *structural* problems (wrong import, a shadow
 reimplementation), not *logical* ones (the test still assumes `for_S`
 returns something indexable, which it never did). This is a real,
-representative case, not a cherry-picked worst case — it is the shortest of
+representative case, not a cherry-picked worst case. It is the shortest of
 several dozen rows with this exact repair pattern in the same file.
 
 ### Stage 1 — the exec gate: does the suite even collect?
@@ -152,11 +152,11 @@ collision, or a collection timeout all fail this gate.
 
 If this gate fails, `score_problem()` returns immediately
 (`test_gen_scorer.py:274-277`) with `exec_ok=False`, `baseline_passed=False`,
-`mutation_score=None`, and every mutation-related field zeroed — nothing
+`mutation_score=None`, and every mutation-related field zeroed. Nothing
 downstream of this point is even attempted. **What it rejects**: malformed
 Python, missing imports the sanitizer didn't catch, and any response so
 badly cut off (e.g. by a token limit) that it isn't syntactically valid
-Python at all.
+Python.
 
 ### Stage 2 — the baseline gate: does the suite pass against the *real* function?
 
@@ -167,15 +167,15 @@ function-under-test (`test_gen_scorer.py:280-282`). `baseline_passed` is
 implementation (pytest exit code 0).
 
 **This is a stricter, later condition than the exec gate, and the two are
-tracked as separate fields for exactly this reason** — a suite can import
+tracked as separate fields for exactly this reason**. A suite can import
 and collect perfectly (`exec_ok=True`) while still failing here because its
 assertions encode the *wrong* expected behaviour (the model misunderstood
 what the function does). If this gate fails, `score_problem()` again
 returns immediately (`test_gen_scorer.py:284-287`), with
 `mutation_score=None` and `notes="suite failed on original; Mut@K
-excluded"` — no mutant is ever run.
+excluded"`. No mutant is ever run.
 
-**Worked example — the same problem, two real models, opposite outcomes at
+**Worked example: the same problem, two real models, opposite outcomes at
 this exact gate.** Dynamic-benchmark template `L3-clamp-seq-001`
 (`template_corpus/templates/L3/L3-clamp-seq-001.py`), instance seed 1102.
 The instantiated function under test (built by the project's own template
@@ -195,9 +195,9 @@ def sum_values(values):
     return agg
 ```
 
-Despite the name (a deliberately generic, non-descriptive identifier — see
-the "why the naming is misleading" note below), this function **clamps**
-every element of `values` into `[8, 33]`; it does not sum anything.
+Despite the name (a deliberately generic, non-descriptive identifier,
+explained in the "why the naming is misleading" note below), this function **clamps**
+every element of `values` into `[8, 33]`. It does not sum anything.
 
 **Qwen2.5-Coder-1.5B-Instruct's full response** (from
 `data/results/dynamic/Qwen__Qwen2.5-Coder-1.5B-Instruct__dynamic__zero_shot__inst1__20260609T221336.jsonl`):
@@ -218,13 +218,13 @@ def test_sum_values(values, expected):
     assert sum_values(values) == expected
 ```
 
-This response misunderstands the function entirely — most cases assert the
+This response misunderstands the function entirely. Most cases assert the
 input is returned **unchanged** even where elements are clearly out of
 `[8, 33]` (e.g. `40`, `-15`, `200` all left untouched), and the one case
 that does predict clamping (`[100, 200, 300] -> [8, 33, 33]`) gets the
 clamped values wrong too (everything above 33 should clamp to `33`, giving
 `[33, 33, 33]`, not `[8, 33, 33]`). Result: `exec_rate=1.0` (the file
-collects fine — valid Python, correct import) but `baseline_passed=False`
+collects fine, valid Python, correct import) but `baseline_passed=False`
 (the assertions fail against the real function), so
 `mutation_score=None`, `notes="suite failed on original; Mut@K excluded"`.
 This row is **entirely excluded** from this model's Mut@K mean under the
@@ -232,7 +232,7 @@ pre-registered definition (§2).
 
 **Claude Sonnet 4.6's full response for the identical problem** (from
 `data/results/dynamic/claude-sonnet-4-6__dynamic__zero_shot__inst1__20260714T141018.jsonl`,
-abbreviated — 33 test functions in total covering the empty-list case,
+abbreviated, 33 test functions in total covering the empty-list case,
 both boundaries from both directions, negative values, floats, a
 return-type check, and a non-mutation "input not modified" check):
 
@@ -260,31 +260,31 @@ def test_original_list_not_modified():
 # ... (27 more, same style)
 ```
 
-`exec_rate=1.0`, `baseline_passed=True` — every one of the 33 assertions
+`exec_rate=1.0`, `baseline_passed=True`. Every one of the 33 assertions
 holds against the real function. This row proceeds to Stage 3.
 
 **Why the function is named `sum_values` despite summing nothing**: the
 identifier is drawn from `IdentifierBank(role="function_L3")` at template-
 instantiation time (`L3-clamp-seq-001.py`'s `parameter_spec`), independent
-of what the function actually does. This is deliberate — it is part of the
+of what the function actually does. This is deliberate. It is part of the
 project's contamination-resistance design (PROJECT_BRIEF.md §5.2's
 "variable names, values, constants, and docstring synonyms vary across
 instances"): a model that has memorised a "clamp" pattern under a
 conventional name (`clamp`, `clip`, `bound`) gets no benefit from that
 memorisation when the same logic appears under an unrelated name and a
 paraphrased docstring. Qwen 1.5B's failure above is exactly the kind of
-result this design is meant to surface honestly rather than mask.
+result this design is meant to surface honestly, not mask.
 
 ### Stage 3 — mutation scoring: only reached if stages 1 and 2 both passed
 
 `score_problem()` (`test_gen_scorer.py:289-308`) runs the test suite
-against every mutant of the function, in parallel (a thread pool — one
+against every mutant of the function, in parallel (a thread pool, one
 worker per mutant, since each worker just coordinates a `subprocess.run`
 call). For each mutant, `_evaluate_mutant()` (`test_gen_scorer.py:222-252`)
 does:
 
 1. Try `python -c "import under_test"` against the mutated source. If this
-   raises or times out, the mutant is **`dropped`** — it never got a fair
+   raises or times out, the mutant is **`dropped`**. It never got a fair
    chance to be tested, so it counts in neither the killed nor the
    survived tally.
 2. Otherwise run the full suite against the mutant. **`killed`** if the
@@ -292,10 +292,10 @@ does:
    still passes.
 
 For the Sonnet example above: `mutants_total=21`, `mutants_dropped=0`
-(every mutant imported cleanly), `mutants_killed=17` — 17 of the 21
+(every mutant imported cleanly), `mutants_killed=17`. 17 of the 21
 syntactic variants of the clamp logic (e.g. `<` swapped for `<=`, `8`
 swapped for `9`, the `append` in one branch swapped for a no-op) were
-caught by at least one of the 33 tests; 4 survived undetected.
+caught by at least one of the 33 tests. 4 survived undetected.
 `mutation_score = 17/21 = 0.8095`.
 
 ---
@@ -303,7 +303,7 @@ caught by at least one of the 33 tests; 4 survived undetected.
 ## 2. Every metric, defined once
 
 All formulas below use `mutation_score`, `baseline_passed`, `exec_rate`,
-`mutants_total`, `mutants_killed`, `mutants_dropped_for_import_failure` —
+`mutants_total`, `mutants_killed`, `mutants_dropped_for_import_failure`,
 the per-row fields written by `score_problem()` and read by
 `src/Analysis/loader.py::load_records()`.
 
@@ -311,15 +311,15 @@ the per-row fields written by `score_problem()` and read by
 
 **Formula**: 1.0 if the exec gate (§1 Stage 1) passed for this row, else
 0.0 (the harness stores it as a rate because some earlier code paths
-support K>1 attempts per problem; in this project's actual runs K=1, so it
+support K>1 attempts per problem. In this project's actual runs K=1, so it
 is effectively a 0/1 indicator per row).
-**Conditional on**: nothing — always defined for every row.
-**Used in**: reported as a secondary metric alongside coverage; the
+**Conditional on**: nothing, always defined for every row.
+**Used in**: reported as a secondary metric alongside coverage. The
 project's own docstring for the exec gate calls it "**Gate** (>0 to score
 the rest)" (PROJECT_BRIEF.md §5.4).
 **Known failure mode**: a high `exec_rate` says only that the response was
-syntactically valid, importable Python — it says nothing about whether the
-test asserts anything correct (see the Qwen 1.5B example above, which has
+syntactically valid, importable Python. It says nothing about whether the
+test asserts anything correct (the Qwen 1.5B example above has
 `exec_rate=1.0` and is still a complete miss).
 
 ### `baseline_pass_rate`
@@ -329,8 +329,8 @@ test asserts anything correct (see the Qwen 1.5B example above, which has
 `n_total` = count of all attempted rows. This equals the fraction of rows
 with `baseline_passed=True` **exactly**, by construction of
 `score_problem()` (`mutation_score` is `None` iff `baseline_passed=False`,
-or — see the next entry — a rarer edge case) — computed this way (via
-`n_defined/n_total`) rather than from a separate `baseline_passed` column
+or, per the next entry, a rarer edge case), computed this way (via
+`n_defined/n_total`) instead of from a separate `baseline_passed` column
 average because it's the same invariant `src/Analysis/stability.py`'s
 coverage adjustment relies on (`comparison.py:75-85`'s docstring makes this
 explicit).
@@ -339,25 +339,25 @@ attempted.
 **Used in**: the `coverage_adjusted` metric below; the conditioning/
 survivorship diagnosis in §4; every "n_defined" column in the tables in §3.
 **Known failure mode**: varies enormously between models (2.0% for Qwen
-1.5B on ULT to 96.3% for GPT-5 on Dynamic-L4, updated 2026-08-10 — Gemini
+1.5B on ULT to 96.3% for GPT-5 on Dynamic-L4, updated 2026-08-10. Gemini
 Pro Preview's Dynamic-L4 slice is nominally higher still at 97.3%, but
 from only 38 rows so far, its own partial-crawl caveat below, so GPT-5's
-figure is the more robust "well-established high" example) — a model
+figure is the more robust "well-established high" example). A model
 with a very low baseline-pass rate has almost no rows contributing to its
 own Mut@K mean, making that mean a shaky point estimate even when it
 looks like a respectably high number (§4's thin-cell discussion).
 
 ### Mut@K — **two definitions, reconciled 2026-08-03**
 
-This project computes Mut@K one way; the paper this project's ULT/PLT
+This project computes Mut@K one way. The paper this project's ULT/PLT
 benchmark is drawn from (Huang & Du et al., arXiv:2508.00408) states a
-formula that, read literally, describes a different way — and, as of this
+formula that, read literally, describes a different way, and, as of this
 document's writing, that paper's *own published code* implements a third
 thing again (which happens to match this project's own choice). Full
 verbatim evidence and the algebraic proof live in
-`analysis/RQ5_CROSS_DEFINITION_AUDIT.md`; the summary needed here:
+`analysis/RQ5_CROSS_DEFINITION_AUDIT.md`. The summary needed here:
 
-**(a) This project's pre-registered primary — EXCLUDE / conditional mean.**
+**(a) This project's pre-registered primary: EXCLUDE / conditional mean.**
 
 ```
 Mut@K = mean( mutation_score_i  for all i where baseline_passed_i = True )
@@ -372,13 +372,13 @@ unless explicitly labelled otherwise (`test_gen_scorer.py:21-25`).
 headline metric for Comparison A/B, RQ5's primary correlations, H1's
 Wilcoxon test. **Known failure mode**: two models with very different
 `baseline_pass_rate` are averaged over *different-sized, self-selected*
-subsets of problems — a model that only ever produces a passing suite for
+subsets of problems. A model that only ever produces a passing suite for
 the 5 easiest problems in the benchmark can still show a high Mut@K, because
 the mean never sees the problems it failed on. This is the single largest
 source of the RQ5 diagnosis in §4.
 
-**(b) The "definition-matched" co-primary — INCLUDE-AS-ZERO / unconditional
-mean, i.e. `coverage_adjusted`.** See next entry — proven identical to
+**(b) The "definition-matched" co-primary: INCLUDE-AS-ZERO / unconditional
+mean, i.e. `coverage_adjusted`.** The next entry is proven identical to
 this, both algebraically and to floating-point precision on this project's
 actual data.
 
@@ -387,21 +387,21 @@ actual data.
 **Formula**: `coverage_adjusted = Mut@K(a) × baseline_pass_rate`, computed
 per model/benchmark/tier.
 **Proven** (`analysis/RQ5_CROSS_DEFINITION_AUDIT.md` §3) to be **exactly**
-the zero-filled unconditional mean — `mean(mutation_score_i, with 0
-substituted for every row where it's None)` — because in every one of this
+the zero-filled unconditional mean, `mean(mutation_score_i, with 0
+substituted for every row where it's None)`, because in every one of this
 project's model×benchmark cells, the count of baseline-passing rows equals
 the count of rows with a defined `mutation_score` (i.e., there is no row
 where the baseline passed but zero mutants were scorable). Verified via two
 independently-coded computation paths agreeing to 5.55e-17 (floating-point
 noise). It is *this project's* best-effort match to the ULT/PLT paper's
 stated Mut@k **formula** (its prose says the denominator is "the total
-number of functions in the benchmark") — but that paper's own **code**
+number of functions in the benchmark"). But that paper's own **code**
 divides by the baseline-passing count instead (the same estimand as this
 project's definition (a)), so `coverage_adjusted` should not be read as
 reproducing what the ULT paper's authors actually computed, only what
 their formula, taken literally, describes.
-**Conditional on**: nothing (defined for every row with `n_total > 0`) —
-this is the practical advantage of this metric over raw Mut@K: it is never
+**Conditional on**: nothing (defined for every row with `n_total > 0`).
+This is the practical advantage of this metric over raw Mut@K: it is never
 a "thin" estimate in the way (a) can be, because its own precision is
 governed by `n_total` (typically 300-400), not `n_defined` (which can be
 as low as 1).
@@ -411,7 +411,7 @@ two headline correlation readings (τ=0.944 canonical, updated 2026-08-07
 from 0.905, §4).
 **Known failure mode**: it is a *product* of two different signals
 ("does the model clear the baseline-pass bar at all" and "how good are the
-tests that already passed") collapsed into one number — a high
+tests that already passed") collapsed into one number. A high
 `coverage_adjusted` score does not tell you which of the two is driving it,
 and §4's diagnosis shows that for this project's data, almost all of its
 cross-benchmark agreement comes from the first signal (baseline-pass rate),
@@ -421,27 +421,27 @@ not the second (mutation-kill quality).
 
 **Formula** (`src/Analysis/stability.py::stable_mut_at_k`): for one model,
 compute Mut@K separately per instantiation (definition (a) above, or
-optionally the coverage-adjusted variant — `coverage_adjust=True`), then
+optionally the coverage-adjusted variant, `coverage_adjust=True`), then
 take the mean and standard deviation of those per-instantiation values.
 `n_instantiations` reports how many instantiations actually had at least
 one scorable problem for that model (an instantiation with zero scorable
 rows is **excluded** from the mean, not counted as 0). A separate function,
 `pairwise_kendall_tau`, computes the Kendall τ between every pair of
 instantiations' model rankings (not the same statistic as StableMut@K's
-own SD — one asks "is each model's own score stable," the other asks "do
+own SD. One asks "is each model's own score stable," the other asks "do
 models keep the same *rank order* across instantiations").
-**Conditional on**: a model having 2+ instantiations with scorable data —
+**Conditional on**: a model having 2+ instantiations with scorable data.
 GPT-5 and GPT-5-mini structurally cannot produce this (single instantiation
 only), by design/cost, not by bug.
 **Used in**: RQ4.1 (stability), and RQ5's attenuation correction (which
-recomputes it live via `mean_pairwise_tau_scoped` rather than hard-coding a
-constant — see §6 item 5 for why this matters).
+recomputes it live via `mean_pairwise_tau_scoped` instead of hard-coding a
+constant, §6 item 5 has why this matters).
 **Known failure mode**: SD is filled to `0.0` for single-instantiation
-groups (undefined std of one value) — treating this as "zero measurement
-noise" rather than "no measurement" would be wrong and has caused a
+groups (undefined std of one value). Treating this as "zero measurement
+noise", not "no measurement", would be wrong and has caused a
 specific analysis bug before (§6). Also: score-level stability (SD as low
 as 0.003-0.007 for most models) reads much more stable than rank-level
-Kendall τ (~0.6-0.7) for the same data — this is not a contradiction, it's
+Kendall τ (~0.6-0.7) for the same data. This is not a contradiction. It's
 because many models cluster within a few percentage points of each other
 in absolute score, so a rank statistic is far more sensitive to small,
 noisy differences flipping two closely-scored models' relative order than
@@ -451,14 +451,14 @@ a score-level SD is (`analysis/STABILITY_INTERPRETATION.md`).
 
 **Formula**: count of rows, within whatever grouping is being reported
 (model × benchmark, model × tier, etc.), where `mutation_score is not
-None`. **Conditional on**: nothing — it's a count, always computable.
+None`. **Conditional on**: nothing. It's a count, always computable.
 **Used in**: the thin-cell filtering rule everywhere in this project
-(`THIN_N_DEFINED = 20` — `scripts/build_comparison_tables.py`,
+(`THIN_N_DEFINED = 20`, `scripts/build_comparison_tables.py`,
 `scripts/analyze_rq5_diagnostics.py`): any model/benchmark cell with
 `n_defined < 20` is flagged as resting on a shaky point estimate for the
 *conditional* Mut@K, and excluded from a "thick-only" companion result.
 **Known failure mode**: it is easy to read a headline Mut@K number without
-checking its own `n_defined` — several already-published-looking numbers
+checking its own `n_defined`. Several already-published-looking numbers
 in this project turned out to be averages over single-digit problem counts
 before this was made an explicit, visible column (§4, §6).
 
@@ -466,16 +466,16 @@ before this was made an explicit, visible column (§4, §6).
 
 **Formula**: count of mutants, for one row, that raised or timed out on
 `python -c "import under_test"` against the mutated source (§1 Stage 3,
-step 1) — before the test suite was even run against them.
+step 1), before the test suite was even run against them.
 **Conditional on**: `baseline_passed=True` (mutants are only generated/run
 at all once a row reaches Stage 3).
 **Used in**: `scored = mutants_total - mutants_dropped`, the denominator of
 `mutation_score` for that row.
 **Known failure mode**: a dropped mutant is neither "killed" (a strength
-signal) nor "survived" (a weakness signal) — it is simply excluded from
+signal) nor "survived" (a weakness signal). It is excluded from
 the ratio. If dropped mutants were incorrectly counted as survived, every
 Mut@K score would be systematically deflated by however common import
-failures are for that function; the harness's `_evaluate_mutant()`
+failures are for that function. The harness's `_evaluate_mutant()`
 explicitly avoids this (§1 Stage 3).
 
 ### Aggregation scope, at a glance (added 2026-08-05, terminology-uniformity
@@ -491,7 +491,7 @@ set along two independent axes depending on which table is being built:
 and **instantiation** (report per-instantiation, or pool across
 instantiations 1-4/5). The table below states, for each metric, what its
 *default* reported scope is and which pooling axes are actually used
-anywhere in this project — nothing here introduces a new scope, it names
+anywhere in this project. Nothing here introduces a new scope. It names
 the ones already computed by `src/Analysis/*.py` and cross-references
 where each is used.
 
@@ -499,12 +499,12 @@ where each is used.
 |---|---|---|---|---|
 | `exec_rate` | 0/1 per row | mean per model × benchmark × tier | reported per-tier, and pooled (`*_pooled`, e.g. `dyn_pooled`) in RQ5's tables | almost always pooled across instantiations (per-instantiation exec_rate is not separately tracked anywhere) |
 | `baseline_pass_rate` | 0/1 per row (`= n_defined/n_total` over the group) | mean per model × benchmark × tier | per-tier and pooled, same as `exec_rate` | pooled, same as `exec_rate` |
-| `Mut@K` (conditional, def. (a)) | `mutation_score` per baseline-passing row | mean per model × benchmark × tier, over rows with `baseline_passed=True` **within that group only** | per-tier (H3); **single-tier, L4-only** for Comparison A (`build_comparison_tables.py`'s `dynamic_l4 = dynamic[dynamic["tier"] == DYNAMIC_TIER]` — deliberately not pooled, since L4 is the CC band closest to ULT/PLT's own CC≥8 filter, see `H4_DESIGN_MEMO.md`); tier-**pooled** (`dyn_pooled`) for RQ5's canonical Dynamic↔ULT correlation, since ULT/PLT has no tier structure to align a per-tier Dynamic figure against. Comparison B (ULT vs PLT) has no Dynamic tier axis at all — neither side of that comparison is CC-tiered the way Dynamic is. | pooled across instantiations for Comparison A/B/RQ5's headline figures; held **per-instantiation** as the input to `StableMut@K` below — these are the same formula applied at two different instantiation-scopes, not two different metrics |
+| `Mut@K` (conditional, def. (a)) | `mutation_score` per baseline-passing row | mean per model × benchmark × tier, over rows with `baseline_passed=True` **within that group only** | per-tier (H3); **single-tier, L4-only** for Comparison A (`build_comparison_tables.py`'s `dynamic_l4 = dynamic[dynamic["tier"] == DYNAMIC_TIER]`, deliberately not pooled, since L4 is the CC band closest to ULT/PLT's own CC≥8 filter, per `H4_DESIGN_MEMO.md`); tier-**pooled** (`dyn_pooled`) for RQ5's canonical Dynamic↔ULT correlation, since ULT/PLT has no tier structure to align a per-tier Dynamic figure against. Comparison B (ULT vs PLT) has no Dynamic tier axis. Neither side of that comparison is CC-tiered the way Dynamic is. | pooled across instantiations for Comparison A/B/RQ5's headline figures; held **per-instantiation** as the input to `StableMut@K` below, these are the same formula applied at two different instantiation-scopes, not two different metrics |
 | `coverage_adjusted` | `mutation_score`, zero-filled per row (`= Mut@K(a) × baseline_pass_rate` over the group) | mean per model × benchmark × tier | mirrors `Mut@K`'s tier-axis scoping exactly (per-tier for H3, L4-only for Comparison A, `dyn_pooled` for RQ5 canonical) | pooled across instantiations for its RQ5/Comparison A/B co-primary use; can also be computed per-instantiation (`stability.py`'s `coverage_adjust=True` path) for a coverage-adjusted `StableMut@K` variant, used only in the low-power tier-mean supplementary rows (`H3_INTERPRETATION.md`) |
-| `StableMut@K` | — (a statistic *of* per-instantiation `Mut@K` or `coverage_adjusted` values, not of rows directly) | one value per model (mean + SD **across instantiations**), optionally broken out per tier (`STABILITY.md`'s "by tier" table) | tier-pooled by default; a per-tier variant exists (`STABILITY.md`) | this metric's entire reason to exist **is** the instantiation axis — it is never reported pooled-to-one-instantiation, that would just be `Mut@K` |
+| `StableMut@K` | — (a statistic *of* per-instantiation `Mut@K` or `coverage_adjusted` values, not of rows directly) | one value per model (mean + SD **across instantiations**), optionally broken out per tier (`STABILITY.md`'s "by tier" table) | tier-pooled by default; a per-tier variant exists (`STABILITY.md`) | this metric's entire reason to exist **is** the instantiation axis: it is never reported pooled-to-one-instantiation, that would just be `Mut@K` |
 | `n_defined` | — (a count of rows, not a per-row quantity) | reported alongside whichever other metric's group it's counting for — no fixed default scope of its own | follows whatever grouping the accompanying metric uses | follows whatever grouping the accompanying metric uses |
 
-**The rule that keeps tier-pooling consistent — and the one deliberate
+**The rule that keeps tier-pooling consistent, and the one deliberate
 exception**: a **tier**-pooled (`*_pooled`, e.g. `dyn_pooled`) figure is
 always a re-aggregation over the *same underlying rows* a per-tier figure
 would use, never a mean-of-per-tier-means (`dyn_pooled` Mut@K is
@@ -517,33 +517,33 @@ compute pooled figures this way directly off the row-level dataframe.
 rule**: `stability.py::stable_mut_at_k` computes per-instantiation Mut@K
 first (`mut_at_k()`, itself a row-level mean within that instantiation),
 then takes the mean **and SD** of those per-instantiation values
-(`stable_mut_at_k()` lines 96-104) — a genuine mean-of-means, because the
+(`stable_mut_at_k()` lines 96-104), a genuine mean-of-means, because the
 per-instantiation SD is the entire quantity of interest for a stability
-metric; collapsing straight to row-level would make "how much does this
+metric. Collapsing straight to row-level would make "how much does this
 model's score vary across instantiations" unanswerable. Only the
-**instantiation** axis is ever pooled this way; the tier axis inside a
+**instantiation** axis is ever pooled this way. The tier axis inside a
 per-instantiation `StableMut@K` figure still follows the row-level rule
-above (or is itself a further `extra_group_cols=("tier",)` breakdown, per
+above (or is a further `extra_group_cols=("tier",)` breakdown, per
 `STABILITY.md`'s "by tier" table).
 
 ### Notation table (added 2026-08-06, notation-consistency pass) — the
 canonical reference for every capital-N/lowercase-n symbol in this
-project; other docs should cite this table rather than redefine any of
-these. A bare, unsubscripted "n" in prose is always a bug from here on —
-every count below has exactly one correct subscript.
+project. Other docs should cite this table instead of redefining any of
+these. A bare, unsubscripted "n" in prose is always a bug from here on.
+Every count below has exactly one correct subscript.
 
 | Symbol | Meaning | Distinguish from | Example |
 |---|---|---|---|
 | `K` | Attempts/problem, Pass@K-style (§5.4 of `PROJECT_BRIEF.md`; matches Exec@K/Mut@K/etc. and the `K` field on every result row). Always 1 in this project's real data. | `m` (a completely different quantity, below) | "Mut@K, K=1" |
-| `m` | Instances/template (`PROJECT_BRIEF.md` §5.2) — a prose-only symbol, no code equivalent (code uses `len(instance_seeds)`). | `K` | "60 templates × m=5" |
-| `N` | **Instantiation scope** — the project-wide design target vs. what was actually executed, a property of the *project's plan*, not of any one table or figure. | `n_instantiations` (a per-model, per-run *count*, below) | "N=5 design target, executed as N=4" |
-| `n_models` | Count of **models** entering one specific comparison/correlation/table. Varies by analysis — see the (renamed) table below. | `N`, `n_problems` | "Kendall τ, n_models=7" |
+| `m` | Instances/template (`PROJECT_BRIEF.md` §5.2), a prose-only symbol, no code equivalent (code uses `len(instance_seeds)`). | `K` | "60 templates × m=5" |
+| `N` | **Instantiation scope**: the project-wide design target vs. what was actually executed, a property of the *project's plan*, not of any one table or figure. | `n_instantiations` (a per-model, per-run *count*, below) | "N=5 design target, executed as N=4" |
+| `n_models` | Count of **models** entering one specific comparison/correlation/table. Varies by analysis, detailed in the (renamed) table below. | `N`, `n_problems` | "Kendall τ, n_models=7" |
 | `n_problems` / `n_total` | Count of **problem rows** in a group (a model×benchmark×tier cell, a pooled scope, etc.). | `n_defined` (a subset of this) | "n_problems=300" |
-| `n_defined` | Count of rows within an `n_problems` group where `mutation_score is not None` (⊆ `n_problems`, never greater) — see `n_defined`'s own entry above. | `n_problems` | "n_defined=112 of n_problems=400" |
-| `n_instantiations` | **Code identifier**, not prose notation (`src/Analysis/stability.py::stable_mut_at_k`'s output column) — for *one model*, how many instantiations actually contributed a scorable value to that model's own `StableMut@K` mean. A per-model, per-run count, not the project-wide `N` above (a model can have `n_instantiations=3` in a partial run while the project's `N` is 5) — this is exactly the ambiguity flagged 2026-08-06: `STABILITY.md`'s raw tables print `n_instantiations` as a column header, which reads like a third notion of "n" next to `n_models` and `N` unless this distinction is stated explicitly, as it now is here. **Not renamed in code** (prose/docs-only fix, per this pass's own scope) — the thesis notation map should represent it with a symbol distinct from both `N` and `n_models` (e.g. a per-model subscript) rather than importing the code's exact column name verbatim. |
+| `n_defined` | Count of rows within an `n_problems` group where `mutation_score is not None` (⊆ `n_problems`, never greater), detailed in `n_defined`'s entry above. | `n_problems` | "n_defined=112 of n_problems=400" |
+| `n_instantiations` | **Code identifier**, not prose notation (`src/Analysis/stability.py::stable_mut_at_k`'s output column), for *one model*, how many instantiations actually contributed a scorable value to that model's own `StableMut@K` mean. A per-model, per-run count, not the project-wide `N` above (a model can have `n_instantiations=3` in a partial run while the project's `N` is 5). This is exactly the ambiguity flagged 2026-08-06: `STABILITY.md`'s raw tables print `n_instantiations` as a column header, which reads like a third notion of "n" next to `n_models` and `N` unless this distinction is stated explicitly, as it now is here. **Not renamed in code** (prose/docs-only fix, per this pass's own scope). The thesis notation map should represent it with a symbol distinct from both `N` and `n_models` (e.g. a per-model subscript), instead of importing the code's exact column name verbatim. |
 
 **Code identifiers that embed one of these ambiguities, for the thesis
-notation map** (listed, not renamed — renaming code identifiers is out of
+notation map** (listed, not renamed, renaming code identifiers is out of
 scope for this pass): `src/eval/test_gen_problem.py`'s `K` field (=`K`
 above, already unambiguous); `src/data/test_gen.py`'s `len(instance_seeds)`
 (=`m` above, no literal variable named `K` or `m`); `src/Analysis/stability.py`'s
