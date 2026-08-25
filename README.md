@@ -67,7 +67,13 @@ The final registered step is `check_doc_citations.py`, a gate that scans
 `analysis/*.md` and `paper/sections/*.tex` for hand-typed numbers and checks
 each one against this same live output — it fails the build (nonzero exit) on
 any number that no longer matches anything the pipeline currently produces.
-See `analysis/README.md` for what a mismatch means and how to resolve one.
+A mismatch means a hand-typed number in a doc no longer matches the pipeline
+that's supposed to back it up — fix the number, or if it's deliberately
+superseded or genuinely external (a paper's own reported figure, a
+leaderboard score), mark it with an inline `<!-- cite:historical -->` /
+`<!-- cite:external -->` comment or an entry in
+`analysis/CITATION_ALLOWLIST.md` (see `CLAUDE.md`'s citation-gate rule for
+the full policy).
 
 To build the paper itself after the assets above are current:
 
@@ -89,7 +95,7 @@ stale relative to the data behind it.
 | `scripts/` | Every pipeline entrypoint, table/figure builder, and one-off diagnostic — see `scripts/README.md` for the full index grouped by role | — |
 | `scripts/slurm/` | SLURM job scripts, one per `scripts/*.py` pipeline entrypoint | — |
 | `data/` | Raw and generated results (gitignored, see below) | — |
-| `analysis/` | Every interpretation document, auto-generated provenance table, and figure behind the paper's results — see `analysis/README.md` for the full index | Results §IV, Discussion §V |
+| `analysis/` | Every interpretation document, auto-generated provenance table, and figure behind the paper's results — see `analysis/INDEX.md` for the full document index (`analysis/README.md` is a specific contamination notice, not the index) | Results §IV, Discussion §V |
 | `docs/` | `Approved_Hypotheses.md` (the six governing hypotheses, verbatim) and `Research_questions.xlsx`/`RESEARCH_QUESTIONS.md` (the RQ/hypothesis tracking workbook and its auto-generated markdown mirror) | Introduction §I (RQ1–RQ5), the hypothesis table in Results §IV |
 | `paper/` | The paper itself (`paper.tex`/`paper.pdf`), the ECS8056 supporting report (`supporting_report/`), and the slide deck (`slides/`) | — (the deliverables) |
 | `tests/` | The pytest suite | — |
