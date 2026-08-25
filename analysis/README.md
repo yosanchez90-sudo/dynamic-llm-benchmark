@@ -13,6 +13,12 @@ not a rewrite of the data.**
 
 ## Which files, and why
 
+Paths below are `analysis/epoch_perf_finetune_*.csv` — the pre-fix,
+quarantined set this notice describes. The corrected replacement set lives
+at a different path entirely, `data/results/finetune_rebuild/epoch_perf_*.csv`
+(see "Where the corrected data lives" below); the two are never the same
+file under two names.
+
 | File | Status |
 |---|---|
 | `epoch_perf_finetune_qwen1_5b_bp_own_30ep.csv` | **Contaminated, partially** — epochs 1–20 read healthy (exec_rate 0.90–0.99); epoch 25 (inst2/3) and epoch 30 (all insts) collapse to 0.0 |
