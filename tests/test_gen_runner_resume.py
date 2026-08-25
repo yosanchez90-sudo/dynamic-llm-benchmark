@@ -20,7 +20,11 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from src.eval.test_gen_runner import _find_resume_file, _tier_signature
+
+pytestmark = pytest.mark.torch
 
 
 def test_tier_signature_dynamic_config():

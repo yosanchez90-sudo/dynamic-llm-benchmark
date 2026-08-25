@@ -18,6 +18,8 @@ dependencies = [
     "litellm>=1.83.0",
     "matplotlib>=3.10.9",
     "openai>=2.36.0",
+    "openpyxl==3.1.5",
+    "peft==0.19.1",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
     "python-docx>=1.2.0",
@@ -31,6 +33,7 @@ dependencies = [
     "torchaudio>=2.5.1",
     "torchvision>=0.20.1",
     "transformers>=4.57.6",
+    "trl==1.6.0",
     "vllm>=0.7.3",
     "wandb>=0.26.1",
 ]
@@ -60,3 +63,6 @@ index-strategy = "unsafe-best-match"
 # second, independent layer so no future _smoke/test_*.py-named script can
 # reintroduce the same trap for anyone running `pytest` from repo root).
 testpaths = ["tests"]
+markers = [
+    "torch: needs a working torch import (CPU is enough -- no test in this suite touches torch.cuda). Skip with `pytest -m 'not torch'` if the environment's torch install is broken; see README.md's Running the tests section.",
+]

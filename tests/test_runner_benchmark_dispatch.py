@@ -6,7 +6,11 @@ benchmark instead of ULT/PLT.
 """
 from __future__ import annotations
 
+import pytest
+
 from src.eval import test_gen_runner
+
+pytestmark = pytest.mark.torch
 
 
 def test_dynamic_benchmark_calls_test_gen_load(monkeypatch):

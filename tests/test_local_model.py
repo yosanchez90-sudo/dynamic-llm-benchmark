@@ -5,10 +5,13 @@ no_repeat_ngram_size collapse (analysis/README_QUARANTINE.md), just via a
 different unlogged default."""
 from unittest.mock import MagicMock
 
+import pytest
 import torch
 
 from src.models.base import GenerationConfig
 from src.models.local import LocalModel
+
+pytestmark = pytest.mark.torch
 
 
 def _make_model(repetition_penalty=1.1, top_k=20) -> LocalModel:

@@ -46,8 +46,47 @@ uv run pytest
 ```
 
 `pyproject.toml` sets `testpaths = ["tests"]`, so a bare `pytest` run picks up
-every test in `tests/` (currently 136 collected). Each test's docstring names
-the specific bug or regression it guards and the module it targets.
+every test in `tests/` (currently 152 collected). Each test's docstring names
+the specific bug or regression it guards and the module it targets. None of
+the 152 require a GPU or real CUDA hardware — see "Running the tests without
+a GPU" below for the three files that need a working `torch` import.
+
+### Running the tests without a GPU
+
+No test in this suite touches `torch.cuda` or loads a real model, so none
+of the 152 actually need GPU hardware. Three files (16 tests --
+`tests/test_local_model.py`, `tests/test_gen_runner_resume.py`,
+`tests/test_runner_benchmark_dispatch.py`) import modules that import
+`torch` transitively, so they need `torch` to be importable at all --
+CPU-only is enough. They're marked with a custom `torch` pytest marker
+(registered in `pyproject.toml`'s `[tool.pytest.ini_options]`) so they can
+be split out:
+
+```bash
+uv run pytest -m "not torch"   # 136 tests, works even if torch can't import
+uv run pytest -m "torch"       # the other 16
+uv run pytest                  # all 152, needs a working torch import
+```
+
+If `pytest` fails with `RuntimeError: Unable to find torch_shm_manager` (or
+any other broken-torch-import error), that's a corrupted local `.venv`, not
+something a fresh `uv sync` reproduces -- confirmed by installing the exact
+same pinned wheel (`torch==2.5.1+cu121`) into a throwaway venv and finding
+`torch/bin/torch_shm_manager` present and `import torch` clean. Fix it with
+a targeted reinstall rather than a full `uv sync` (which would also prune
+any installed-but-undeclared package -- see the warning below):
+
+```bash
+uv sync --reinstall-package torch
+```
+
+**Do not run `uv sync` (no flags) to "fix" the environment.** Every
+dependency actually imported by this project's code must be declared in
+`pyproject.toml` -- if you find one that isn't (check with `uv sync
+--dry-run` and look for packages it would uninstall that you know are in
+use), add it with `uv add "package==<currently-installed version>"` rather
+than just running a bare `uv sync`, which silently removes anything
+installed-but-undeclared and can break a script that depended on it.
 
 ## Regenerating results, figures, and tables
 
