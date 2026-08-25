@@ -90,7 +90,7 @@ Untrusted code, whether a model's generated test file or a scraped ground-truth 
 
 ### 2.4 The test suite
 
-The project's automated test suite currently collects 136 tests across the `tests/` directory, run with pytest. Coverage spans the scoring harness's three stages, the result loader's deduplication logic, the canonical-model filter used by every downstream analysis script, and the tier-aware resume matcher that prevents a retried job from overwriting a different job's output file. Regression tests were added in response to specific bugs found during the project, not only for new code as it was written; three of the error-ledger entries in section 2.7 each have a named regression test tied to the fix.
+The project's automated test suite currently collects 152 tests across the `tests/` directory, run with pytest. Coverage spans the scoring harness's three stages, the result loader's deduplication logic, the canonical-model filter used by every downstream analysis script, and the tier-aware resume matcher that prevents a retried job from overwriting a different job's output file. Regression tests were added in response to specific bugs found during the project, not only for new code as it was written; three of the error-ledger entries in section 2.7 each have a named regression test tied to the fix.
 
 ### 2.5 The citation gate
 

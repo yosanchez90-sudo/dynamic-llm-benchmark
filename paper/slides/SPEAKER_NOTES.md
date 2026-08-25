@@ -85,7 +85,7 @@ Same spine as the video script, with the screen segment expanded and the three D
 uv run pytest tests/ --collect-only -q | tail -3
 ```
 
-"A hundred and thirty-six tests, covering the scoring harness, the deduplication logic, and the tier-aware resume matcher, among others."
+"A hundred and fifty-two tests, covering the scoring harness, the deduplication logic, and the tier-aware resume matcher, among others."
 
 ```bash
 tail -30 analysis/METRICS_AND_FINDINGS_EXPLAINED.md

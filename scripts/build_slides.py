@@ -366,14 +366,14 @@ def build() -> None:
     # ---- Slide 14: DEMO ONLY repo structure ----
     s = blank_slide(prs)
     add_title(s, "DEMO ONLY: repository structure")
-    add_body(s, "src/ the pipeline. scripts/ every analysis, plot, and build step. tests/ 136 tests. analysis/ every result and interpretation. paper/ the paper and this deck.",
+    add_body(s, "src/ the pipeline. scripts/ every analysis, plot, and build step. tests/ 152 tests. analysis/ every result and interpretation. paper/ the paper and this deck.",
               top=Inches(1.6), size=20)
     add_notes(s, "Live demo only. Open the repo, point at each top-level directory in turn.", demo_only=True)
 
     # ---- Slide 15: DEMO ONLY verification ----
     s = blank_slide(prs)
     add_title(s, "DEMO ONLY: how the numbers are checked")
-    add_body(s, "136 tests. A citation gate that checks every hand-typed number against live output. An 11-bug error ledger, each with a named fix.",
+    add_body(s, "152 tests. A citation gate that checks every hand-typed number against live output. An 11-bug error ledger, each with a named fix.",
               top=Inches(1.6), size=20)
     add_notes(s, "Live demo only. Run the citation gate on screen if time allows; show one row of the error ledger.", demo_only=True)
 

@@ -109,6 +109,7 @@ REFERENCE_FILES = [
     "analysis/stability_stablemut.csv",
     "analysis/h3_tier_gradient_all_tier.csv",
     "analysis/h3_tier_gradient_l2l4.csv",
+    "analysis/test_suite_count.csv",
     # paper/values.tex is itself generated straight from the analysis/*.csv
     # files above (scripts/build_paper_values.py) -- included as a reference
     # source too so its own macros count as "live" for any OTHER paper/
@@ -155,6 +156,8 @@ PATTERNS: list[tuple[str, float, re.Pattern]] = [
         r"n_models\s*[:=]\s*(\d+)")),
     ("n_defined", 0.5, re.compile(
         r"n_defined\s*[:=]\s*(\d+)")),
+    ("test_count", 0.5, re.compile(
+        r"\bcollects?\s+(\d+)\s+tests?\b")),
 ]
 
 
@@ -262,6 +265,7 @@ COLUMN_KIND_MAP = {
     "p_value_holm": "p_value",
     "n_models": "n_models",
     "n_defined": "n_defined",
+    "collected": "test_count",
     # H2-supplementary's endpoint/decline tables are already on a 0-100
     # percentage(-point) scale (unlike PP_SCALE_COLUMNS' 0-1 fractions
     # below), so these map straight to "pp" with no rescaling.
@@ -363,7 +367,7 @@ def _is_pp_scale(norm_header: str) -> bool:
         norm_header.endswith(c) for c in PP_SCALE_COLUMNS)
 
 
-_INT_KINDS = {"n_models", "n_defined"}
+_INT_KINDS = {"n_models", "n_defined", "test_count"}
 
 
 def _tag_cell(claims: list[Claim], norm_header: str, raw_header: str,
@@ -440,6 +444,7 @@ def _extract_pandas_tables(path: Path, text: str) -> list[Claim]:
 # digits spelled out since LaTeX macro names can't contain them).
 MACRO_SUFFIX_KIND = [
     ("NDefined", "n_defined"),
+    ("TestSuiteCollected", "test_count"),
     ("EffectR", "effect_r"),
     ("Tau", "kendall_tau"),
     ("Rho", "spearman_rho"),

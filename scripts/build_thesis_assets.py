@@ -81,6 +81,9 @@ STEPS: list[tuple[str, str, str]] = [
      "paper/references.bib: generated from paper/references.yaml"),
     ("paper_table1", "scripts/build_paper_table1.py",
      "paper/table1.tex: compact hypothesis/prediction/verdict table, read live from docs/Research_questions.xlsx"),
+    ("test_suite_count", "scripts/count_test_suite.py",
+     "analysis/test_suite_count.csv: live `pytest --collect-only` count, "
+     "so the supporting report's \"N tests\" claim can't silently drift"),
     ("paper_values", "scripts/build_paper_values.py",
      "paper/values.tex: every quantitative value the paper cites, as LaTeX "
      "macros read live from analysis/*.csv"),
