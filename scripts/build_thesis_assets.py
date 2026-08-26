@@ -75,6 +75,9 @@ STEPS: list[tuple[str, str, str]] = [
      "supporting report and slide deck -- structural, not data-derived"),
     ("contamination_loop_figure", "scripts/plot_contamination_loop.py",
      "Three-step contamination-loop diagram, for the slide deck -- structural, not data-derived"),
+    ("execution_evidence_figure", "scripts/plot_execution_evidence.py",
+     "Real, live-captured execution evidence (test suite, citation gate, SLURM job "
+     "accounting) for the supporting report -- structural, not data-derived"),
     ("research_questions_md", "scripts/build_research_questions_md.py",
      "docs/RESEARCH_QUESTIONS.md: diffable markdown mirror of docs/Research_questions.xlsx"),
     ("paper_bib", "scripts/build_paper_bib.py",

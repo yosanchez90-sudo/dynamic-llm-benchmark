@@ -74,6 +74,32 @@ def _add_inline_runs(paragraph, text: str):
             paragraph.add_run(part)
 
 
+def _shade_paragraph(paragraph, hex_color: str) -> None:
+    """Apply a solid background shade to one paragraph (a code-block line),
+    via the raw w:shd element python-docx has no wrapper for."""
+    shd = OxmlElement("w:shd")
+    shd.set(qn("w:val"), "clear")
+    shd.set(qn("w:color"), "auto")
+    shd.set(qn("w:fill"), hex_color)
+    paragraph.paragraph_format.element.get_or_add_pPr().append(shd)
+
+
+def _add_code_block(doc, code_lines: list[str]) -> None:
+    """Render a fenced ```...``` block as monospace paragraphs on a shaded
+    background, one Word paragraph per source line so long listings don't
+    collapse into a single unreadable run. Blank lines keep the shading so
+    the block reads as one continuous panel."""
+    for line in code_lines:
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(0)
+        p.paragraph_format.space_before = Pt(0)
+        _shade_paragraph(p, "F0F0F0")
+        r = p.add_run(line if line.strip() else " ")
+        r.font.name = "Consolas"
+        r.font.size = Pt(9)
+    doc.add_paragraph().paragraph_format.space_after = Pt(4)  # spacer after block
+
+
 def _parse_table(lines: list[str], start: int) -> tuple[list[list[str]], int]:
     """Parse a pipe-delimited markdown table starting at `start` (the
     header row). Returns (rows, next_line_index)."""
@@ -186,7 +212,15 @@ def build() -> None:
         line = lines[i]
         stripped = line.strip()
 
-        if stripped.startswith("### "):
+        if stripped.startswith("```"):
+            j = i + 1
+            code_lines: list[str] = []
+            while j < len(lines) and not lines[j].strip().startswith("```"):
+                code_lines.append(lines[j])
+                j += 1
+            _add_code_block(doc, code_lines)
+            i = j + 1
+        elif stripped.startswith("### "):
             doc.add_heading(stripped[4:], level=2)
             i += 1
         elif stripped.startswith("## "):
