@@ -1,13 +1,13 @@
 # RQ5 / H6 — cross-benchmark validity (raw tables)
 
-Generated: 2026-08-12T00:06:59.876752+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T07:53:10.911071+00:00
+Git commit: 09eb1bf
 Script: scripts/analyze_rq5.py
 
 Per analysis/RQ5_ANALYSIS_PLAN.md (pre-registered 2026-07-27, before this
 script's first run). Interpretation, once the public-benchmark pairs land,
 belongs in a separate RQ5_INTERPRETATION.md (same split as Comparison C,
-analysis/COMPARISON_C_INTERPRETATION.md) -- not embedded here.
+analysis/COMPARISON_C_INTERPRETATION.md), not embedded here.
 
 ## Model ranking table
 

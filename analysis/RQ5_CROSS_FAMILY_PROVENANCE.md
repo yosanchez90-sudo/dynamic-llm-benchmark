@@ -1,11 +1,11 @@
 # RQ5 cross-family extension -- correlations (raw tables)
 
-Generated: 2026-08-12T00:13:15.037723+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T07:57:43.205363+00:00
+Git commit: 09eb1bf
 Script: scripts/analyze_rq5_cross_family.py
 
 Per `analysis/RQ5_CROSS_FAMILY_PROPOSAL.md` (approved 2026-07-28). This is a
-POST-HOC, supplementary extension -- `analysis/RQ5_PROVENANCE.md`
+POST-HOC, supplementary extension. `analysis/RQ5_PROVENANCE.md`
 (canonical 9 models, `scripts/analyze_rq5.py`) remains the pre-registered
 RQ5 primary result and is NOT modified or superseded by anything here.
 Cross-family models are never part of `coverage_matrix.py::CANONICAL_MODELS`
@@ -20,9 +20,9 @@ and never enter Comparison A/B or StableMut@K (see
 - Mistral-7B: Dynamic COMPLETE, ULT COMPLETE
 
 **If any model above is PARTIAL or MISSING, every "canonical+cross-family"
-correlation below is provisional** -- re-run this script once all 4
-candidates' Dynamic + ULT jobs complete (see
-`data/download_logs/rq5_cross_family_job_map_20260728.md` for job IDs) and
+correlation below is provisional**. Re-run this script once all 4
+candidates' Dynamic + ULT jobs complete (job IDs are in
+`data/download_logs/rq5_cross_family_job_map_20260728.md`) and
 treat only a run with all 4 COMPLETE as the number that answers the
 supervisor's bottom-up validity question.
 

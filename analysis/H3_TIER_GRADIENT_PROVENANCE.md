@@ -1,7 +1,7 @@
 # H3 (RQ2) tier gradient -- raw tables
 
-Generated: 2026-08-12T00:18:50.524803+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T08:02:03.004295+00:00
+Git commit: 09eb1bf
 Script: scripts/analyze_h3_tier_gradient.py
 
 Pre-registered plan (written before this script existed):
@@ -23,7 +23,7 @@ claude-haiku-4-5-20251001     753 [L1, L2, L3, L4]     ok     -0.452286  0.0001 
 
 Significant at raw p<0.05: 9/9. Significant at Holm-adjusted p<0.05: **9/9**.
 
-## Per-model, L2-L4 (ceiling-effect sensitivity check -- excludes near-zero-variance L1)
+## Per-model, L2-L4 (ceiling-effect sensitivity check, excludes near-zero-variance L1)
 
               model_short  n_rows tiers_present                  status  spearman_rho  p_perm  p_perm_holm
          gpt-5-2025-08-07    1046  [L2, L3, L4]                      ok     -0.416314  0.0001       0.0008
@@ -37,9 +37,9 @@ claude-haiku-4-5-20251001     566  [L2, L3, L4]                      ok     -0.4
                 Qwen 1.5B      66      [L2, L3] insufficient tier range           NaN     NaN          NaN
 
 Significant at raw p<0.05: 8/8 computable. Significant at Holm-adjusted p<0.05: **8/8 computable**.
-(1 model(s) have "insufficient tier range" in this scope -- see H3_ANALYSIS_PLAN.md's incomplete-tier-coverage section.)
+(1 model(s) have "insufficient tier range" in this scope, per H3_ANALYSIS_PLAN.md's incomplete-tier-coverage section.)
 
-## Pooled (between-model confound NOT controlled for -- see H3_ANALYSIS_PLAN.md)
+## Pooled (between-model confound NOT controlled for, per H3_ANALYSIS_PLAN.md)
 
 All-tier: rho=-0.38680577952650025, p=9.999000099990002e-05, n_rows=7146
 L2-L4: rho=-0.3506948706611829, p=9.999000099990002e-05, n_rows=5505

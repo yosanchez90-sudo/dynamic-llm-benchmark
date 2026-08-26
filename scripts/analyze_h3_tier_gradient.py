@@ -168,14 +168,14 @@ Pre-registered plan (written before this script existed):
 
 Significant at raw p<0.05: {all_tier_n_sig_raw}/{len(all_tier_df)}. Significant at Holm-adjusted p<0.05: **{all_tier_n_sig_holm}/{len(all_tier_df)}**.
 
-## Per-model, L2-L4 (ceiling-effect sensitivity check -- excludes near-zero-variance L1)
+## Per-model, L2-L4 (ceiling-effect sensitivity check, excludes near-zero-variance L1)
 
 {l2l4_df[["model_short", "n_rows", "tiers_present", "status", "spearman_rho", "p_perm", "p_perm_holm"]].to_string(index=False)}
 
 Significant at raw p<0.05: {l2l4_n_sig_raw}/{len(l2l4_valid)} computable. Significant at Holm-adjusted p<0.05: **{l2l4_n_sig_holm}/{len(l2l4_valid)} computable**.
-({len(l2l4_df) - len(l2l4_valid)} model(s) have "insufficient tier range" in this scope -- see H3_ANALYSIS_PLAN.md's incomplete-tier-coverage section.)
+({len(l2l4_df) - len(l2l4_valid)} model(s) have "insufficient tier range" in this scope, per H3_ANALYSIS_PLAN.md's incomplete-tier-coverage section.)
 
-## Pooled (between-model confound NOT controlled for -- see H3_ANALYSIS_PLAN.md)
+## Pooled (between-model confound NOT controlled for, per H3_ANALYSIS_PLAN.md)
 
 All-tier: rho={pooled_all_tier['spearman_rho']}, p={pooled_all_tier['p_perm']}, n_rows={pooled_all_tier['n_rows']}
 L2-L4: rho={pooled_l2l4['spearman_rho']}, p={pooled_l2l4['p_perm']}, n_rows={pooled_l2l4['n_rows']}

@@ -126,7 +126,7 @@ def main() -> None:
 
 {stamp_block("scripts/plot_ranking_matrix_heatmap.py")}
 Source: {CORR_CSV.relative_to(ROOT)} (both scopes; Holm-Bonferroni applied
-separately per scope, 12-test family each -- see
+separately per scope, 12-test family each, computed in
 scripts/build_ranking_matrix.py).
 
 Output: {OUT_PATH.relative_to(ROOT)} (+ .png).

@@ -1,13 +1,13 @@
 # Collapse vs survival figure — provenance
 
-Generated: 2026-08-12T00:23:34.042917+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T08:05:36.918413+00:00
+Git commit: 09eb1bf
 Script: scripts/plot_collapse_vs_survival.py
 
 Sources: analysis/rq5_cross_family_model_ranking.csv, analysis/rq5_cross_family_correlations.csv.
 n=3 minimum achievable two-sided permutation p-value (0.3333)
 verified directly against src/Analysis/correlation.py's _permutation_p()
-(two-sided |stat|>=|observed| test, not one-sided) -- NOT the 1/6~=0.167
+(two-sided |stat|>=|observed| test, not one-sided), NOT the 1/6~=0.167
 one-sided figure, which this project's own test does not compute. Thin
 cells (n_defined<20) ringed in red, same convention as
 analysis/figures/ranking_matrix_heatmap.pdf and noise_floor.pdf.

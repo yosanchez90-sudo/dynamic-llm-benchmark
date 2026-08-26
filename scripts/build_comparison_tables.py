@@ -264,25 +264,25 @@ def main() -> None:
         return format(x, spec) if x is not None else "n/a"
 
     a_direction_msg = (
-        "All three share the same sign -- a directional read is at least "
+        "All three share the same sign. A directional read is at least "
         "internally consistent across conditionings, though still not "
-        "significant at any of the tiny n's involved (see p-values above)."
+        "significant at any of the tiny n's involved (per the p-values above)."
         if _signs_agree(a_wilcoxon.effect_r, a_wilcoxon_thick.effect_r, a_wilcoxon_adj.effect_r)
         else (
-            "The sign FLIPS depending on which conditioning is applied -- "
-            "raw/thin/definition-matched do not agree on which side "
+            "The sign FLIPS depending on which conditioning is applied. "
+            "Raw/thin/definition-matched do not agree on which side "
             "(dynamic_l4 or ult) scores higher. This is the second flip on "
             "top of the raw-vs-coverage-adjusted flip already noted above "
             "(first flip found 2026-07-30). Given this, the honest "
             "conclusion is that Comparison A supports no directional claim "
-            "at the current n (<=5 models, p>0.05 in every conditioning) -- "
+            "at the current n (<=5 models, p>0.05 in every conditioning), "
             "not \"the effect is X, but weak,\" but \"this data cannot "
             "currently establish which of Dynamic-L4 or ULT scores a model "
             "higher, under any of the definitions tried.\""
         )
     )
     b_direction_msg = (
-        "All three share the same sign -- a directional read is at least "
+        "All three share the same sign. A directional read is at least "
         "internally consistent across conditionings."
         if _signs_agree(b_wilcoxon.effect_r, b_wilcoxon_thick.effect_r, b_wilcoxon_adj.effect_r)
         else "The sign FLIPS depending on which conditioning is applied for Comparison B too."
@@ -298,44 +298,44 @@ data/results/ult/*.jsonl, data/results/plt/*.jsonl.
 CC bands: data/raw/ult_plt/subsample_manifest.json (tag=core_400).
 
 ## Comparison A (Dynamic-L4 vs ULT) — {len(a_paired)}/{len(CANONICAL_MODELS)} models
-Missing (no scorable data on one or both sides — NOT zero-filled, simply
+Missing (no scorable data on one or both sides, NOT zero-filled,
 absent from comparison_a_paired.csv): {a_missing or "none"}
 
-**Interpretation lives in `analysis/COMPARISON_A_INTERPRETATION.md`** — see
-that file's "Multiple-comparisons correction for RQ1" section before
-quoting any p-value here as "significant": RQ1's correctable family is
-this comparison (H1 Test 1) plus Comparison B (H1 Test 2), corrected
-separately per conditioning — see "RQ1 Holm-Bonferroni correction" below
-for the live numbers. The thin-filtered/definition-matched rows are three
+**Interpretation lives in `analysis/COMPARISON_A_INTERPRETATION.md`**. That
+file's "Multiple-comparisons correction for RQ1" section has the detail
+needed before quoting any p-value here as "significant": RQ1's correctable
+family is this comparison (H1 Test 1) plus Comparison B (H1 Test 2),
+corrected separately per conditioning, live numbers in "RQ1 Holm-Bonferroni
+correction" below. The thin-filtered/definition-matched rows are three
 independently-corrected conditionings, not robustness variants excluded
 from correction.
 
 ## Comparison B (ULT vs PLT) — {len(b_paired)}/{len(CANONICAL_MODELS)} models
 Missing: {b_missing or "none"}
 
-Pairing unit and CC-band methodology: see src/Analysis/comparison.py's
-module docstring.
+Pairing unit and CC-band methodology: `src/Analysis/comparison.py`'s
+module docstring has the detail.
 
 ## Comparison A conditioning/survivorship audit (added 2026-07-28)
 
 Comparison A pairs Mut@K, which is only defined where baseline_passed=True
 (the same conditioning RQ5 diagnosed as the dominant factor behind its low
-pooled Dynamic<->ULT rank agreement, `analysis/RQ5_DIAGNOSTICS.md` sec 3) --
-each model's paired mean is computed over a DIFFERENT-sized, different
+pooled Dynamic<->ULT rank agreement, `analysis/RQ5_DIAGNOSTICS.md` sec 3).
+Each model's paired mean is computed over a DIFFERENT-sized, different
 subset of problems, not a shared denominator. Full per-model n_total/
 n_defined/baseline_pass_rate for both sides: `analysis/comparison_a_coverage.csv`.
 
 {a_coverage.to_string(index=False)}
 
 **Co-primary definition-matched row** (labelled "coverage-adjusted" in prior
-versions of this file -- 2026-08-03: PROVEN algebraically and code-verified
+versions of this file. 2026-08-03: PROVEN algebraically and code-verified
 identical to the true zero-filled/unconditional Mut@K, i.e. this project's
 best-effort reading of the ULT/PLT paper's own Sec 3.4.3 PROSE formula. This
 is a co-primary reported alongside, not a replacement for, the pre-registered
-primary above -- see "Cross-definition note" below for why it is NOT simply
+primary above. The "Cross-definition note" below has why it is NOT
 "the literature-matching score" without qualification.
 Max |coverage_adjusted - independently-recomputed def-b| across all rows in
-this table: {a_defb_max_diff:.2e} (floating-point noise only --
+this table: {a_defb_max_diff:.2e} (floating-point noise only,
 `analysis/comparison_a_coverage_adjusted.csv`):
 
 | | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
@@ -344,16 +344,16 @@ this table: {a_defb_max_diff:.2e} (floating-point noise only --
 | definition-matched / coverage-adjusted (co-primary) | {a_wilcoxon_adj.n_pairs} | {a_wilcoxon_adj.mean_a:.4f} | {a_wilcoxon_adj.mean_b:.4f} | {_fmt(a_wilcoxon_adj.effect_r)} | {_fmt(a_wilcoxon_adj.p_value, '.4f')} |
 
 **Does the conclusion change?** {
-    "Effect direction FLIPS between raw and definition-matched (sign of effect_r differs) -- treat Comparison A's direction as conditioning-sensitive, not robust."
+    "Effect direction FLIPS between raw and definition-matched (sign of effect_r differs). Treat Comparison A's direction as conditioning-sensitive, not robust."
     if (a_wilcoxon.effect_r is not None and a_wilcoxon_adj.effect_r is not None
         and a_wilcoxon.effect_r * a_wilcoxon_adj.effect_r < 0)
-    else f"Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read (which side is higher, and that n_models={a_wilcoxon.n_pairs} is too small at either p-value to call this a real effect) does not flip."
+    else f"Effect direction is the SAME sign raw vs definition-matched. Magnitude/significance may still differ (above), but the qualitative read (which side is higher, and that n_models={a_wilcoxon.n_pairs} is too small at either p-value to call this a real effect) does not flip."
 }
 
 ## Comparison A thin-cell audit (added 2026-07-30, extended 2026-08-03)
 
 A model's own paired Mut@K (pre-registered primary) is a shaky point
-estimate when it's averaged over very few baseline-passing problems --
+estimate when it's averaged over very few baseline-passing problems.
 n_defined<{THIN_N_DEFINED} on either side is flagged thin here, same
 threshold used in `analysis/RQ5_DIAGNOSTICS.md`. Per-model n_defined for
 both sides:
@@ -361,7 +361,7 @@ both sides:
 {a_thin_stats[['model_label', 'n_defined_dynamic_l4', 'n_defined_ult']].to_string(index=False)}
 
 **Thin model(s) excluded from the {len(a_paired_thick)}-model thick-only
-result below**: {sorted(a_thin_models['model_label'].tolist()) or "none -- all models thick on both sides"}.
+result below**: {sorted(a_thin_models['model_label'].tolist()) or "none, all models thick on both sides"}.
 
 | | n_pairs | mean_a (dynamic_l4) | mean_b (ult) | effect_r | p |
 |---|---|---|---|---|---|
@@ -370,28 +370,28 @@ result below**: {sorted(a_thin_models['model_label'].tolist()) or "none -- all m
 
 **Does the {a_wilcoxon.n_pairs}-model result survive thin-cell filtering?**
 {
-    f"NO in the sense that it shrinks to n_models={a_wilcoxon_thick.n_pairs} once thin cells are excluded -- {len(a_thin_models)} of the original {a_wilcoxon.n_pairs} model(s) were resting on a point estimate averaged over fewer than {THIN_N_DEFINED} baseline-passing problems, not a stable per-model mean."
+    f"NO in the sense that it shrinks to n_models={a_wilcoxon_thick.n_pairs} once thin cells are excluded. {len(a_thin_models)} of the original {a_wilcoxon.n_pairs} model(s) were resting on a point estimate averaged over fewer than {THIN_N_DEFINED} baseline-passing problems, not a stable per-model mean."
     if len(a_thin_models) > 0 else
-    f"Yes -- no model in the {a_wilcoxon.n_pairs}-model result has n_defined<{THIN_N_DEFINED} on either side."
+    f"Yes. No model in the {a_wilcoxon.n_pairs}-model result has n_defined<{THIN_N_DEFINED} on either side."
 }
 
 **Does thin-cell filtering even apply to the definition-matched/coverage-
 adjusted co-primary?** The pre-registered primary's thinness comes from
-n_defined (few baseline-passing rows -> shaky conditional mean); the
+n_defined (few baseline-passing rows -> shaky conditional mean). The
 definition-matched score is a zero-filled mean over ALL n_total rows, so
-ITS precision is governed by n_total, not n_defined -- a model with
+ITS precision is governed by n_total, not n_defined. A model with
 n_defined=1 but n_total=375 (e.g. Qwen 7B, dynamic_l4) still gives a
 well-estimated near-zero definition-matched score, not a shaky one. Checked
 directly against the same THIN_N_DEFINED=20 threshold applied to n_total
 instead: {
     f"{len(a_adj_thin_models)} model(s) have n_total<{THIN_N_DEFINED} on either side: {sorted(a_adj_thin_models['model_label'].tolist())}."
     if len(a_adj_thin_models) > 0
-    else f"0 models -- every model's n_total is >>{THIN_N_DEFINED} on both sides (min n_total this table: dynamic_l4={int(a_coverage_dyn['n_total_dynamic_l4'].min())}, ult={int(a_coverage_ult['n_total_ult'].min())}), so no model is excluded from the co-primary row above on thinness grounds."
+    else f"0 models. Every model's n_total is >>{THIN_N_DEFINED} on both sides (min n_total this table: dynamic_l4={int(a_coverage_dyn['n_total_dynamic_l4'].min())}, ult={int(a_coverage_ult['n_total_ult'].min())}), so no model is excluded from the co-primary row above on thinness grounds."
 }
 
 ## Comparison B conditioning/survivorship + co-primary + thin-cell audit (added 2026-08-03)
 
-Same conditioning applies to Comparison B (ULT vs PLT) as Comparison A --
+Same conditioning applies to Comparison B (ULT vs PLT) as Comparison A.
 mutation_score is only defined where baseline_passed=True on each side. Full
 per-model n_total/n_defined/baseline_pass_rate: `analysis/comparison_b_coverage.csv`.
 
@@ -399,7 +399,7 @@ per-model n_total/n_defined/baseline_pass_rate: `analysis/comparison_b_coverage.
 
 **Co-primary definition-matched row** (max |coverage_adjusted -
 independently-recomputed def-b|: {b_defb_max_diff:.2e}, floating-point noise
-only -- `analysis/comparison_b_coverage_adjusted.csv`):
+only, `analysis/comparison_b_coverage_adjusted.csv`):
 
 | | n_pairs | mean_a (ult) | mean_b (plt) | effect_r | p |
 |---|---|---|---|---|---|
@@ -407,10 +407,10 @@ only -- `analysis/comparison_b_coverage_adjusted.csv`):
 | definition-matched / coverage-adjusted (co-primary) | {b_wilcoxon_adj.n_pairs} | {b_wilcoxon_adj.mean_a:.4f} | {b_wilcoxon_adj.mean_b:.4f} | {_fmt(b_wilcoxon_adj.effect_r)} | {_fmt(b_wilcoxon_adj.p_value, '.4f')} |
 
 **Does the conclusion change?** {
-    "Effect direction FLIPS between raw and definition-matched (sign of effect_r differs) -- treat Comparison B's direction as conditioning-sensitive, not robust."
+    "Effect direction FLIPS between raw and definition-matched (sign of effect_r differs). Treat Comparison B's direction as conditioning-sensitive, not robust."
     if (b_wilcoxon.effect_r is not None and b_wilcoxon_adj.effect_r is not None
         and b_wilcoxon.effect_r * b_wilcoxon_adj.effect_r < 0)
-    else f"Effect direction is the SAME sign raw vs definition-matched; magnitude/significance may still differ (see table above), but the qualitative read does not flip at n_models={b_wilcoxon.n_pairs}."
+    else f"Effect direction is the SAME sign raw vs definition-matched. Magnitude/significance may still differ (above), but the qualitative read does not flip at n_models={b_wilcoxon.n_pairs}."
 }
 
 **Thin-cell audit** (n_defined<{THIN_N_DEFINED} on either side flagged thin):
@@ -418,7 +418,7 @@ only -- `analysis/comparison_b_coverage_adjusted.csv`):
 {b_thin_stats[['model_label', 'n_defined_ult', 'n_defined_plt']].to_string(index=False)}
 
 **Thin model(s) excluded from the {len(b_paired_thick)}-model thick-only
-result below**: {sorted(b_thin_models['model_label'].tolist()) or "none -- all models thick on both sides"}.
+result below**: {sorted(b_thin_models['model_label'].tolist()) or "none, all models thick on both sides"}.
 
 | | n_pairs | mean_a (ult) | mean_b (plt) | effect_r | p |
 |---|---|---|---|---|---|
@@ -427,9 +427,9 @@ result below**: {sorted(b_thin_models['model_label'].tolist()) or "none -- all m
 
 **Does the {b_wilcoxon.n_pairs}-model result survive thin-cell filtering?**
 {
-    f"NO in the sense that it shrinks to n_models={b_wilcoxon_thick.n_pairs} once thin cells are excluded -- {len(b_thin_models)} of the original {b_wilcoxon.n_pairs} model(s) were resting on a point estimate averaged over fewer than {THIN_N_DEFINED} baseline-passing problems."
+    f"NO in the sense that it shrinks to n_models={b_wilcoxon_thick.n_pairs} once thin cells are excluded. {len(b_thin_models)} of the original {b_wilcoxon.n_pairs} model(s) were resting on a point estimate averaged over fewer than {THIN_N_DEFINED} baseline-passing problems."
     if len(b_thin_models) > 0 else
-    f"Yes -- no model in the {b_wilcoxon.n_pairs}-model result has n_defined<{THIN_N_DEFINED} on either side."
+    f"Yes. No model in the {b_wilcoxon.n_pairs}-model result has n_defined<{THIN_N_DEFINED} on either side."
 }
 
 ## Directional-stability verdict across ALL conditionings tried (added 2026-08-03)
@@ -440,15 +440,15 @@ definition-matched/coverage-adjusted={_fmt(a_wilcoxon_adj.effect_r)}. {a_directi
 
 Comparison B's effect_r sign: raw-unfiltered={_fmt(b_wilcoxon.effect_r)},
 raw-thin-cell-filtered={_fmt(b_wilcoxon_thick.effect_r)},
-definition-matched/coverage-adjusted={_fmt(b_wilcoxon_adj.effect_r)}. {b_direction_msg} See
-`analysis/RQ5_CROSS_DEFINITION_AUDIT.md` "Consequence audit" for the
+definition-matched/coverage-adjusted={_fmt(b_wilcoxon_adj.effect_r)}. {b_direction_msg}
+`analysis/RQ5_CROSS_DEFINITION_AUDIT.md`'s "Consequence audit" has the
 narrative verdict on both comparisons together (this block reports the raw
-numbers; that doc reports the reasoned conclusion).
+numbers. That doc reports the reasoned conclusion).
 
 ## RQ1 Holm-Bonferroni correction (H1 Test 1 + H1 Test 2) — computed here 2026-08-12
 
 `docs/Approved_Hypotheses.md` names ULT-vs-PLT (Comparison B) as H1's own
-second test, not an unofficial exploratory check — RQ1's correctable
+second test, not an unofficial exploratory check. RQ1's correctable
 family is these two tests, corrected separately per conditioning (three
 independent 2-test families, not one pooled 6-test family). H2
 (Comparison C's DiD) reports an effect size + bootstrap CI and never
@@ -461,13 +461,13 @@ H1 Test 2 entry.
 **Read plainly**: at the raw/pre-registered-primary conditioning, neither
 test survives Holm correction. At the definition-matched co-primary
 conditioning, both survive. The thin-cell-filtered reading is a
-robustness variant, reported here for completeness rather than as a
+robustness variant, reported here for completeness, not as a
 member of the pre-registered family.
 
-## Cross-definition note (added 2026-07-30, revised 2026-08-03 -- see analysis/RQ5_CROSS_DEFINITION_AUDIT.md)
+## Cross-definition note (added 2026-07-30, revised 2026-08-03, analysis/RQ5_CROSS_DEFINITION_AUDIT.md has detail)
 
 Every "raw Mut@K" number in this file uses this project's own EXCLUDE/
-conditional definition (mean over baseline-passing rows only) -- the
+conditional definition (mean over baseline-passing rows only), the
 pre-registered primary, never swapped out.
 
 The "definition-matched / coverage-adjusted" co-primary row is this
@@ -476,7 +476,7 @@ formula (Mut@k = sum(Mi)/N, N stated as "the total number of functions in
 the benchmark," read as INCLUDE-AS-ZERO/unconditional). **This reading is
 contradicted by the paper's own published code**: `Ray/main.py`'s
 `mutation_statistic()`, the function actually invoked from that repo's CLI,
-divides by `len(correct_tasks)` -- a baseline-pass-conditioned count, the
+divides by `len(correct_tasks)`, a baseline-pass-conditioned count, the
 SAME estimand as this project's pre-registered primary Mut@K, not the
 zero-filled one the paper's prose describes. Full evidence (verbatim
 quotes, code excerpts, the algebraic proof that coverage_adjusted equals
@@ -489,10 +489,10 @@ score without this caveat attached.
 
 load_records() dedupes on (model_label, benchmark, instantiation_id,
 template_id, instance_seed, tier, K, prompting_condition), keeping the
-newest row by timestamp -- see that module's docstring for why. Comparison A
+newest row by timestamp. That module's docstring has why. Comparison A
 filters to tier=L4 only, and the ~559 duplicate rows found in the
 2026-07-26 audit (scripts/audit_result_integrity.py) are entirely
-L1/L2/L3-tier stale-retry rows -- none are L4, so Comparison A is unaffected
+L1/L2/L3-tier stale-retry rows. None are L4, so Comparison A is unaffected
 regardless of whether this table predates or postdates the loader fix.
 Comparison B reads data/results/ult|plt/ directly, which the same audit
 found have zero duplicate keys. Both tables here are correct independent of

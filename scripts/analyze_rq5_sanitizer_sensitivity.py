@@ -102,7 +102,7 @@ def main() -> None:
     out = ["# RQ5 sanitizer sensitivity analysis (post-hoc, zero-compute)", "",
            stamp_block("scripts/analyze_rq5_sanitizer_sensitivity.py"),
            "src/eval/test_gen_scorer.py::sanitize_test_file strips a reimplementation of",
-           "the function-under-test and/or prepends a missing import before scoring --",
+           "the function-under-test and/or prepends a missing import before scoring,",
            "recorded per-row in `notes`. This checks whether repairs are evenly",
            "distributed across models and whether excluding repaired rows changes the",
            "RQ5 primary/coverage-adjusted picture. Canonical models only, Dynamic pooled",
@@ -163,26 +163,26 @@ def main() -> None:
     out.append("")
 
     out += ["## Do repairs differentially benefit weaker models?", "",
-            "Two ways to check this: (a) the direct distribution -- is repair need",
-            "concentrated in specific models rather than spread evenly, (b) a",
+            "Two ways to check this: (a) the direct distribution: is repair need",
+            "concentrated in specific models, not spread evenly, (b) a",
             "correlation against baseline_pass_rate. (a) is the more trustworthy read",
-            "here since Dynamic's repair distribution is near-degenerate (see table",
-            "above) -- most models sit at exactly 0%, which makes a Kendall tau over",
+            "here since Dynamic's repair distribution is near-degenerate (table",
+            "above). Most models sit at exactly 0%, which makes a Kendall tau over",
             "9 points essentially a 1-point-vs-8-ties comparison, not a smooth",
             "9-point relationship.", ""]
     n_dyn_repaired_models = int((df["dyn_repair_frac"] > 0).sum())
     top_repair_row = df.loc[df["dyn_repair_frac"].idxmax()]
     out.append(
         f"**(a) Direct read**: {n_dyn_repaired_models} of {len(df)} canonical models have ANY "
-        f"repaired rows on Dynamic -- repair need is concentrated almost entirely in "
+        f"repaired rows on Dynamic. Repair need is concentrated almost entirely in "
         f"**{top_repair_row['model_short']}** ({top_repair_row['dyn_repair_frac']*100:.2f}%, "
         f"vs 0% for every other model), the smallest/weakest model in this project's own "
         f"capability ordering. On ULT (where reimplementation is more common across the "
-        f"board -- real-world scraped functions, more naming variety) the same model has "
+        f"board, real-world scraped functions, more naming variety) the same model has "
         f"the highest rate there too "
         f"({df.loc[df['model_short']==top_repair_row['model_short'], 'ult_repair_frac'].iloc[0]*100:.2f}%). "
         f"**Yes, sanitization concentrates on and differentially helps the weakest "
-        f"model** -- this is directly visible in the distribution, not just inferred "
+        f"model**. This is directly visible in the distribution, not just inferred "
         f"from a correlation coefficient."
     )
     out.append("")
@@ -192,11 +192,11 @@ def main() -> None:
             repair_bp_sub["dyn_repair_frac"].to_numpy(), repair_bp_sub["dyn_bp"].to_numpy())
         out.append(
             f"**(b) Correlation check**: Kendall τ(repair_frac, baseline_pass_rate) = "
-            f"{res_repair.kendall_tau:.3f} (n={res_repair.n}, perm p={res_repair.kendall_p_perm:.4f}) "
-            f"-- direction is consistent with (a) (negative: more repairs where "
+            f"{res_repair.kendall_tau:.3f} (n={res_repair.n}, perm p={res_repair.kendall_p_perm:.4f}). "
+            f"Direction is consistent with (a) (negative: more repairs where "
             f"baseline_pass_rate is lower), but **not statistically significant at this n** "
             f"(a near-degenerate 8-zeros-plus-1-outlier distribution is a weak basis for a "
-            f"correlation coefficient regardless of its point estimate) -- treat (a), the "
+            f"correlation coefficient regardless of its point estimate). Treat (a), the "
             f"direct distribution, as the trustworthy evidence here, not this p-value."
         )
     else:

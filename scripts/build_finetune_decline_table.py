@@ -133,8 +133,8 @@ def main() -> None:
 
 {stamp_block("scripts/build_finetune_decline_table.py")}
 Companion to `analysis/finetune_endpoint_table.csv` (baseline_pass_rate,
-seen vs fresh, epoch 30 only). This table tracks `exec_rate` -- whether
-the generated suite runs at all, independent of correctness -- on the
+seen vs fresh, epoch 30 only). This table tracks `exec_rate`, whether
+the generated suite runs at all, independent of correctness, on the
 held-out (unseen inst2/3) split from epoch 0 to epoch 30, per condition.
 
 Source glob: {SRC_GLOB}

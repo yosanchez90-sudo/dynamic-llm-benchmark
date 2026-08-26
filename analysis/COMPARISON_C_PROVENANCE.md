@@ -1,17 +1,17 @@
 # Comparison C — canonical 2x3 DiD results (raw tables)
 
-Generated: 2026-08-12T00:05:49.493739+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T07:52:25.768948+00:00
+Git commit: 09eb1bf
 Script: scripts/analyze_comparison_c.py
 
 **Interpretation lives in `analysis/COMPARISON_C_INTERPRETATION.md`**
-(hand-written, not touched by this script) — this file is the regenerable
-raw-tables companion; re-run this script freely after new data lands.
+(hand-written, not touched by this script). This file is the regenerable
+raw-tables companion. Re-run this script freely after new data lands.
 
 Per analysis/COMPARISON_C_ANALYSIS_PLAN.md (pre-registered 2026-07-26,
 amended same day for Dynamic-arm tier composition, both before this script's
 first run). Primary metric: baseline_pass_rate. Mut@K reported alongside,
-secondary (see PRE-data-sparsity note in the analysis plan).
+secondary (the analysis plan has a PRE-data-sparsity note).
 
 ## Sources
 
@@ -44,7 +44,7 @@ unseen_ult  0.024306   0.180556 0.156250       0.087407 0.068843   0.013330   0.
   dynamic_l4    225     225  0.000000   0.000000 0.000000    0.000000    0.000000
 dynamic_l1l3    675     675  0.066667   0.154074 0.087407    0.056296    0.120000
 
-## Mut@K (secondary; n_mut_defined shows how much of n_total this covers)
+## Mut@K (secondary, n_mut_defined shows how much of n_total this covers)
 
    benchmark  n_total  n_mut_defined  mut_at_k side
     seen_ult      112              1  0.885714  pre

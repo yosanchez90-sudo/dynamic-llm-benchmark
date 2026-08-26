@@ -168,13 +168,13 @@ def main() -> None:
 
 {stamp_block("scripts/analyze_comparison_c.py")}
 **Interpretation lives in `analysis/COMPARISON_C_INTERPRETATION.md`**
-(hand-written, not touched by this script) — this file is the regenerable
-raw-tables companion; re-run this script freely after new data lands.
+(hand-written, not touched by this script). This file is the regenerable
+raw-tables companion. Re-run this script freely after new data lands.
 
 Per analysis/COMPARISON_C_ANALYSIS_PLAN.md (pre-registered 2026-07-26,
 amended same day for Dynamic-arm tier composition, both before this script's
 first run). Primary metric: baseline_pass_rate. Mut@K reported alongside,
-secondary (see PRE-data-sparsity note in the analysis plan).
+secondary (the analysis plan has a PRE-data-sparsity note).
 
 ## Sources
 
@@ -196,7 +196,7 @@ secondary (see PRE-data-sparsity note in the analysis plan).
 
 {gradient.to_string(index=False)}
 
-## Mut@K (secondary; n_mut_defined shows how much of n_total this covers)
+## Mut@K (secondary, n_mut_defined shows how much of n_total this covers)
 
 {mut_df.to_string(index=False)}
 """

@@ -1,12 +1,12 @@
 # Fine-tune endpoint table (epoch 30, n_problems=150) — raw table
 
-Generated: 2026-08-12T00:05:43.342361+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T07:52:23.063072+00:00
+Git commit: 09eb1bf
 Script: scripts/build_finetune_endpoint_table.py
 
 This is the regenerable raw-table companion to the hand-written
 `analysis/FINETUNE_ENDPOINT_PROVENANCE.md` (methodology/interpretation,
-not touched by this script) -- re-run this script freely after new
+not touched by this script). Re-run this script freely after new
 data lands in `data/results/finetune_rebuild/`.
 
 Source glob: data/results/finetune_rebuild/epoch_perf_*.csv

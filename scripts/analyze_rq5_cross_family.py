@@ -248,7 +248,7 @@ def main() -> None:
 
 {stamp_block("scripts/analyze_rq5_cross_family.py")}
 Per `analysis/RQ5_CROSS_FAMILY_PROPOSAL.md` (approved 2026-07-28). This is a
-POST-HOC, supplementary extension -- `analysis/RQ5_PROVENANCE.md`
+POST-HOC, supplementary extension. `analysis/RQ5_PROVENANCE.md`
 (canonical 9 models, `scripts/analyze_rq5.py`) remains the pre-registered
 RQ5 primary result and is NOT modified or superseded by anything here.
 Cross-family models are never part of `coverage_matrix.py::CANONICAL_MODELS`
@@ -260,9 +260,9 @@ and never enter Comparison A/B or StableMut@K (see
 {chr(10).join(completeness_lines) if completeness_lines else "(none landed yet)"}
 
 **If any model above is PARTIAL or MISSING, every "canonical+cross-family"
-correlation below is provisional** -- re-run this script once all 4
-candidates' Dynamic + ULT jobs complete (see
-`data/download_logs/rq5_cross_family_job_map_20260728.md` for job IDs) and
+correlation below is provisional**. Re-run this script once all 4
+candidates' Dynamic + ULT jobs complete (job IDs are in
+`data/download_logs/rq5_cross_family_job_map_20260728.md`) and
 treat only a run with all 4 COMPLETE as the number that answers the
 supervisor's bottom-up validity question.
 
@@ -284,7 +284,7 @@ cross-family) x 2 metric versions (raw Mut@K, coverage-adjusted).
 Hard-split pairs are a secondary consistency check, excluded from this
 family on that basis, not silently.
 
-{headline[["pair", "scope", "kendall_tau", "kendall_p_perm", "kendall_p_perm_holm"]].to_string(index=False) if len(headline) else "(skipped -- no headline pairs computed yet, public scores not merged)"}
+{headline[["pair", "scope", "kendall_tau", "kendall_p_perm", "kendall_p_perm_holm"]].to_string(index=False) if len(headline) else "(skipped, no headline pairs computed yet, public scores not merged)"}
 
 Significant at raw p<0.05: {n_sig_raw}/{len(headline)}. Significant at Holm-adjusted p<0.05: **{n_sig_holm}/{len(headline)}**.
 """

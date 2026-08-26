@@ -1,11 +1,11 @@
 # Ranking matrix heatmap — provenance
 
-Generated: 2026-08-12T12:55:45.982912+00:00
-Git commit: f1fe92d
+Generated: 2026-08-26T08:05:29.338097+00:00
+Git commit: 09eb1bf
 Script: scripts/plot_ranking_matrix_heatmap.py
 
 Source: analysis/ranking_matrix_correlations.csv (both scopes; Holm-Bonferroni applied
-separately per scope, 12-test family each -- see
+separately per scope, 12-test family each, computed in
 scripts/build_ranking_matrix.py).
 
 Output: analysis/figures/ranking_matrix_heatmap.pdf (+ .png).

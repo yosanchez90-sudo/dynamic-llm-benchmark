@@ -52,9 +52,9 @@ def main() -> None:
 `pytest --collect-only -q` against `testpaths = ["tests"]`
 (pyproject.toml): **{collected} tests collected**.
 
-Collection only -- no test executed, no pass/fail claim here. For the
-executed-and-passing count, run `pytest -q` directly (see README.md's
-"Running the tests" section for the CPU-only vs GPU-node split via the
+Collection only, no test executed, no pass/fail claim here. For the
+executed-and-passing count, run `pytest -q` directly (README.md's
+"Running the tests" section has the CPU-only vs GPU-node split via the
 `torch` marker).
 """
     PROVENANCE_OUT.write_text(provenance)

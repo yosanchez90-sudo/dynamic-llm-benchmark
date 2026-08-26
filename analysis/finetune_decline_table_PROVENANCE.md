@@ -1,12 +1,12 @@
 # Held-out execution-rate decline table (epoch 0 vs epoch 30) — raw table
 
-Generated: 2026-08-19T02:19:10.498761+00:00
-Git commit: a2f4b35
+Generated: 2026-08-26T07:52:23.241268+00:00
+Git commit: 09eb1bf
 Script: scripts/build_finetune_decline_table.py
 
 Companion to `analysis/finetune_endpoint_table.csv` (baseline_pass_rate,
-seen vs fresh, epoch 30 only). This table tracks `exec_rate` -- whether
-the generated suite runs at all, independent of correctness -- on the
+seen vs fresh, epoch 30 only). This table tracks `exec_rate`, whether
+the generated suite runs at all, independent of correctness, on the
 held-out (unseen inst2/3) split from epoch 0 to epoch 30, per condition.
 
 Source glob: data/results/finetune_rebuild/epoch_perf_*.csv

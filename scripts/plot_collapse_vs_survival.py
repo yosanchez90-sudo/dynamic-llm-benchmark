@@ -127,7 +127,7 @@ def main() -> None:
 Sources: {RANKING_CSV.relative_to(ROOT)}, {CORR_CSV.relative_to(ROOT)}.
 n=3 minimum achievable two-sided permutation p-value ({MIN_P_AT_N3:.4f})
 verified directly against src/Analysis/correlation.py's _permutation_p()
-(two-sided |stat|>=|observed| test, not one-sided) -- NOT the 1/6~=0.167
+(two-sided |stat|>=|observed| test, not one-sided), NOT the 1/6~=0.167
 one-sided figure, which this project's own test does not compute. Thin
 cells (n_defined<20) ringed in red, same convention as
 analysis/figures/ranking_matrix_heatmap.pdf and noise_floor.pdf.

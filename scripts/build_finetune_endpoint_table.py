@@ -154,7 +154,7 @@ def main() -> None:
 {stamp_block("scripts/build_finetune_endpoint_table.py")}
 This is the regenerable raw-table companion to the hand-written
 `analysis/FINETUNE_ENDPOINT_PROVENANCE.md` (methodology/interpretation,
-not touched by this script) -- re-run this script freely after new
+not touched by this script). Re-run this script freely after new
 data lands in `data/results/finetune_rebuild/`.
 
 Source glob: {SRC_GLOB}

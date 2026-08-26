@@ -131,7 +131,7 @@ def main() -> None:
 Per analysis/RQ5_ANALYSIS_PLAN.md (pre-registered 2026-07-27, before this
 script's first run). Interpretation, once the public-benchmark pairs land,
 belongs in a separate RQ5_INTERPRETATION.md (same split as Comparison C,
-analysis/COMPARISON_C_INTERPRETATION.md) -- not embedded here.
+analysis/COMPARISON_C_INTERPRETATION.md), not embedded here.
 
 ## Model ranking table
 
@@ -139,7 +139,7 @@ analysis/COMPARISON_C_INTERPRETATION.md) -- not embedded here.
 
 ## Correlations
 
-{corr_df.to_string(index=False) if len(corr_df) else "(none computed -- see skip messages above)"}
+{corr_df.to_string(index=False) if len(corr_df) else "(none computed, per the skip messages above)"}
 """
     (ROOT / "analysis" / "RQ5_PROVENANCE.md").write_text(provenance)
     print(f"\nWritten: analysis/rq5_model_ranking.csv, analysis/rq5_correlations.csv, "

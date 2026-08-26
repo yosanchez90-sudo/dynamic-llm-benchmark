@@ -1,21 +1,21 @@
 # Ranking matrix — every metric, every benchmark, side by side
 
-Generated: 2026-08-12T00:23:11.313555+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T08:05:26.126034+00:00
+Git commit: 09eb1bf
 Script: scripts/build_ranking_matrix.py
 
-Supervisor reframe (2026-08-04): the ranking exercise is metric-agnostic --
-this file reports model rankings under exec_rate, baseline_pass_rate,
-conditional Mut@K, and coverage-adjusted Mut@K side by side, rather than
+Supervisor reframe (2026-08-04): the ranking exercise is metric-agnostic.
+This file reports model rankings under exec_rate, baseline_pass_rate,
+conditional Mut@K, and coverage-adjusted Mut@K side by side, instead of
 arguing which Mut@K definition is canonical. Full per-cell data:
 `analysis/ranking_matrix_scores.csv`. Hand-written interpretation, if any,
-belongs in a separate file -- this one is auto-generated raw tables only.
+belongs in a separate file. This one is auto-generated raw tables only.
 
 ## Table 1: per-metric scores and ranks
 
 (a) Dynamic pooled, (b) Dynamic L4, (c) ULT core_400, (d) BigCodeBench
-(published Complete-split Pass@1 -- not a per-row metric, so the SAME
-BigCodeBench number/rank is shown under every metric block below; this is
+(published Complete-split Pass@1, not a per-row metric, so the SAME
+BigCodeBench number/rank is shown under every metric block below. This is
 noted, not an oversight). Canonical (9) and canonical+cross-family (13)
 scopes shown separately.
 

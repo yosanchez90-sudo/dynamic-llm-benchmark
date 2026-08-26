@@ -1,12 +1,12 @@
 # Stability (RQ4.1) — raw tables
 
-Generated: 2026-08-12T00:05:42.210985+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T07:52:22.152104+00:00
+Git commit: 09eb1bf
 Script: scripts/analyze_stability.py
 
 **Interpretation lives in `analysis/STABILITY_INTERPRETATION.md`**
-(hand-written, not touched by this script) — this file is the regenerable
-raw-tables companion; re-run this script freely after new data lands. Any
+(hand-written, not touched by this script). This file is the regenerable
+raw-tables companion. Re-run this script freely after new data lands. Any
 number quoted from this file elsewhere (e.g. RQ5's disattenuation
 correction) is only current as of the commit above, not frozen.
 

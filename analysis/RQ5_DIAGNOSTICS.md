@@ -1,11 +1,11 @@
 # RQ5 diagnostics (post-hoc, zero-compute)
 
-Generated: 2026-08-12T00:07:28.496312+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T07:53:24.991246+00:00
+Git commit: 09eb1bf
 Script: scripts/analyze_rq5_diagnostics.py
 
 Pooled Dynamic Mut@K vs ULT remains the pre-registered PRIMARY result
-(analysis/RQ5_ANALYSIS_PLAN.md, analysis/RQ5_PROVENANCE.md) -- everything
+(analysis/RQ5_ANALYSIS_PLAN.md, analysis/RQ5_PROVENANCE.md). Everything
 below is post-hoc diagnostic of that result's low rank agreement (Kendall
 tau=0.278, n=9), not a replacement for it.
 
@@ -14,7 +14,7 @@ tau=0.278, n=9), not a replacement for it.
 Dynamic-L4 is the CC>=8 band, matching ULT exactly (Comparison A's own
 convention, src/Analysis/comparison.py). Pooling L1-L4 compares a
 mixed-difficulty benchmark (L1/L2 near-ceiling for most models) against a
-hard-only one -- this is the first candidate explanation for low pooled
+hard-only one. This is the first candidate explanation for low pooled
 rank agreement.
 
 | Dynamic side | n | Pearson r | CI | Spearman ρ | CI | Kendall τ | CI | perm p (τ) |
@@ -25,7 +25,7 @@ rank agreement.
 | L3 | 9 | 0.814 | [-0.58, 0.99] | 0.100 | [-0.65, 0.85] | 0.111 | [-0.48, 0.75] | 0.7576 |
 | L4 | 8 | -0.452 | [-0.89, 0.99] | -0.143 | [-0.64, 1.00] | 0.143 | [-0.43, 1.00] | 0.7185 |
 
-**Same table, thin cells excluded** (n_defined<20 on either side for that tier -- a model whose own mean is a shaky point estimate shouldn't drive a cross-model correlation any more than it should drive a paired comparison, same threshold as Comparison A's thin-cell audit,
+**Same table, thin cells excluded** (n_defined<20 on either side for that tier, a model whose own mean is a shaky point estimate shouldn't drive a cross-model correlation any more than it should drive a paired comparison, same threshold as Comparison A's thin-cell audit,
 `analysis/COMPARISON_PROVENANCE.md`):
 
 | Dynamic side | n | Kendall τ | CI | perm p (τ) | thin model(s) excluded |
@@ -52,13 +52,13 @@ Highest-SD (best-discriminating) tier among the top models: **L4**.
 
 ## 2b. Noise-floor / resolving-power audit
 
-The discrimination audit above (sec 2) shows the between-model SPREAD; on
-its own that doesn't say whether pooled Mut@K can actually RESOLVE which
-model ranks above which -- for that, the spread has to be compared against
+The discrimination audit above (sec 2) shows the between-model SPREAD. On
+its own that doesn't say whether pooled Mut@K can RESOLVE which
+model ranks above which. For that, the spread has to be compared against
 each model's own between-instantiation noise (RQ4.1, `analysis/STABILITY.md`).
 If two adjacent models' score gap is smaller than either model's own SD
 across repeat instantiations, their relative rank is not distinguishable from
-noise -- re-running the same model would plausibly reorder them on its own.
+noise. Re-running the same model would plausibly reorder them on its own.
 ULT has no repeat-instantiation concept (K=1, static benchmark), so this audit
 is Dynamic-only.
 
@@ -72,17 +72,17 @@ is Dynamic-only.
 
 **Pooled ratio = 6.73** (above 1).
 
-**Largest run of adjacent models whose pooled Mut@K gap is smaller than either model's own between-instantiation SD (i.e. not reliably orderable against each other from this data alone)**: gpt-5-mini-2025-08-07 > claude-haiku-4-5-20251001 > Qwen 32B > claude-sonnet-4-6 > gemini-3.1-flash-lite -- 5 models.
-Their pooled spread is 0.005; their own individual SDs are 0.001, 0.004, 0.003, 0.003, 0.004 -- the spread is smaller than every one of these models' own measurement noise. **Rewriting the tau=0.278 interpretation accordingly: at least part of the low rank agreement is not that Dynamic and ULT disagree about these models' quality, it's that pooled Mut@K lacks the resolving power to rank them AT ALL, on this data alone -- "the benchmarks disagree" and "this benchmark can't resolve close scores" are different claims, and the tau=0.278 headline conflates them.**
+**Largest run of adjacent models whose pooled Mut@K gap is smaller than either model's own between-instantiation SD (i.e. not reliably orderable against each other from this data alone)**: gpt-5-mini-2025-08-07 > claude-haiku-4-5-20251001 > Qwen 32B > claude-sonnet-4-6 > gemini-3.1-flash-lite, 5 models.
+Their pooled spread is 0.005; their own individual SDs are 0.001, 0.004, 0.003, 0.003, 0.004. The spread is smaller than every one of these models' own measurement noise. **Rewriting the tau=0.278 interpretation accordingly: at least part of the low rank agreement is not that Dynamic and ULT disagree about these models' quality, it's that pooled Mut@K lacks the resolving power to rank them AT ALL, on this data alone. "the benchmarks disagree" and "this benchmark can't resolve close scores" are different claims, and the tau=0.278 headline conflates them.**
 
 ## 3. Conditioning / survivorship audit
 
-Mut@K is defined only where baseline_passed=True -- each model's pooled/per-tier
+Mut@K is defined only where baseline_passed=True. Each model's pooled/per-tier
 mean is therefore computed over a DIFFERENT subset of problems, not a shared
 denominator. coverage_adjusted = Mut@K x baseline_pass_rate folds the
 conditioning back in (a model that rarely produces a baseline-passing suite
-gets penalised, not just averaged over the suites that happened to pass) --
-this is NOT the same estimand as Mut@K itself, reported as a robustness check,
+gets penalised, not just averaged over the suites that happened to pass).
+This is NOT the same estimand as Mut@K itself, reported as a robustness check,
 not a replacement metric.
 
 | Model | tier | n_total | n_defined | baseline_pass_rate | Mut@K | coverage_adjusted |
@@ -118,20 +118,20 @@ not a replacement metric.
 **Flagged explicitly (3 of 9 canonical models have a compromised L4 contribution to their pooled score, not just one)**:
 - Qwen 32B: THIN (n_defined=13 < 20)
 - Qwen 7B: THIN (n_defined=1 < 20)
-- Qwen 1.5B: FLOOR (attempted, 0 passed baseline -- a genuine capability finding)
-"Pooled" therefore silently means a different tier composition per model for 3/9 models -- not an apples-to-apples average, a real methodological gap in the pre-registered primary metric as computed.
+- Qwen 1.5B: FLOOR (attempted, 0 passed baseline, a genuine capability finding)
+"Pooled" therefore means a different tier composition per model for 3/9 models, not an apples-to-apples average, a real methodological gap in the pre-registered primary metric as computed.
 
-**Top-ranked model check**: by pooled Mut@K, **gpt-5-2025-08-07** ranks highest (0.960) -- its L4 status is OK. By coverage-adjusted score, **gemini-3.1-pro-preview** ranks highest instead (0.9172) -- its L4 status is OK. Neither top-ranked model has a MISSING L4 status, so this specific confound does not apply to the top rank, though thin coverage elsewhere in the table still affects the tier composition comparability noted above.
+**Top-ranked model check**: by pooled Mut@K, **gpt-5-2025-08-07** ranks highest (0.960). Its L4 status is OK. By coverage-adjusted score, **gemini-3.1-pro-preview** ranks highest instead (0.9172). Its L4 status is OK. Neither top-ranked model has a MISSING L4 status, so this specific confound does not apply to the top rank, though thin coverage elsewhere in the table still affects the tier composition comparability noted above.
 
 **Rank correlation on coverage-adjusted score (n_models=9)**: Pearson r=0.884, Spearman ρ=0.983, Kendall τ=0.944 (perm p=0.0002).
 
 ## 3b. Decomposing the coverage-adjusted agreement
 
-coverage_adjusted = Mut@K x baseline_pass_rate is a PRODUCT of two signals --
+coverage_adjusted = Mut@K x baseline_pass_rate is a PRODUCT of two signals:
 how much of its tau=0.944 agreement is just baseline pass rate (can the
 model produce a suite that PASSES against the original function, a stricter and
-later gate than mere exec/collection -- src/eval/test_gen_scorer.py's
-exec_ok and baseline_passed are distinct checks, not the same thing) vs
+later gate than mere exec/collection. src/eval/test_gen_scorer.py's
+exec_ok and baseline_passed are different checks, not the same thing) vs
 actual mutation-killing quality? Same n, same models (dropna on the
 coverage-adjusted columns) for all three rows, so they're directly comparable.
 
@@ -141,7 +141,7 @@ coverage-adjusted columns) for all three rows, so they're directly comparable.
 | (b) conditioned Mut@K alone (= the pre-registered PRIMARY result) | 9 | 0.910 | 0.333 | 0.278 | 0.3505 |
 | (c) coverage-adjusted product (Mut@K x baseline_pass_rate) | 9 | 0.884 | 0.983 | 0.944 | 0.0002 |
 
-**How much of τ=0.944 is baseline pass rate vs mutation quality:** baseline_pass_rate ALONE already gives τ=0.889 -- nearly all of the coverage-adjusted agreement is explained by which models can produce a baseline-passing suite at all (a suite that PASSES against the real function -- not merely one that executes/collects, a weaker, earlier gate this project's scorer calls exec_ok), not by mutation-killing quality once that's controlled for -- conditioned Mut@K alone (row b, the actual pre-registered primary result) is τ=0.278, i.e. models that clear the baseline-pass bar do NOT then agree on which suites are the BETTER mutation killers. Read literally: the coverage-adjusted score's apparent validity is substantially a baseline-pass-rate-agreement result, not evidence that Mut@K itself (conditional on passing) is cross-benchmark valid.
+**How much of τ=0.944 is baseline pass rate vs mutation quality:** baseline_pass_rate ALONE already gives τ=0.889. Nearly all of the coverage-adjusted agreement is explained by which models can produce a baseline-passing suite (a suite that PASSES against the real function, not merely one that executes/collects, a weaker, earlier gate this project's scorer calls exec_ok), not by mutation-killing quality once that's controlled for. Conditioned Mut@K alone (row b, the actual pre-registered primary result) is τ=0.278, i.e. models that clear the baseline-pass bar do NOT then agree on which suites are the BETTER mutation killers. Read literally: the coverage-adjusted score's apparent validity is mostly a baseline-pass-rate-agreement result, not evidence that Mut@K itself (conditional on passing) is cross-benchmark valid.
 
 ## 3c. Reliability of the coverage-adjusted score
 
@@ -156,28 +156,28 @@ N=4 scope (instantiations 1-4), same as sec 4's raw-Mut@K reliability.
 | raw Mut@K | 0.583 |
 | coverage-adjusted (Mut@K x baseline_pass_rate) | 1.000 |
 
-**The coverage-adjusted score IS more reliable** across Dynamic instantiations (1.000 vs 0.583 raw) -- this makes it both more valid (sec 3b) and more reliable, a real argument for reporting it as a companion metric, not just a post-hoc robustness check. A perfect or near-perfect adjusted figure is worth a sanity check before taking as an unqualified win, though: verified this is not a degenerate small-n artifact (n_models=9 per pair, every pair individually significant at p=5.51e-06 (largest/least-significant p across pairs), not just the mean) -- it is the SAME mechanism as sec 3b, not a separate finding. **Qualification: "n=9" is models, not a uniform amount of repeat measurement per model** -- instantiation counts vary: Qwen 1.5B=5, Qwen 32B=5, Qwen 7B=5, claude-haiku-4-5-20251001=5, claude-sonnet-4-6=5, gemini-3.1-flash-lite=4, gemini-3.1-pro-preview=4, gpt-5-2025-08-07=5, gpt-5-mini-2025-08-07=5. A model with only 4 scorable instantiations (or with some instantiations partially landed, see analysis/STABILITY.md) contributes a noisier per-model SD to this figure than one with a full 5, so treat the exact tau value as somewhat more uncertain than a clean n=9 label implies. baseline_pass_rate apparently varies enormously and consistently BETWEEN models (a 45x spread, sec 3 above) while staying comparatively stable WITHIN a model across instantiations, so a score dominated by that spread ranks models the same way every time almost by construction -- the same reason it's more cross-benchmark-valid (baseline pass rate dominates the signal) is why it's more reliable (baseline pass rate is itself the stable quantity). Neither result is suspect; both are the same underlying fact read two ways.
+**The coverage-adjusted score IS more reliable** across Dynamic instantiations (1.000 vs 0.583 raw). This makes it both more valid (sec 3b) and more reliable, a real argument for reporting it as a companion metric, not just a post-hoc robustness check. A perfect or near-perfect adjusted figure is worth a sanity check before taking as an unqualified win, though: verified this is not a degenerate small-n artifact (n_models=9 per pair, every pair individually significant at p=5.51e-06 (largest/least-significant p across pairs), not just the mean). It is the SAME mechanism as sec 3b, not a separate finding. **Qualification: "n=9" is models, not a uniform amount of repeat measurement per model**. Instantiation counts vary: Qwen 1.5B=5, Qwen 32B=5, Qwen 7B=5, claude-haiku-4-5-20251001=5, claude-sonnet-4-6=5, gemini-3.1-flash-lite=4, gemini-3.1-pro-preview=4, gpt-5-2025-08-07=5, gpt-5-mini-2025-08-07=5. A model with only 4 scorable instantiations (or with some instantiations partially landed, per analysis/STABILITY.md) contributes a noisier per-model SD to this figure than one with a full 5, so treat the exact tau value as somewhat more uncertain than a clean n=9 label implies. baseline_pass_rate apparently varies enormously and consistently BETWEEN models (a 45x spread, sec 3 above) while staying comparatively stable WITHIN a model across instantiations, so a score dominated by that spread ranks models the same way every time almost by construction. The same reason it's more cross-benchmark-valid (baseline pass rate dominates the signal) is why it's more reliable (baseline pass rate is itself the stable quantity). Neither result is suspect. Both are the same underlying fact read two ways.
 
 ## 4. Attenuation correction
 
-rho_disattenuated = rho_observed / sqrt(reliability_x * reliability_y) -- the
+rho_disattenuated = rho_observed / sqrt(reliability_x * reliability_y), the
 classical correction for attenuation due to unreliable measurement (Spearman,
 1904), derived for Pearson r under classical test theory. Applying the same form
 to Kendall tau here is an APPROXIMATION carried over by analogy, not a rigorously
-derived rank-statistic correction -- treat the disattenuated tau as illustrative.
+derived rank-statistic correction. Treat the disattenuated tau as illustrative.
 
-- Dynamic's own reliability (RQ4.1, N=4 mean pairwise Kendall tau across instantiations, computed live from CANONICAL_MODELS-filtered data on disk as of this run -- see the Generated/Git commit stamp above; this is NOT a frozen constant and will move as more instantiation data lands, same as `analysis/STABILITY.md` itself): **0.583**.
-- ULT has **no repeat-measure reliability estimate in this project** -- it is evaluated once per model (K=1; the K=5 sensitivity sweep was the first item cut per PROJECT_BRIEF.md's gate cut-priority, and a static benchmark has no "instantiation" concept to repeat across the way Dynamic does). Stated plainly rather than assumed: the correction below uses Dynamic's reliability only (equivalent to assuming ULT's reliability=1, which UNDERESTIMATES the true disattenuated correlation if ULT is not, in fact, perfectly reliable).
+- Dynamic's own reliability (RQ4.1, N=4 mean pairwise Kendall tau across instantiations, computed live from CANONICAL_MODELS-filtered data on disk as of this run, per the Generated/Git commit stamp above. This is NOT a frozen constant and will move as more instantiation data lands, same as `analysis/STABILITY.md` itself): **0.583**.
+- ULT has **no repeat-measure reliability estimate in this project**. It is evaluated once per model (K=1; the K=5 sensitivity sweep was the first item cut per PROJECT_BRIEF.md's gate cut-priority, and a static benchmark has no "instantiation" concept to repeat across the way Dynamic does). Stated plainly, not assumed: the correction below uses Dynamic's reliability only (equivalent to assuming ULT's reliability=1, which UNDERESTIMATES the true disattenuated correlation if ULT is not, in fact, perfectly reliable).
 - Observed pooled Kendall τ = 0.278 (n_models=9).
 - Partial disattenuation (ULT reliability assumed = 1): τ_disattenuated = 0.278 / sqrt(0.583) = **0.364**.
-- Even with this correction, the disattenuated tau stays far from the pre-registered validity-supporting zone -- the low observed correlation is NOT primarily an artifact of Dynamic's own (already-high, 0.583) reliability.
+- Even with this correction, the disattenuated tau stays far from the pre-registered validity-supporting zone. The low observed correlation is NOT primarily an artifact of Dynamic's own (already-high, 0.583) reliability.
 
-**Matched disattenuation on the coverage-adjusted score** (sec 3b/3c) -- the pairing above uses the RAW Mut@K correlation with the RAW Mut@K reliability; this is the same correction applied to the ADJUSTED correlation with the ADJUSTED score's OWN reliability, since mixing a raw correlation with an adjusted reliability (or vice versa) would not be a matched pair:
+**Matched disattenuation on the coverage-adjusted score** (sec 3b/3c). The pairing above uses the RAW Mut@K correlation with the RAW Mut@K reliability. This is the same correction applied to the ADJUSTED correlation with the ADJUSTED score's OWN reliability, since mixing a raw correlation with an adjusted reliability (or vice versa) would not be a matched pair:
 - Coverage-adjusted reliability (N=4, sec 3c): **1.000**.
 - Observed coverage-adjusted Kendall τ = 0.944 (n_models=9).
 - Matched disattenuation: τ_disattenuated = 0.944 / sqrt(1.000) = **0.944**.
-- Compare to the raw-matched 0.364 above -- the coverage-adjusted score's disattenuated agreement is still much higher, consistent with sec 3b's finding that most of its apparent validity is a baseline-pass-rate-agreement effect rather than a reliability artifact of either metric.
+- Compare to the raw-matched 0.364 above. The coverage-adjusted score's disattenuated agreement is still much higher, consistent with sec 3b's finding that most of its apparent validity is a baseline-pass-rate-agreement effect, not a reliability artifact of either metric.
 
-**Thin-cell-filtered primary correlation** (n_defined<20 on either side -- same threshold as secs 1/3b and Comparison A's audit):
+**Thin-cell-filtered primary correlation** (n_defined<20 on either side, same threshold as secs 1/3b and Comparison A's audit):
 - Unfiltered: τ=0.278 (n_models=9). Thin-cell-excluded: τ=0.333 (n_models=7, excluded: ['Qwen 1.5B', 'Qwen 7B']).
-- **Mistral is unquotable on this pair once cross-family models are in scope** (ULT n_defined=1, analysis/RQ5_CROSS_FAMILY_PROVENANCE.md) -- not applicable to this canonical-only n=9 table (Mistral isn't one of the 9 canonical models), flagged here so the rule is visible in one place; see the cross-family provenance doc for its own thin-cell flags.
+- **Mistral is unquotable on this pair once cross-family models are in scope** (ULT n_defined=1, analysis/RQ5_CROSS_FAMILY_PROVENANCE.md), not applicable to this canonical-only n=9 table (Mistral isn't one of the 9 canonical models). This is flagged here so the rule is visible in one place. The cross-family provenance doc has its own thin-cell flags for that.

@@ -49,11 +49,11 @@ def main() -> None:
         "`scripts/build_research_questions_md.py`.",
         f"Git commit at generation time: {commit}",
         "",
-        "The xlsx is the source of truth for formatting; this file exists so "
+        "The xlsx is the source of truth for formatting. This file exists so "
         "the",
         "workbook's content is diffable and greppable in git. Do not "
-        "hand-edit —",
-        "edit the xlsx and regenerate.",
+        "hand-edit.",
+        "Edit the xlsx and regenerate.",
         "",
     ]
 

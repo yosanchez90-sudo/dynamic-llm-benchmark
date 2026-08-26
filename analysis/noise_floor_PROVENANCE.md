@@ -1,12 +1,12 @@
 # Noise floor by metric and tier — provenance
 
-Generated: 2026-08-12T00:23:29.071269+00:00
-Git commit: ce774c2
+Generated: 2026-08-26T08:05:33.617379+00:00
+Git commit: 09eb1bf
 Script: scripts/plot_noise_floor.py
 
 Computed directly from data/results/dynamic/*.jsonl (canonical 9 models),
 using src.Analysis.stability.stable_mut_at_k per tier (extra_group_cols
-not used here -- filtered per tier instead, then aggregated). Raw table:
+not used here, filtered per tier instead, then aggregated). Raw table:
 analysis/noise_floor_by_tier.csv.
 
 4-model unresolvable-cluster annotation is a named citation of

@@ -1,11 +1,11 @@
 # Research questions workbook — markdown mirror
 
 Generated from `docs/Research_questions.xlsx` by `scripts/build_research_questions_md.py`.
-Git commit at generation time: a2f4b35
+Git commit at generation time: 09eb1bf
 
-The xlsx is the source of truth for formatting; this file exists so the
-workbook's content is diffable and greppable in git. Do not hand-edit —
-edit the xlsx and regenerate.
+The xlsx is the source of truth for formatting. This file exists so the
+workbook's content is diffable and greppable in git. Do not hand-edit.
+Edit the xlsx and regenerate.
 
 ## Hypotheses
 
