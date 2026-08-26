@@ -14,9 +14,9 @@ definition-matched reading used below: `analysis/RQ5_CROSS_DEFINITION_AUDIT.md`.
 data landed, growing this comparison from n_models=5 to n_models=8)
 
 **Directional ambiguity resolved: all three conditionings' rank-based
-effect sizes now agree Dynamic-L4 is favored.** But H1 itself, the
+effect sizes now agree Dynamic-L4 is favored, but H1 itself, the
 pre-registered raw/unfiltered test, still is not statistically
-significant. This is a real change from the earlier "the sign flips
+significant.** This is a real change from the earlier "the sign flips
 twice" finding: previously the raw-unfiltered reading uniquely favored
 ULT while the other two favored Dynamic-L4. Now all three agree. **The
 new models are also why a naive "compare the two column means" read would

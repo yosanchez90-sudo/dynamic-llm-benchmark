@@ -407,7 +407,7 @@ z-test: that appeared only in a later, unapproved expanded draft. The
 approved wording asks for the two coefficients directly.)
 
 **What was executed**: Answerable entirely from data already computed for
-clause 1, direct comparison of Dynamic↔BigCodeBench against
+clause 1: direct comparison of Dynamic↔BigCodeBench against
 ULT↔BigCodeBench, same scopes, same metrics, same run
 (`analysis/RQ5_CROSS_FAMILY_PROVENANCE.md`). Full table (§ below, added to
 `analysis/RQ5_INTERPRETATION.md` per task 8):
@@ -447,7 +447,7 @@ requires exactly this direct comparison, no Fisher z. The **result**
 differs from the prediction: this project predicted a weaker dynamic-proxy
 correlation and found the opposite.
 
-**Verdict: NOT SUPPORTED.** Direction is opposite to the prediction.
+**Verdict: NOT SUPPORTED, direction is opposite to the prediction.**
 
 **Paper-ready sentence**: "H6 clause 2 (the dynamic-proxy correlation
 will be weaker than the static-proxy correlation) is not supported:

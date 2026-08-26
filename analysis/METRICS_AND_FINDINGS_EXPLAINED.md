@@ -1,13 +1,13 @@
 # Metrics and findings, explained
 
 **Purpose of this document.** A single, self-contained reference for anyone
-who understands software testing but has never seen this project, how a
+who understands software testing but has never seen this project: how a
 model response turns into a number, what every reported metric actually
 means, why the sample size changes between tables, what the findings are
 and how strong each one really is, what the data does *not* support, and a
 full accounting of every measurement bug found and fixed along the way.
-Written for explaining the work end to end, not as a quick-reference card,
-favours completeness over brevity throughout.
+Written for explaining the work end to end, not as a quick-reference card.
+It favours completeness over brevity throughout.
 
 Hand-written, not auto-generated, but every number in it is either quoted
 from an auto-generated table (cited by file) or computed live from raw
