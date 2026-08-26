@@ -1,6 +1,22 @@
 \documentclass[conference,letterpaper]{IEEEtran}
 \IEEEoverridecommandlockouts
 
+% Arabic decimal section numbering (1, 2, 2.1, 3.3) instead of IEEEtran's
+% default Roman-numeral/letter scheme (I, IV-A). Both \ref-facing counters
+% and the visible heading forms are redefined so headings and every \ref
+% call render identically -- these are the same definitions IEEEtran.cls
+% itself uses under its \texttt{compsoc} class option, adopted directly
+% here without invoking \texttt{compsoc} itself, which changes fonts and
+% spacing project-wide.
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+\renewcommand{\theparagraph}{\thesubsubsection.\arabic{paragraph}}
+\renewcommand{\thesectiondis}{\thesection}
+\renewcommand{\thesubsectiondis}{\thesubsection}
+\renewcommand{\thesubsubsectiondis}{\thesubsubsection}
+\renewcommand{\theparagraphdis}{\theparagraph}
+
 \usepackage{cite}
 \usepackage{amsmath}
 \usepackage{amssymb}
