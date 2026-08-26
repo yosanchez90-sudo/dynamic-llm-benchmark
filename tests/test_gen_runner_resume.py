@@ -1,19 +1,19 @@
 """Regression tests for src/eval/test_gen_runner.py's resume-file matching.
 
 2026-07-26 race audit: _find_resume_file matched on (model_label, benchmark,
-prompting_condition, instantiation_id) only -- NOT tier. Two Dynamic configs
+prompting_condition, instantiation_id) only, NOT tier. Two Dynamic configs
 for the same (model, instantiation) but different tier sets (e.g. L1L2 vs
 L3L4, this project's standard tier-group split) were therefore
 indistinguishable to the matcher. Confirmed via real job logs (2026-07-14,
 jobs 9376519/9376524 for claude-haiku-4-5 inst4) that a later L1L2 retry job
 (9468234, 2026-07-23) resumed into the L3L4 job's own output file, and a
-later L3L4 retry (9468238) did the same again -- producing duplicate,
+later L3L4 retry (9468238) did the same again, producing duplicate,
 sometimes content-conflicting rows for the same (template_id, instance_seed)
 across the two tier groups' files. See CLAUDE.md's isolation/matcher note
 and data/raw/ult_plt/PROVENANCE.md-adjacent audit output for the full trail.
 No data was lost (coverage_matrix.py's set-based check shows every in-scope
 cell complete) and src/Analysis/loader.py's existing timestamp-based dedup
-already resolves the duplicates for analysis -- this test guards the root
+already resolves the duplicates for analysis. This test guards the root
 cause so future runs don't depend on manual job sequencing to avoid it.
 """
 from __future__ import annotations

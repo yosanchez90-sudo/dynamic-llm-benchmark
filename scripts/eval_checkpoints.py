@@ -2,11 +2,11 @@
 
 Loads the base model ONCE, then hot-swaps adapter weights for each checkpoint
 so we don't pay the 14GB reload cost at every epoch. Only runs exec gate +
-baseline pass — mutation scoring is skipped to keep runtime tractable
+baseline pass. Mutation scoring is skipped to keep runtime tractable
 (~15 min per checkpoint × 3 instantiations vs ~6h with mutation).
 
-MEASUREMENT POLICY (fixed 2026-07-12 after an extended investigation —
-see PROJECT_BRIEF-adjacent notes / analysis/README.md — into a false
+MEASUREMENT POLICY (fixed 2026-07-12 after an extended investigation,
+see PROJECT_BRIEF-adjacent notes / analysis/README.md, into a false
 "collapse" in three of six fine-tuning conditions):
   - no_repeat_ngram_size is NEVER used here. It was added 2026-07-07 to
     combat a genuine problem (see below) but the fix was wrong: HF's
@@ -17,22 +17,22 @@ see PROJECT_BRIEF-adjacent notes / analysis/README.md — into a false
     its own mandatory first line corrupted, because generating it again
     trips the n-gram repeat ban. Confirmed at n=50 (0/50 clean import lines
     with it enabled vs 50/50 with it disabled, under both greedy and
-    sampling, independent of repetition_penalty) — this single setting
+    sampling, independent of repetition_penalty). This single setting
     explained the entire recorded collapse in three of six conditions.
-  - The wall-clock stopping criteria (_TimeLimitCriteria) IS kept — job
+  - The wall-clock stopping criteria (_TimeLimitCriteria) IS kept. Job
     9315777 (2026-07-05, the original bp_gpt5/7B sweep) hung for real: it
     stalled at epoch 5/instantiation 1, generation 73/150, and produced zero
     further output for ~11.5 hours until SLURM force-killed it at the
     12-hour job limit. That was a genuine problem needing a genuine
-    safeguard. Its timeout is now deliberately sized rather than inherited:
+    safeguard. Its timeout is now sized, not inherited:
     measured throughput on V100 for this model is ~20 tok/s (min observed
     15.8 tok/s across 100 timed generations, none of which came anywhere
     near max_new_tokens=2048); at the slowest observed rate a full
     2048-token generation would take ~129s. The default below (240s) clears
     that with ~1.85x headroom while remaining orders of magnitude short of
     an actual hang.
-  - repetition_penalty is set explicitly (not left to silently inherit from
-    the base model's own generation_config.json — confirmed via explicit A/B
+  - repetition_penalty is set explicitly (not left to inherit from
+    the base model's own generation_config.json, confirmed via explicit A/B
     toggling to have zero effect on the corruption either way, but per
     CLAUDE.md's "resolved generation config is part of run identity" rule,
     an inherited default must never be implicit).
@@ -42,22 +42,22 @@ see PROJECT_BRIEF-adjacent notes / analysis/README.md — into a false
     alongside _TimeLimitCriteria. Re-reading job 9315777's log more
     closely: it stalled mid-generate() with zero incremental output for
     11.5h, which _TimeLimitCriteria can't catch (that check only runs
-    between successfully generated tokens — a stuck forward pass never
+    between successfully generated tokens. A stuck forward pass never
     gets back to it). The watchdog is a background thread that force-exits
     the process after --watchdog-timeout seconds of no completed
     generate() call, independent of the main thread's cooperation. See
     _ProcessWatchdog's docstring for why this works and why it kills the
-    whole shard rather than just the stuck problem.
+    whole shard, not just the stuck problem.
   - Every row logs adapter_path and adapter_weights_hash (added
     2026-07-16, see analysis/reports/inst1_control_verification.md's
     addendum). Previously there was no per-row record of which adapter
-    directory produced a given row at all — CLAUDE.md's "adapter identity
+    directory produced a given row at all. CLAUDE.md's "adapter identity
     (path + hash) is part of model identity" rule had been retrofitted
     into the dynamic-benchmark JSONL pipeline (process_batch.py/
     run_eval.py) but never into this script. adapter_weights_hash is a
     sha256 of the checkpoint's adapter_model.safetensors file (None for
     the no-adapter epoch-0 baseline), computed once per epoch via
-    adapter_weights_hash() — not per row, since hashing a several-
+    adapter_weights_hash(), not per row, since hashing a several-
     hundred-MB file for every (instantiation, draw) row in that epoch
     would be wasteful. This is a schema addition only: existing
     epoch_perf_*.csv files are not backfilled or re-run.
@@ -137,17 +137,17 @@ def _score_fast(fn_source: str, fn_name: str, test_source: str,
 # ── inference for one (adapter, instantiation, draw) ──────────────────────────
 
 class _TimeLimitCriteria:
-    """Stop generation once a wall-clock budget is exceeded — a genuine
+    """Stop generation once a wall-clock budget is exceeded, a genuine
     safety net for the real hang recorded in job 9315777 (see module
     docstring), NOT a substitute for no_repeat_ngram_size, which must never
     be re-added here (see module docstring for why).
 
     LIMITATION (found 2026-07-14, re-examining job 9315777's log): this is
     only checked BETWEEN successfully generated tokens, inside generate()'s
-    own loop. If a single forward pass hangs — the log shows zero
+    own loop. If a single forward pass hangs (the log shows zero
     incremental output for 11.5h at epoch5/inst1/problem75, not slow-but-
-    progressing output, consistent with a CUDA/driver-level stall rather
-    than a token-generation loop — this criteria is never re-invoked, and
+    progressing output, consistent with a CUDA/driver-level stall, not
+    a token-generation loop), this criteria is never re-invoked, and
     what actually ended job 9315777 was SLURM's job-level --time limit, not
     this class. See _ProcessWatchdog below for the process-external guard
     that covers that gap.
@@ -174,23 +174,23 @@ class _ProcessWatchdog:
     Why a thread and not just a longer _TimeLimitCriteria: that criteria is
     a callback inside generate()'s own token loop, so it can't fire if a
     single forward pass never returns control (a stuck CUDA/driver call,
-    not a slow-but-progressing generation — see _TimeLimitCriteria's
+    not a slow-but-progressing generation, see _TimeLimitCriteria's
     docstring). A watchdog THREAD works around this because PyTorch's CUDA
     calls release the GIL while blocked on the device (standard behavior,
-    needed for e.g. DataLoader workers to overlap with GPU compute) — so
+    needed for e.g. DataLoader workers to overlap with GPU compute). So
     this thread keeps running and can call os._exit() even while the main
     thread is wedged inside a single generate() call that will never
     return. os._exit() is an unconditional process kill: it does not
     require the stuck thread's cooperation.
 
-    This kills the WHOLE shard job (not just the one stuck problem) — that
+    This kills the WHOLE shard job (not just the one stuck problem). That
     is intentional. There's no way to safely abandon one stuck CUDA call
     and continue in the same process (the CUDA context may be corrupted).
     The existing sharded-submission design already treats "resubmit only
     the failed shards" as normal recovery (see submit_epoch_curve_shards.py
     and merge_epoch_curve_shards.py), so a hard process exit here is a
     faster-detecting version of the same recovery path SLURM's own --time
-    limit already provides — not a new failure mode, just a much shorter
+    limit already provides, not a new failure mode, just a much shorter
     time-to-detection (minutes instead of hours) than waiting for the full
     job time limit to elapse.
 
@@ -234,7 +234,7 @@ class _ProcessWatchdog:
 
 
 def resolved_generation_config(do_sample: bool, seed: int | None, max_seconds: float) -> dict:
-    """The full resolved generation config for one draw — logged into every
+    """The full resolved generation config for one draw, logged into every
     result row per CLAUDE.md's "resolved generation config is part of run
     identity" rule.
     """
@@ -258,7 +258,7 @@ def _run_inference(model, tokenizer, problems, do_sample: bool, seed: int | None
     """Return raw response strings for each problem, for one (do_sample, seed) draw.
 
     watchdog: kicked immediately before each generate() call so a stuck
-    forward pass (job 9315777's failure mode — see _ProcessWatchdog) is
+    forward pass (job 9315777's failure mode, see _ProcessWatchdog) is
     caught even though _TimeLimitCriteria can't see it. Optional so this
     function stays independently testable/callable without a live watchdog.
     """
@@ -297,7 +297,7 @@ def _run_inference(model, tokenizer, problems, do_sample: bool, seed: int | None
 def adapter_weights_hash(ckpt_dir: Path) -> str | None:
     """sha256 of the adapter weights file, for CSV provenance (CLAUDE.md:
     "Adapter identity (path + hash) is part of model identity"). None for
-    the no-adapter baseline. Hashes the file on disk directly rather than
+    the no-adapter baseline. Hashes the file on disk directly, not
     tensor contents, so it also catches a same-weights-different-format
     resave, which existing consumers don't need to distinguish but which
     is cheap to be strict about here.
@@ -376,7 +376,7 @@ def main() -> None:
     train_cfg  = cfg["training"]
     ckpt_base  = ROOT / train_cfg["output_dir"]
 
-    # New authoritative location — see analysis/README.md for why the old
+    # New authoritative location, see analysis/README.md for why the old
     # analysis/epoch_perf_*.csv files are quarantined, not overwritten.
     out_path = args.out or ROOT / f"data/results/finetune_rebuild/epoch_perf_{cfg['name']}.csv"
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -435,7 +435,7 @@ def main() -> None:
 
     # ── discover checkpoint dirs ──────────────────────────────────────────────
     # SFTTrainer names them checkpoint-<step>. Map epoch → step dir.
-    # steps_per_epoch = ceil(n_train / effective_batch) — read from saved state.
+    # steps_per_epoch = ceil(n_train / effective_batch). Read from saved state.
     ckpt_dirs = sorted(ckpt_base.glob("checkpoint-*"),
                        key=lambda p: int(p.name.split("-")[1]))
     if not ckpt_dirs:
@@ -486,7 +486,7 @@ def main() -> None:
             print(f"\n=== Epoch {epoch} ({ckpt_dir.name}) ===")
 
             if peft_model is None:
-                # First adapter load — wrap base model
+                # First adapter load, wrap base model
                 peft_model = PeftModel.from_pretrained(base, str(ckpt_dir))
                 peft_model.eval()
             else:
@@ -500,7 +500,7 @@ def main() -> None:
                 set_peft_model_state_dict(peft_model, state)
             model = peft_model
 
-        # Computed once per epoch (not per row) -- hashing a several-hundred-MB
+        # Computed once per epoch (not per row). Hashing a several-hundred-MB
         # safetensors file for every (instantiation, draw) row would be wasteful.
         current_adapter_path = str(current_ckpt_dir) if current_ckpt_dir is not None else None
         current_adapter_hash = adapter_weights_hash(current_ckpt_dir)

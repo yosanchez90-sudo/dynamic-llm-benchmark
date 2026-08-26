@@ -1,22 +1,22 @@
-"""RQ5/H6 — cross-benchmark validity analysis, per the pre-registered
+"""RQ5/H6, cross-benchmark validity analysis, per the pre-registered
 analysis/RQ5_ANALYSIS_PLAN.md.
 
 Part 1 (zero-compute, always runs): Dynamic (pooled Mut@K across all
 landed tiers/instantiations, baseline_pass_rate secondary) vs ULT core_400
-Mut@K, per model -- score correlation (Pearson/Spearman) + rank consistency
+Mut@K, per model, score correlation (Pearson/Spearman) + rank consistency
 (Kendall tau), with bootstrap CIs and permutation p-values
 (src/Analysis/correlation.py).
 
 Parts 2-3 (public-benchmark pairs: Dynamic<->public, ULT<->public) are
 gated on analysis/rq5_public_scores.csv existing (written by the
-leaderboard harvest / self-run pipeline) -- this script runs Part 1 alone
+leaderboard harvest / self-run pipeline). This script runs Part 1 alone
 until that file exists, and adds the other two pairs once it does, so it is
 safe to re-run at any point without editing code.
 
 Outputs:
-  analysis/rq5_model_ranking.csv       -- per-model scores, both benchmarks
-  analysis/rq5_correlations.csv        -- one row per benchmark pair
-  analysis/RQ5_PROVENANCE.md           -- raw tables (regenerable)
+  analysis/rq5_model_ranking.csv,      per-model scores, both benchmarks
+  analysis/rq5_correlations.csv,       one row per benchmark pair
+  analysis/RQ5_PROVENANCE.md,          raw tables (regenerable)
 
 Usage: python scripts/analyze_rq5.py
 """

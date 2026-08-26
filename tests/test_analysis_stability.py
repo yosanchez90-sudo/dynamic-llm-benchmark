@@ -18,7 +18,7 @@ def test_mut_at_k_excludes_gate_failures():
     df = pd.DataFrame([
         _row("m1", "1", 1.0),
         _row("m1", "1", 0.5),
-        _row("m1", "1", None),  # Exec@K/baseline gate failed — excluded, not zero
+        _row("m1", "1", None),  # Exec@K/baseline gate failed, excluded, not zero
     ])
     agg = mut_at_k(df, ["model_label", "instantiation_id"])
     row = agg.iloc[0]
@@ -43,7 +43,7 @@ def test_stable_mut_at_k_mean_and_sd():
 def test_stable_mut_at_k_excludes_instantiations_with_no_scorable_problems():
     df = pd.DataFrame([
         _row("m1", "1", 0.8),
-        _row("m1", "2", None),  # entirely gated out — must not count as 0
+        _row("m1", "2", None),  # entirely gated out, must not count as 0
     ])
     out = stable_mut_at_k(df)
     row = out.iloc[0]
@@ -108,7 +108,7 @@ def test_stable_mut_at_k_coverage_adjust_scales_by_scored_fraction():
 
 
 def test_mut_at_k_generalizes_to_exec_rate_never_conditioned():
-    """exec_rate is never None -- metric_col='exec_rate' should reduce to a
+    """exec_rate is never None. metric_col='exec_rate' should reduce to a
     plain mean over ALL rows, n_scored == n_total always."""
     df = pd.DataFrame([
         {"model_label": "m1", "instantiation_id": "1", "exec_rate": 1.0, "mutation_score": None},
@@ -122,7 +122,7 @@ def test_mut_at_k_generalizes_to_exec_rate_never_conditioned():
 
 
 def test_mut_at_k_generalizes_to_baseline_passed_bool_cast():
-    """baseline_passed is a bool column -- must average correctly (True=1,
+    """baseline_passed is a bool column, must average correctly (True=1,
     False=0), not raise or silently misbehave on non-numeric dtype."""
     df = pd.DataFrame([
         {"model_label": "m1", "instantiation_id": "1", "baseline_passed": True},
@@ -155,7 +155,7 @@ def test_coverage_adjust_rejects_non_default_metric_col():
 
 def test_pairwise_kendall_tau_coverage_adjust_can_change_ranking():
     """Raw Mut@K ties b/c ahead of a; coverage-adjusting by a much lower
-    baseline_pass_rate for b flips the ranking -- proves coverage_adjust
+    baseline_pass_rate for b flips the ranking, proves coverage_adjust
     actually changes which score drives the rank correlation, not just a
     uniform rescale."""
     df = pd.DataFrame([

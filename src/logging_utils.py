@@ -6,7 +6,7 @@ or similar) and the output path. Outputs: one JSON line appended to that path.
 Position in the pipeline: the single write path every result row goes through,
 from src/eval/test_gen_runner.py (per-problem results) and scripts/process_batch.py
 (batch-API results). Append-only by design (never truncates or rewrites the file)
-so a crashed or killed job keeps every row it already wrote -- see CLAUDE.md's
+so a crashed or killed job keeps every row it already wrote, see CLAUDE.md's
 data/results/ convention ("JSONL outputs, never overwritten").
 """
 import json

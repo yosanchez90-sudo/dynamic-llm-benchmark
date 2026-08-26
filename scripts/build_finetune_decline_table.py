@@ -3,7 +3,7 @@ the corrected data/results/finetune_rebuild/epoch_perf_*.csv files.
 
 Companion to scripts/build_finetune_endpoint_table.py, same source files,
 different metric and question. That script reports baseline_pass_rate
-(seen vs fresh, epoch 30 only) -- whether the generated suite is correct.
+(seen vs fresh, epoch 30 only), whether the generated suite is correct.
 This one reports exec_rate (whether the generated suite runs at all,
 independent of correctness) on the held-out split specifically, tracked
 from epoch 0 to epoch 30, to separate a genuine held-out capability cost
@@ -11,7 +11,7 @@ from the memorisation signal baseline_pass_rate alone cannot distinguish.
 
 seen   = instantiation 1 (the LoRA training split)
 unseen = mean(instantiation 2, instantiation 3) per draw, then mean+-SD of
-         that across the 3 R=3 sampling replicates -- same convention as
+         that across the 3 R=3 sampling replicates, same convention as
          build_finetune_endpoint_table.py.
 
 Usage:
@@ -57,9 +57,9 @@ def _model_shortname(model_id: str) -> str:
 
 def load_unseen_exec_rate(path: Path, epoch: int) -> tuple[str, float, list[float] | None]:
     """Sampling replicates (sampling_seed{42,43,44}) are recorded at epoch 30
-    only, same convention as build_finetune_endpoint_table.py -- epoch 0
+    only, same convention as build_finetune_endpoint_table.py. Epoch 0
     (the untrained base checkpoint) has greedy only, so `sampling` is None
-    there rather than raising on a requirement that never applied."""
+    there, not raising on a requirement that never applied."""
     rows = list(csv.DictReader(path.open()))
     ep_rows = [r for r in rows if int(r["epoch"]) == epoch]
     if not ep_rows:
@@ -97,7 +97,7 @@ def decline_row(path: Path) -> dict:
         "model": model_label,
         "condition": condition,
         # Held-out (unseen inst2/3) exec_rate: does the generated suite run
-        # at all, independent of correctness -- distinct from
+        # at all, independent of correctness, different from
         # build_finetune_endpoint_table.py's baseline_pass_rate.
         "exec_rate_unseen_epoch0_greedy_pct": round(greedy_by_epoch[e0], 1),
         "exec_rate_unseen_epoch30_greedy_pct": round(greedy_by_epoch[e30], 1),

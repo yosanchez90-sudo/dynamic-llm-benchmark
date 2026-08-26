@@ -4,7 +4,7 @@ Reads the Qwen 7B inst1 evaluation results, reconstructs the original prompt
 for each problem (using the same template engine the evaluation used), pairs it
 with the model's own extracted test file, and writes a training JSONL.
 
-Only records where the generated test executed cleanly (exec_ok) are kept — we
+Only records where the generated test executed cleanly (exec_ok) are kept. We
 don't want to teach the model to produce broken syntax.
 
 Output: data/finetune/train_qwen7b_inst1.jsonl

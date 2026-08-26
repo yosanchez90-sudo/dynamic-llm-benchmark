@@ -7,13 +7,13 @@ run one-job-per-condition. That ceiling is a packing artifact, not an
 experiment-size constraint, so this script shards each condition by
 (epoch [+ epoch0 baseline folded into the epoch=1 shard]) for the 7
 non-final epochs, and by (epoch=30, draw) for the endpoint (greedy +
-3 sampling seeds) -- 11 shards/condition x 6 conditions = 66 shards.
+3 sampling seeds), 11 shards/condition x 6 conditions = 66 shards.
 
 Each shard writes to its OWN CSV file under
 data/results/finetune_rebuild/shards/ to avoid concurrent-write races on
 NFS; merge_epoch_curve_shards.py combines them afterward, after verifying
 shard-count / row-count completeness. See CLAUDE.md: results are
-append-only, so shard files are never combined by overwriting -- the merge
+append-only, so shard files are never combined by overwriting. The merge
 script only ever creates the new epoch_perf_<name>.csv once, or appends
 rows a resumed eval_checkpoints.py run hadn't already written.
 
@@ -39,7 +39,7 @@ MANIFEST_DIR = SHARD_DIR / "manifests"
 NON_FINAL_EPOCHS = [3, 5, 10, 15, 20, 25]  # epoch 1 handled separately (folded w/ baseline)
 SAMPLING_SEEDS = [42, 43, 44]
 
-# (config stem, is_slow) -- bp_gpt5 conditions are the long-output, slow ones
+# (config stem, is_slow). bp_gpt5 conditions are the long-output, slow ones
 # (measured ~5h/epoch-shard for the 7B variant); everything else is fast.
 CONDITIONS = [
     ("finetune_qwen1_5b_inst1_30ep",   False),
@@ -53,8 +53,8 @@ CONDITIONS = [
 
 def _mem_for(config_name: str, is_slow: bool) -> str:
     """--mem was a flat 16G for every shard regardless of model size or
-    condition until 2026-07-14, when 3 of 66 shards (all bp_gpt5 -- the
-    long-output condition -- 2x 1.5B, 1x 7B) OOM-killed 6.5-8.5h into an
+    condition until 2026-07-14, when 3 of 66 shards (all bp_gpt5, the
+    long-output condition, 2x 1.5B, 1x 7B) OOM-killed 6.5-8.5h into an
     8h-budgeted run: jobs 9372594, 9372595, 9372627 (see
     analysis/README_QUARANTINE.md). 16G left ~2GB headroom for a 7B model's
     weights alone (14GB bf16), and bp_gpt5's longer generations (bigger
@@ -155,9 +155,9 @@ def submit(shard: Shard) -> str:
         f"BASELINE_FLAG={shard.baseline_flag}",
     ])
     job_name = f"epc_{shard.config_name.replace('finetune_', '')}_{shard.label}"
-    # env -u BASH_ENV per CLAUDE.md — avoids BASH_ENV hook conflicts on sbatch.
+    # env -u BASH_ENV per CLAUDE.md, avoids BASH_ENV hook conflicts on sbatch.
     # --mem overrides run_eval_checkpoints_shard.slurm's flat #SBATCH --mem=16G
-    # default (sbatch CLI args win over in-script pragmas) — see _mem_for()'s
+    # default (sbatch CLI args win over in-script pragmas), see _mem_for()'s
     # docstring for why a flat value across model sizes/conditions OOM-killed
     # 3 of the first 66 shards.
     cmd = [
@@ -171,7 +171,7 @@ def submit(shard: Shard) -> str:
         str(SLURM_SCRIPT),
     ]
     # sbatch itself has no built-in call timeout (see analysis/README_QUARANTINE.md's
-    # subprocess-timeout audit) — a hung slurmctld would otherwise block this
+    # subprocess-timeout audit). A hung slurmctld would otherwise block this
     # call, and every shard after it in the submission loop, forever.
     try:
         result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=30)

@@ -1,5 +1,5 @@
 """Comparison A (Dynamic vs ULT, RQ1/H1) and Comparison B (ULT vs PLT,
-RQ1 observational contamination signal) — see PROJECT_BRIEF.md Sec 7.
+RQ1 observational contamination signal), see PROJECT_BRIEF.md Sec 7.
 
 PAIRING UNIT (read before trusting a p-value here): PROJECT_BRIEF.md Sec 3.1
 specifies H1 as "paired Wilcoxon signed-rank, dynamic vs ULT mutation score
@@ -9,7 +9,7 @@ pairing across benchmarks. The pairing implemented here is by MODEL: one
 paired observation per model (that model's mean Mut@K on Dynamic-L4 vs its
 mean Mut@K on ULT/PLT), Wilcoxon signed-rank across the <=9 model-level
 pairs. This is the standard repeated-measures unit for benchmark-vs-benchmark
-comparison when items don't correspond across conditions — flagged explicitly
+comparison when items don't correspond across conditions, flagged explicitly
 because the brief's wording is genuinely ambiguous, not to hide a shortcut.
 With <=9 models this test has very limited power; report the effect size
 (matched-pairs rank-biserial correlation) and its CI as primary, per
@@ -17,12 +17,12 @@ PROJECT_BRIEF.md Sec 3.1 ("effect sizes with CIs are primary; p-values
 support").
 
 Dynamic-side comparison is restricted to tier="L4" (this project's CC>=8
-band, matching ULT/PLT exactly) — comparing against ALL Dynamic tiers pooled
+band, matching ULT/PLT exactly). Comparing against ALL Dynamic tiers pooled
 would conflate benchmark identity with complexity difference.
 
 Comparison B (ULT vs PLT) additionally reports a CC-band breakdown (from
 data/raw/ult_plt/subsample_manifest.json's per-problem `band` field) since
-"matched CC" is the whole point of that comparison — the model-paired table
+"matched CC" is the whole point of that comparison. The model-paired table
 alone doesn't show whether an observed gap holds within each complexity band
 or is driven by one band's imbalance.
 """
@@ -56,7 +56,7 @@ class PairedWilcoxonResult:
 
 def dynamic_l4_for_model(df: pd.DataFrame, model_label: str) -> pd.DataFrame:
     """Dynamic-benchmark rows for one model, restricted to tier=L4 (see
-    module docstring) — the only fair comparison set against ULT/PLT.
+    module docstring), the only fair comparison set against ULT/PLT.
     """
     return df[(df["model_label"] == model_label) & (df["tier"] == DYNAMIC_TIER)]
 
@@ -70,21 +70,21 @@ def unconditional_mean_by_model(
     df: pd.DataFrame, metric: str = "mutation_score", model_col: str = "model_label",
 ) -> pd.Series:
     """Zero-filled per-model mean: every row counts, with 0 substituted where
-    `metric` is None (baseline_passed=False, or -- empirically never observed
-    in this project's data, see analysis/RQ5_CROSS_DEFINITION_AUDIT.md -- a
+    `metric` is None (baseline_passed=False, or, empirically never observed
+    in this project's data, see analysis/RQ5_CROSS_DEFINITION_AUDIT.md, a
     baseline-passing problem with zero scorable mutants). Denominator is
     n_total, not n_defined.
 
     This is this project's best-effort reading of the ULT/PLT paper's Sec
     3.4.3 formula (Mut@k = sum(Mi)/N, N stated as "the total number of
     functions in the benchmark"), NOT a replacement for the pre-registered
-    conditional Mut@K (`_mean_by_model`) -- see the audit doc for why the
+    conditional Mut@K (`_mean_by_model`), see the audit doc for why the
     paper's own published code does not actually match this reading, and
-    why it's reported as a labelled co-primary rather than a swap.
+    why it's reported as a labelled co-primary, not a swap.
 
     PROVEN identical to `mutk * baseline_pass_rate` ("coverage_adjusted" in
     scripts/build_comparison_tables.py and scripts/analyze_rq5_diagnostics.py)
-    whenever n_defined == n_baseline_passed for every model -- true of every
+    whenever n_defined == n_baseline_passed for every model, true of every
     cell in this project's data as of 2026-08-03 (verified in
     build_comparison_tables.py's a_defb_max_diff/b_defb_max_diff checks).
     """
@@ -100,8 +100,8 @@ def coverage_stats_table(
 ) -> pd.DataFrame:
     """Per-model n_total, n_defined, baseline_pass_rate for one benchmark
     side of a comparison. `metric` (Mut@K) is only ever defined where
-    baseline_passed=True, so n_defined/n_total == baseline_pass_rate exactly
-    -- computed that way (rather than requiring a separate baseline_passed
+    baseline_passed=True, so n_defined/n_total == baseline_pass_rate exactly,
+    computed that way (instead of requiring a separate baseline_passed
     column) since it's the same invariant src/Analysis/stability.py's
     coverage adjustment relies on.
 
@@ -129,15 +129,15 @@ def paired_model_table(
     label_b: str = "b",
     conditional: bool = True,
 ) -> pd.DataFrame:
-    """One row per model with a scorable mean `metric` on BOTH sides —
-    models missing from either side are dropped, not zero-filled (matches
+    """One row per model with a scorable mean `metric` on BOTH sides.
+    Models missing from either side are dropped, not zero-filled (matches
     src/Contamination/did.py's convention). Reported n_pairs (== len(result))
-    makes a short table visible rather than implying full 9-model coverage.
+    makes a short table visible, not implying full 9-model coverage.
 
     conditional=True (default): pre-registered primary, mean over
     baseline-passing rows only (`_mean_by_model`).
     conditional=False: definition-matched co-primary, zero-filled mean over
-    ALL rows (`unconditional_mean_by_model`) -- see that function's
+    ALL rows (`unconditional_mean_by_model`), see that function's
     docstring. A model only drops out here if it has zero rows at all for
     that benchmark side (never happens for canonical models with a
     completed run), so this variant is far less likely to shrink n_pairs
@@ -152,7 +152,7 @@ def paired_model_table(
 
 def _rank_biserial(diffs: np.ndarray) -> float:
     """Matched-pairs rank-biserial correlation: (sum of positive ranks -
-    sum of negative ranks) / total rank sum — the standard effect size for
+    sum of negative ranks) / total rank sum, the standard effect size for
     a Wilcoxon signed-rank test. Zero-diff pairs are dropped first (standard
     treatment, matches what scipy.stats.wilcoxon does internally).
     """
@@ -187,7 +187,7 @@ def paired_wilcoxon(
 ) -> PairedWilcoxonResult:
     """Paired Wilcoxon signed-rank across model-level pairs (see module
     docstring for the pairing-unit rationale). Returns None stat/p/effect if
-    fewer than 2 pairs — scipy.stats.wilcoxon needs n>=1 but the test and its
+    fewer than 2 pairs. scipy.stats.wilcoxon needs n>=1 but the test and its
     effect size are not meaningfully defined below 2 pairs.
     """
     n = len(paired)
@@ -236,7 +236,7 @@ def matched_cc_table(
     band_lookup_plt: dict[str, str],
     metric: str = "mutation_score",
 ) -> pd.DataFrame:
-    """Per-CC-band ULT vs PLT mean `metric` — the observational contamination
+    """Per-CC-band ULT vs PLT mean `metric`, the observational contamination
     signal (PROJECT_BRIEF.md Sec 7): expect PLT systematically higher than
     ULT at matched CC. Bands with no scorable rows on either side are simply
     absent from the result (not zero-filled).
@@ -250,7 +250,7 @@ def matched_cc_table(
     ult_b = _band_means(ult_df, band_lookup_ult).add_suffix("_ult")
     plt_b = _band_means(plt_df, band_lookup_plt).add_suffix("_plt")
     # inner join: a band missing scorable rows on either side can't produce
-    # a "matched CC" delta, so it's dropped rather than left as a NaN row —
+    # a "matched CC" delta, so it's dropped, not left as a NaN row,
     # same "skip, don't zero-fill" convention as src/Contamination/did.py.
     out = pd.concat([ult_b, plt_b], axis=1, join="inner")
     out["delta_plt_minus_ult"] = out["mean_plt"] - out["mean_ult"]

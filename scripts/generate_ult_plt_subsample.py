@@ -24,7 +24,7 @@ NOT what's implemented (see PROVENANCE.md for the full writeup):
       (closed-source models cannot exceed N=400/bench), so full-set Qwen
       data would be inadmissible for the headline cross-model comparisons
       anyway;
-  (b) N=400 paired gives SE ~ 0.025 on mutation-score metrics -- adequate
+  (b) N=400 paired gives SE ~ 0.025 on mutation-score metrics, adequate
       for the expected contamination-inflation deltas;
   (c) local GPU budget is queue-bound (shared a100/a100mig/v100 partitions,
       3-day wall-clock cap per job), and is reserved for the P4 coverage

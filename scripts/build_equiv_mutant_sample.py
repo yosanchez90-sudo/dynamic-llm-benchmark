@@ -4,8 +4,8 @@ across all 15 templates x 5 canonical instantiation seeds (101-105) per tier.
 
 Stratification: largest-remainder (Hamilton) apportionment of the 30 seats
 across the 7 SAC operators, proportional to each operator's share of that
-tier's candidate pool -- so the sample's operator mix mirrors the corpus's
-actual operator mix rather than an artificial uniform split. Draw within each
+tier's candidate pool. So the sample's operator mix mirrors the corpus's
+actual operator mix, not an artificial uniform split. Draw within each
 operator stratum is a fixed-seed random.sample (SAMPLE_SEED below), so the
 pack is exactly reproducible.
 

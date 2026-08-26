@@ -18,7 +18,7 @@ from src.models.base import GenerationConfig, Model, ModelOutput  # noqa: F401 (
 
 
 def _hash_adapter(adapter_path: str) -> str:
-    """sha256 over adapter_config.json + the adapter weights file — the
+    """sha256 over adapter_config.json + the adapter weights file, the
     identity of "which adapter was actually loaded", not just its path
     (a path like .../adapter_final can get overwritten by a later training
     run without the path itself changing, which a hash catches).
@@ -91,7 +91,7 @@ class LocalModel(Model):
         cfg: GenerationConfig,
     ) -> ModelOutput:
         # No fallback path exists here by design: apply_chat_template() raises
-        # if the tokenizer has no chat_template rather than silently applying
+        # if the tokenizer has no chat_template instead of silently applying
         # some other format, so "chat_template_source" below is always
         # "tokenizer_config" for any row that made it past this call. Logged
         # explicitly (not just implied by the absence of a crash) after the
@@ -102,8 +102,8 @@ class LocalModel(Model):
             hashlib.sha256(chat_template.encode()).hexdigest()[:16] if chat_template else None
         )
         # Inferred from the actual messages received, not from config intent
-        # (src/data/test_gen.py::_build_messages's supports_system_role flag)
-        # -- reflects what was really sent even if something upstream changes.
+        # (src/data/test_gen.py::_build_messages's supports_system_role flag),
+        # reflects what was really sent even if something upstream changes.
         prompt_delivery_mode = (
             "system_role" if any(m["role"] == "system" for m in messages)
             else "system_folded_into_user"
@@ -116,13 +116,13 @@ class LocalModel(Model):
         torch.manual_seed(cfg.seed)
         # Anything not explicitly passed to generate() falls back to the
         # checkpoint's own generation_config.json (loaded into
-        # self.model.generation_config at from_pretrained time) — silently,
+        # self.model.generation_config at from_pretrained time), silently,
         # with no record of it anywhere. This is the same failure mode as
         # the no_repeat_ngram_size collapse (analysis/README_QUARANTINE.md),
         # just via a different unlogged inherited default: Qwen2.5-Coder's
         # checkpoints ship repetition_penalty=1.1 (1.5B/7B) or 1.05 (32B) and
         # top_k=20. Resolve and pin them explicitly here (values unchanged
-        # from what has always been in effect — this is a logging fix, not a
+        # from what has always been in effect, this is a logging fix, not a
         # behavior change) so run identity is actually complete and doesn't
         # depend on whatever happens to be cached in HF_HOME.
         ckpt_gen_cfg = self.model.generation_config
@@ -161,7 +161,7 @@ class LocalModel(Model):
                 "top_p": cfg.top_p,
                 "seed": cfg.seed,
                 # Inherited from the checkpoint's generation_config.json, not
-                # this project's YAML configs — recorded explicitly so a
+                # this project's YAML configs, recorded explicitly so a
                 # future checkpoint update that changes these can't silently
                 # change results without showing up in the logged record.
                 "repetition_penalty": gen_kwargs.get("repetition_penalty"),

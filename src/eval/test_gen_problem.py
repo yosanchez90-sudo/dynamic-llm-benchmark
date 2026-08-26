@@ -17,7 +17,7 @@ from typing import Any, Callable
 
 def compute_model_label(model_id: str, adapter_path: str | None = None) -> str:
     """The first-class identity of "which exact model produced these
-    outputs" — distinguishes a base model from any LoRA-adapted variant of
+    outputs", distinguishes a base model from any LoRA-adapted variant of
     the same model_id/model_revision (adapters don't change the base
     checkpoint's SHA, so those two fields alone can't tell them apart).
 
@@ -42,7 +42,7 @@ class Mutant:
     """One semantic-altering mutant of a function-under-test.
 
     `source` is the COMPLETE mutated function source (ready to write to a
-    module and import) — NOT a marker tuple. See mutation_adapter.py for how
+    module and import), NOT a marker tuple. See mutation_adapter.py for how
     the seven SAC operators populate this.
     """
     operator: str          # "AOR" | "ROR" | "LOR" | "CR" | "BM" | "SDL" | "RSM"
@@ -79,7 +79,7 @@ class TestGenProblem:
 @dataclass
 class TestGenRecord:
     """One row of the spec's tidy dataset (§3.1.2.3). This is what gets
-    written to JSONL — one record per (model, problem) evaluation.
+    written to JSONL, one record per (model, problem) evaluation.
 
     The column names match the spec EXACTLY so analysis code can rely on them.
     """

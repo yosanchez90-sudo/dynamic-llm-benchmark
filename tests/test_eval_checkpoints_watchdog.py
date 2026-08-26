@@ -3,7 +3,7 @@
 This is the process-external guard added after re-examining job 9315777's
 hang: it stalled mid-generate() with zero incremental output for 11.5h,
 which _TimeLimitCriteria can't catch (that check only runs between
-successfully generated tokens inside generate()'s own loop — a stuck
+successfully generated tokens inside generate()'s own loop, a stuck
 forward pass never returns control to it). _ProcessWatchdog is a
 background thread that force-exits the process on a stale deadline,
 independent of the main thread's cooperation.

@@ -4,18 +4,18 @@ systematically a harder/messier population than PLT core_400 (n=400), which
 would explain why fine-tuning's generic-improvement effect shows up more on
 PLT than on unseen-ULT, without needing a content-specific story?
 
-unseen-ULT is DEFINED by NOT having a verified training pair -- i.e. it's
+unseen-ULT is DEFINED by NOT having a verified training pair, i.e. it's
 whatever scripts/repair_ult_ground_truth.py's taxonomy could not repair
 (STRUCTURAL, SHAPE_NOT_REPAIRABLE, ASSERTION_MISMATCH_VERIFY_FAILED, FLAKY).
 PLT core_400 was never run through that taxonomy at all: PLT's `test_input`
 field never contained real assertions in the first place
 (data/raw/ult_plt/PROVENANCE.md's original "Known discrepancy" note) so
-there is nothing there to classify as repairable/unrepairable -- PLT is a
+there is nothing there to classify as repairable/unrepairable. PLT is a
 plain CC-stratified sample, unscreened by any test-quality criterion, while
 unseen-ULT is the specifically-selected hard remainder of a screened
 population. That asymmetry is itself part of the answer, not just a
 caveat, and is reported as such alongside the numeric comparison (code
-length, CC, PRE baseline_pass -- same fields as
+length, CC, PRE baseline_pass, same fields as
 scripts/build_comparison_c_seen_manifest.py's seen-vs-unseen audit, reused
 here for unseen-vs-PLT).
 
@@ -49,17 +49,17 @@ def main() -> None:
     unseen_entries = [p for p in seen_manifest["problems"] if not p["seen_in_training"]]
     print(f"unseen-ULT: {len(unseen_entries)}")
 
-    # Records absent from the taxonomy CSV entirely aren't "unknown" -- checked
+    # Records absent from the taxonomy CSV entirely aren't "unknown", checked
     # directly (2026-07-27): repair_ult_ground_truth.py's build_test_file()
-    # raises SyntaxError and silently drops the record (SKIPPED_PARSE_OR_CC)
+    # raises SyntaxError and drops the record (SKIPPED_PARSE_OR_CC)
     # whenever ANY of the 5 shipped ground-truth `tests` strings is not even
-    # valid Python (unclosed brackets, garbled/truncated text -- confirmed by
+    # valid Python (unclosed brackets, garbled/truncated text, confirmed by
     # direct ast.parse() on a sample: task_id 7492 has an unclosed `[`,
     # task_id 18248 an unclosed `{`, task_id 4584 outright garbled text). This
     # is a MORE severe defect than STRUCTURAL (code that parses but can't run)
-    # or SHAPE_NOT_REPAIRABLE (runs, wrong assertion shape) -- the ground
-    # truth test body itself isn't parseable Python. Labelled explicitly
-    # rather than left as an unexplained gap.
+    # or SHAPE_NOT_REPAIRABLE (runs, wrong assertion shape). The ground
+    # truth test body itself isn't parseable Python. Labelled explicitly,
+    # not left as an unexplained gap.
     taxonomy = {r["task_id"]: r["category"] for r in csv.DictReader(TAXONOMY_PATH.open())}
     unseen_categories = Counter(taxonomy.get(e["task_id"], "UNPARSEABLE_TEST_SYNTAX") for e in unseen_entries)
     print(f"unseen-ULT taxonomy breakdown: {dict(unseen_categories)}")

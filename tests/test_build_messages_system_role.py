@@ -1,7 +1,7 @@
 """StarCoder2-15B accommodation (2026-07-28): its chat_template
 unconditionally raise_exception()s on role="system", so
 supports_system_role=False must fold SYSTEM_INSTRUCTION into the first user
-turn instead -- same instruction text, different delivery. Generic (no
+turn instead, same instruction text, different delivery. Generic (no
 per-model branch), controlled entirely by the caller's flag.
 """
 from __future__ import annotations
@@ -26,7 +26,7 @@ def test_supports_system_role_false_folds_into_first_user_turn():
 
 def test_supports_system_role_false_default_is_true_unaffected():
     """Default behavior (no flag passed) must be unchanged from before this
-    feature existed -- regression guard against accidentally flipping the
+    feature existed, regression guard against accidentally flipping the
     default for every other model."""
     messages = _build_messages("def f(): pass", "zero_shot")
     assert messages[0]["role"] == "system"

@@ -1,5 +1,5 @@
 """Shared provenance stamp for thesis-asset-generating scripts
-(scripts/build_thesis_assets.py's registry) -- every registered step's
+(scripts/build_thesis_assets.py's registry). Every registered step's
 output should carry a generation timestamp + git commit hash, so a reader
 can tell exactly which code produced a given table/figure. Previously
 inconsistent: some scripts had it, several didn't (found 2026-07-28 while
@@ -26,7 +26,7 @@ def git_commit() -> str:
 def stamp_block(script_path: str) -> str:
     """3-line 'Generated / Git commit / Script' block, the convention this
     project's *_PROVENANCE.md files already use (see e.g.
-    analysis/COMPARISON_PROVENANCE.md) -- for embedding directly in a
+    analysis/COMPARISON_PROVENANCE.md), for embedding directly in a
     Markdown provenance doc.
     """
     return (

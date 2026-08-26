@@ -105,7 +105,7 @@ def main() -> None:
     pp("HTwoUnseenGain", unseen["gain"])
     raw("HTwoSeenN", f"{int(seen['n_pre'])}")
 
-    # Endpoint table (population, n, pre, post, gain, CI) -- five
+    # Endpoint table (population, n, pre, post, gain, CI), five
     # populations, one row per benchmark in comparison_c_gradient.csv.
     # Kind-suffix at the very end of each name (N/Pre/Post), matching this
     # file's own \Num<Hyp><Quantity> convention, so check_doc_citations.py's
@@ -135,8 +135,8 @@ def main() -> None:
     # analysis/equiv_mutants/inspection_sheet.xlsx is currently fully unfilled
     # (0/120 verdicts across all four tiers); scripts/compute_validated_score.py
     # correctly writes nothing until at least one tier has filled rows. This
-    # block picks up its output automatically, per tier, once that happens --
-    # no further code changes needed -- and stays a no-op until then, matching
+    # block picks up its output automatically, per tier, once that happens,
+    # no further code changes needed, and stays a no-op until then, matching
     # the paper's own "not yet complete" disclosure (04_results.tex, Additional
     # Disclosures).
     validated_path = ANALYSIS / "equiv_mutants" / "validated_scores.csv"
@@ -151,10 +151,10 @@ def main() -> None:
             num(f"HTwoValidated{name}EquivRate", row["equivalent_rate"], ".3f")
 
     # ---------------------------------------------------- H2-supplementary
-    # Post-hoc, not one of the six pre-registered hypotheses -- see
+    # Post-hoc, not one of the six pre-registered hypotheses, see
     # analysis/HYPOTHESIS_COVERAGE_AUDIT.md's H2-supplementary section.
     # Metric: baseline_pass_rate (seen vs fresh instantiation), greedy
-    # primary with R=3 sampling mean+-SD as a robustness note -- same
+    # primary with R=3 sampling mean+-SD as a robustness note, same
     # convention as build_finetune_endpoint_table.py itself.
     endpoint = pd.read_csv(ANALYSIS / "finetune_endpoint_table.csv")
 
@@ -175,7 +175,7 @@ def main() -> None:
             num(f"HSupp{mtag}{ctag}Gap", seen["baseline_pass_gap_pp_greedy"], ".1f")
 
     # Held-out exec_rate decline (cross-model conditions only show a real
-    # one; self-contamination and control do not -- see
+    # one; self-contamination and control do not, see
     # analysis/finetune_decline_table_PROVENANCE.md).
     decline = pd.read_csv(ANALYSIS / "finetune_decline_table.csv")
 
@@ -196,14 +196,14 @@ def main() -> None:
 
     # -------------------------------------------------------------------- H5
     # Pre-registered threshold (docs/Approved_Hypotheses.md:16: "the
-    # Kendall's tau ... will exceed 0.7"), not derived from a CSV -- a
-    # fixed design constant, hardcoded here rather than left as a bare
+    # Kendall's tau ... will exceed 0.7"), not derived from a CSV, a
+    # fixed design constant, hardcoded here, not left as a bare
     # literal in paper prose so the two stay single-sourced.
     num("HFiveTauThreshold", 0.7, ".1f")
     # Standard statistical significance convention (p<0.05), not project-
-    # specific -- given its own macro rather than an inline `% cite:`
+    # specific, given its own macro, not an inline `% cite:`
     # marker because it sits mid-paragraph, where a same-line LaTeX
-    # comment would silently swallow the rest of that physical line.
+    # comment would swallow the rest of that physical line.
     num("SigLevel", 0.05, ".2f")
     stable = pd.read_csv(ANALYSIS / "stability_stablemut.csv")
     kendall = pd.read_csv(ANALYSIS / "stability_kendall.csv")
@@ -215,7 +215,7 @@ def main() -> None:
     raw("HFiveNFourSigCount", f"{(n4['p_value'] < 0.05).sum()}/{len(n4)}")
     raw("HFiveNFourHolmCount", f"{(n4['p_value_holm'] < 0.05).sum()}/{len(n4)}")
     # score-level SD range, excluding the two known outliers (Qwen 1.5B high,
-    # Gemini Pro Preview low) -- "most models" reading, matching this
+    # Gemini Pro Preview low), "most models" reading, matching this
     # project's own established convention (analysis/STABILITY_INTERPRETATION.md)
     sd_middle = stable[~stable["model_label"].isin(
         ["Qwen__Qwen2.5-Coder-1.5B-Instruct", "gemini-3.1-pro-preview"])]["sd_mut_at_k"]
@@ -224,7 +224,7 @@ def main() -> None:
     # -------------------------------------------------------------------- H6
     # Pre-registered validity-supporting band (analysis/RQ5_ANALYSIS_PLAN.md:91:
     # "Moderate-to-strong (roughly Spearman rho in the 0.4-0.8 range ...)").
-    # Fixed design constants, not derived from a CSV -- see HFiveTauThreshold above.
+    # Fixed design constants, not derived from a CSV, see HFiveTauThreshold above.
     num("HSixBandLow", 0.4, ".1f")
     num("HSixBandHigh", 0.8, ".1f")
     rq5_corr = pd.read_csv(ANALYSIS / "rq5_correlations.csv")
@@ -258,7 +258,7 @@ def main() -> None:
 
     # RQ5 diagnostics decomposition (baseline_pass_rate alone / coverage-adjusted):
     # no standalone CSV for this table (it's embedded in RQ5_DIAGNOSTICS.md's
-    # generated prose) -- recompute directly from the same source
+    # generated prose). Recompute directly from the same source
     # analyze_rq5_diagnostics.py itself reads (rq5_model_ranking.csv's
     # baseline_pass_rate columns for the 9 canonical models), so this script
     # has no dependency on parsing markdown.

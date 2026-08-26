@@ -1,22 +1,22 @@
 """Generate paper/table1.tex: a compact hypothesis/prediction/verdict table,
 read live from docs/Research_questions.xlsx's Hypotheses sheet.
 
-Two things are deliberately NOT auto-derived from the sheet's own prose:
+Two things are NOT auto-derived from the sheet's own prose:
 
 1. **Prediction** is a fixed, hand-written one-line paraphrase per
    hypothesis, not a truncation of the sheet's "Approved wording
    (condensed)" column (already 1-2 full sentences, too long to safely
    shorten by string-slicing without risking a misleading cut). The
    pre-registered wording itself doesn't change, so a fixed paraphrase
-   carries no drift risk -- see docs/Approved_Hypotheses.md for the exact
+   carries no drift risk, see docs/Approved_Hypotheses.md for the
    source text each paraphrase compresses.
 2. **Verdict** IS read live, as the leading tag of the sheet's own "Final
    verdict" cell (everything before the first " - " or ". ", whichever
-   comes first) -- this is the part that can actually change as data
+   comes first). This is the part that can actually change as data
    lands, so it must track the sheet, not be hand-typed here.
 
 A hypothesis ID present in PARAPHRASES but absent from the sheet (or vice
-versa) raises loudly rather than silently producing a mismatched table --
+versa) raises loudly instead of silently producing a mismatched table,
 same "fail loud on a coverage gap" discipline as the rest of this
 project's validators.
 

@@ -1,5 +1,5 @@
 """Unit tests for src/Contamination/did.py using synthetic frames with known
-ground-truth DiD values — no dependency on real fine-tuning results.
+ground-truth DiD values, no dependency on real fine-tuning results.
 """
 from __future__ import annotations
 

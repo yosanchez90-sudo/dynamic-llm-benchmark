@@ -51,11 +51,11 @@ MODEL_SPECS: list[ModelSpec] = [
 ]
 KNOWN_LABELS = {m.model_label for m in MODEL_SPECS}
 
-# Single source of truth for "one of the 9 canonical models" -- every script
+# Single source of truth for "one of the 9 canonical models". Every script
 # that computes a cross-model comparison/ranking/reliability figure (Comparison
 # A/B, StableMut@K, RQ5) must filter to this before aggregating, or a
 # fine-tuned adapter variant (Comparison C artifact) or a future cross-family
-# model (RQ5 extension, distinct model_labels like "deepseek-ai__...") silently
+# model (RQ5 extension, different model_labels like "deepseek-ai__...") silently
 # joins the panel. Confirmed 2026-07-28: analyze_stability.py had no such
 # filter, so the two LoRA adapter labels leaked into pairwise Kendall tau once
 # their POST Dynamic eval landed, moving the N=4 reliability figure from 0.675
@@ -65,7 +65,7 @@ CANONICAL_MODELS: list[str] = [m.model_label for m in MODEL_SPECS]
 
 def filter_to_canonical(df, label_col: str = "model_label"):
     """Restrict df to the 9 canonical model_labels, dropping anything else
-    (fine-tuned adapters, future cross-family models) silently -- callers that
+    (fine-tuned adapters, future cross-family models) silently. Callers that
     want to report what was excluded should diff df[label_col].unique() against
     CANONICAL_MODELS themselves (see coverage_matrix.load_coverage's
     unknown_labels for the reporting pattern)."""

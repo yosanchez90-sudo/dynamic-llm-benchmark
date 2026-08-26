@@ -43,7 +43,7 @@ def test_filter_to_canonical_drops_adapter_and_cross_family_labels():
 
 def test_analyze_stability_filters_adapter_labels(tmp_path, monkeypatch):
     """End-to-end: two synthetic instantiations of data for one canonical
-    model and one adapter variant of it -- the adapter must not surface in
+    model and one adapter variant of it. The adapter must not surface in
     StableMut@K or pairwise Kendall tau output."""
     import analyze_stability
 
@@ -68,7 +68,7 @@ def test_analyze_stability_filters_adapter_labels(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "analysis").mkdir()
     # STABILITY_MD/ROOT are module-level constants derived from the real repo
-    # root -- must be redirected together (main() does STABILITY_MD.relative_to(ROOT)
+    # root, must be redirected together (main() does STABILITY_MD.relative_to(ROOT)
     # for its final print), or this test overwrites the actual
     # analysis/STABILITY.md with synthetic data.
     monkeypatch.setattr(analyze_stability, "ROOT", tmp_path)

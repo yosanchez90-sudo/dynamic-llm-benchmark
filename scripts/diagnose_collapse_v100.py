@@ -1,6 +1,6 @@
 """Phase-1b Step 5: hardware control. Same checkpoints, same 10 held-out
 problems, same production code path (eval_checkpoints.py's actual functions,
-imported directly) as diagnose_collapse_direct.py — but run on a V100, the
+imported directly) as diagnose_collapse_direct.py, but run on a V100, the
 ORIGINAL hardware every bp_* condition's healthy/collapsed numbers were
 actually measured on (confirmed via job logs: 9315776-9315779 all ran on
 gpu105/106/107, Tesla V100-PCIE-32GB). All prior diagnostics ran on A100 MIG

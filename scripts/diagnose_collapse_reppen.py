@@ -1,5 +1,5 @@
 """Phase-1b Step 6 (targeted): the one candidate repetition-family processor
-never empirically toggled — repetition_penalty=1.1, silently inherited from
+never empirically toggled, repetition_penalty=1.1, silently inherited from
 the base model's own generation_config.json (confirmed present via file
 read; never explicitly passed as a kwarg by any version of
 eval_checkpoints.py, old or new, so HF's generate() falls through to the
@@ -83,7 +83,7 @@ def main() -> None:
         print(f"\n=== {label} (repetition_penalty={rep_pen}, explicit GenerationConfig, greedy) ===")
         gen_config = GenerationConfig(
             max_new_tokens=2048,
-            do_sample=False,          # greedy — removes sampling as a variable
+            do_sample=False,          # greedy, removes sampling as a variable
             repetition_penalty=rep_pen,
             eos_token_id=tokenizer.eos_token_id,
             pad_token_id=tokenizer.pad_token_id,

@@ -39,7 +39,7 @@ def test_top_p_1_0_omits_top_p_keeps_temperature():
 
 
 def test_top_p_below_1_sends_top_p_drops_temperature():
-    """A genuine top_p constraint (<1.0) is respected — and temperature is
+    """A genuine top_p constraint (<1.0) is respected, and temperature is
     dropped to satisfy the API's mutual-exclusion rule."""
     model = _make_model()
     model.client.messages.create.return_value = _mock_response()
@@ -54,7 +54,7 @@ def test_top_p_below_1_sends_top_p_drops_temperature():
 
 def test_logged_generation_config_matches_what_was_sent():
     """generation_config in the returned ModelOutput must reflect the
-    actual API request, not the config's nominal values — a logged top_p
+    actual API request, not the config's nominal values. A logged top_p
     that was never sent would silently misrepresent run identity."""
     model = _make_model()
     model.client.messages.create.return_value = _mock_response()

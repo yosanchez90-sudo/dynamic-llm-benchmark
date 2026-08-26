@@ -10,12 +10,12 @@ Writes to analysis/:
   COMPARISON_PROVENANCE.md      generation timestamp, git commit, data
                                  sources, and which of the 9 canonical
                                  models are still missing from each table
-                                 (never zero-filled — see src/Analysis/
+                                 (never zero-filled, see src/Analysis/
                                  comparison.py's module docstring)
 
 Re-running this script after more data lands (e.g. once the GPT batches in
 analysis/SUPERVISOR_HANDOFF_*.md are processed) regenerates all outputs from
-whatever is on disk at that time — safe to re-run any time, append-only
+whatever is on disk at that time, safe to re-run any time, append-only
 result files are never modified.
 
 Usage:
@@ -71,7 +71,7 @@ def _signs_agree(*values: float | None) -> bool:
 
 
 def main() -> None:
-    # Restrict to the 9 canonical (base, non-adapter) models -- fine-tuned
+    # Restrict to the 9 canonical (base, non-adapter) models. Fine-tuned
     # variants (the six supplementary-study adapters, and now the canonical
     # Comparison C adapter) are a different model identity
     # (compute_model_label) and must never silently enter a Comparison A/B
@@ -114,7 +114,7 @@ def main() -> None:
     a_wilcoxon_adj = paired_wilcoxon(a_paired_adj, label_a="dynamic_l4_adj", label_b="ult_adj")
 
     # --- Code-verified proof that coverage_adjusted == the true definition-(b)
-    # (zero-filled unconditional) score -- analysis/RQ5_CROSS_DEFINITION_AUDIT.md
+    # (zero-filled unconditional) score. analysis/RQ5_CROSS_DEFINITION_AUDIT.md
     # sec "Algebraic check" derives coverage_adjusted = mutk*bp_rate =
     # (D'/N)*mutk and true def-(b) = (D/N)*mutk, equal iff n_defined==D
     # equals n_baseline_passed==D' for every model. Computed independently
@@ -155,7 +155,7 @@ def main() -> None:
     b_matched_cc = matched_cc_table(ult, plt, bands_ult, bands_plt)
 
     # --- Comparison B coverage/conditioning audit + adjusted robustness row
-    # (added 2026-08-03, mirrors Comparison A's block above -- same
+    # (added 2026-08-03, mirrors Comparison A's block above, same
     # conditioning applies since both sides use mutation_score) ------------
     b_coverage_ult = coverage_stats_table(ult).add_suffix("_ult").rename(
         columns={"model_label_ult": "model_label"})
@@ -193,7 +193,7 @@ def main() -> None:
 
     # --- Thin-cell filter applied to the def-b/coverage-adjusted co-primary
     # itself. Its own denominator is n_total (zero-fill mean over ALL rows),
-    # not n_defined -- a model with few baseline-passing rows can still give
+    # not n_defined. A model with few baseline-passing rows can still give
     # a well-estimated near-zero co-primary score if n_total is large (see
     # analysis/RQ5_CROSS_DEFINITION_AUDIT.md "Does thin-cell filtering even
     # apply?"). Checked here with the SAME THIN_N_DEFINED=20 threshold
@@ -210,13 +210,13 @@ def main() -> None:
     ]
 
     # --- RQ1 Holm-Bonferroni: H1 Test 1 (this comparison) + H1 Test 2
-    # (Comparison B) -- docs/Approved_Hypotheses.md names ULT-vs-PLT as H1's
+    # (Comparison B). docs/Approved_Hypotheses.md names ULT-vs-PLT as H1's
     # own second test (analysis/HYPOTHESIS_DEVIATIONS.md), so RQ1's
     # correctable family is these two tests, not H1 alone (an earlier
-    # version of this script treated H1 as a size-one family, a no-op --
+    # version of this script treated H1 as a size-one family, a no-op,
     # corrected 2026-08-12). Corrected separately per conditioning (raw/
     # pre-registered-primary, thin-cell-filtered/robustness, definition-
-    # matched/co-primary) -- three independent 2-test families, not one
+    # matched/co-primary), three independent 2-test families, not one
     # pooled 6-test family, matching every other RQ family's convention of
     # correcting within one reported scope at a time.
     holm_rows = []

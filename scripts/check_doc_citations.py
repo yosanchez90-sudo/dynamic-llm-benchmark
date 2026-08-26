@@ -6,22 +6,22 @@ sources (the *_PROVENANCE.md / STABILITY.md / RANKING_MATRIX.md /
 RQ5_DIAGNOSTICS.md family, plus their underlying CSVs).
 
 WHAT THIS CATCHES: a hand-written doc citing a number that no longer
-appears anywhere in the current pipeline output -- exactly the failure
+appears anywhere in the current pipeline output, exactly the failure
 mode found and fixed earlier in this pass (RQ5_INTERPRETATION.md citing
 tau=0.333 for the pooled Dynamic<->ULT primary after a data landing moved
 the live value to 0.278; STABILITY_INTERPRETATION.md citing a stale mean
 pairwise tau).
 
-WHAT THIS DOES NOT DO -- read before trusting a MISMATCH as a bug:
+WHAT THIS DOES NOT DO, read before trusting a MISMATCH as a bug:
 - It matches on VALUE within a small tolerance per statistic type, not on
-  full semantic context (which exact pair/scope/metric a number claims to
+  full semantic context (which pair/scope/metric a number claims to
   be). A MATCH means "this number is live somewhere in the reference
   corpus for this statistic type," not "this is definitely the correct
-  citation for this exact sentence."
+  citation for this sentence."
 - MISMATCH lists the closest live value(s) of the same statistic type as
   a lead, not a guaranteed replacement.
 
-SUPPRESSING LEGITIMATE FINDINGS -- two mechanisms, use whichever fits:
+SUPPRESSING LEGITIMATE FINDINGS, two mechanisms, use whichever fits:
 1. Inline marker, same line as the claim: `<!-- cite:historical -->` or
    `<!-- cite:external -->`. Suppresses every claim found on that line.
    For a multi-line span (e.g. a frozen historical table), bracket it with
@@ -29,23 +29,23 @@ SUPPRESSING LEGITIMATE FINDINGS -- two mechanisms, use whichever fits:
    `:external:`) on their own lines.
 2. `analysis/CITATION_ALLOWLIST.md`, a markdown table keyed on
    file+line+kind+value (line matched with a small tolerance so minor
-   nearby edits don't silently break the entry) with a required one-line
+   nearby edits don't break the entry) with a required one-line
    reason. Use this when an inline marker would be awkward to place, or
    for values the checker can't verify due to a known extraction gap
-   (documented per-entry) rather than genuine document staleness.
+   (documented per-entry), not genuine document staleness.
 Both produce a SUPPRESSED verdict, counted separately from MATCH so a
-suppressed-but-wrong value doesn't silently look verified.
+suppressed-but-wrong value doesn't look verified.
 
-For the separate hand-typed-number lint (`paper/sections/*.tex` only --
+For the separate hand-typed-number lint (`paper/sections/*.tex` only,
 see find_hand_typed_numbers): the same two labels apply via a same-line
 LaTeX comment, `% cite:historical` or `% cite:external`, since a bare
 `<!-- --> ` HTML comment isn't valid inside a .tex line. Use this for
-numbers that are genuinely not a pipeline-derived result -- a model's own
+numbers that are genuinely not a pipeline-derived result, a model's own
 published name/version fragment (e.g. the "1.5" in "Qwen2.5-Coder-1.5B").
 CAUTION: this project's paper/sections/*.tex files write each paragraph
-as a single physical source line, and `%` comments to true end-of-line --
-placing the marker after anything other than the paragraph's own final
-character silently drops the rest of that paragraph from the compiled
+as a single physical source line, and `%` comments to true end-of-line.
+Placing the marker after anything other than the paragraph's own final
+character drops the rest of that paragraph from the compiled
 PDF with no error (confirmed 2026-08-12: an `% cite:external` marker
 placed mid-paragraph, after a "p<0.05" mention that wasn't the sentence's
 last, ate the paragraph's remaining sentences including its hypothesis
@@ -55,7 +55,7 @@ successfully "suppressed" real prose it was never meant to touch). Only
 use this marker when the flagged number is provably the last thing on
 its physical line; for anything mid-paragraph (e.g. a universal
 statistical convention like the "0.05" in "p<0.05"), give it a real
-macro in build_paper_values.py instead (see \SigLevel) -- exactly the
+macro in build_paper_values.py instead (see \SigLevel), exactly the
 same treatment as a project-specific pre-registered constant, which
 should get its own macro too, so the prose stays
 single-sourced against docs/Approved_Hypotheses.md or the relevant
@@ -77,7 +77,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ANALYSIS = ROOT / "analysis"
 
 # Reference sources: auto-regenerated, safe to treat as "what the pipeline
-# currently says" -- re-run scripts/build_thesis_assets.py before trusting
+# currently says". Re-run scripts/build_thesis_assets.py before trusting
 # this checker's output as current. Paths are ROOT-relative.
 REFERENCE_FILES = [
     "analysis/COMPARISON_PROVENANCE.md",
@@ -111,13 +111,13 @@ REFERENCE_FILES = [
     "analysis/h3_tier_gradient_l2l4.csv",
     "analysis/test_suite_count.csv",
     # paper/values.tex is itself generated straight from the analysis/*.csv
-    # files above (scripts/build_paper_values.py) -- included as a reference
+    # files above (scripts/build_paper_values.py), included as a reference
     # source too so its own macros count as "live" for any OTHER paper/
     # source that might cite the same figure a second time in different form.
     "paper/values.tex",
 ]
 
-# Hand-written docs to check -- key -> ROOT-relative path, so --only can
+# Hand-written docs to check, key -> ROOT-relative path, so --only can
 # target one.
 DOC_FILES = {
     "comparison_a_interpretation": "analysis/COMPARISON_A_INTERPRETATION.md",
@@ -135,9 +135,9 @@ DOC_FILES = {
     "supporting_report": "paper/supporting_report/REPORT.md",
 }
 # paper/sections/*.tex are added dynamically in main() (the file set changes
-# as the paper is drafted) rather than hardcoded here -- see _paper_section_docs().
+# as the paper is drafted), not hardcoded here. See _paper_section_docs().
 
-# (type, tolerance, regex) -- regex must have exactly one capturing group,
+# (type, tolerance, regex). Regex must have exactly one capturing group,
 # the numeric value (sign included where relevant).
 PATTERNS: list[tuple[str, float, re.Pattern]] = [
     ("kendall_tau", 0.0006, re.compile(
@@ -223,7 +223,7 @@ def _load_allowlist() -> list[AllowlistEntry]:
                 value=float(cells[3]), reason=cells[4],
             ))
         except ValueError:
-            continue  # malformed row -- skip rather than crash the checker
+            continue  # malformed row, skip instead of crashing the checker
     return entries
 
 
@@ -242,7 +242,7 @@ def _allowlist_covers(entry_list: list[AllowlistEntry], claim: Claim, tol: float
 
 # Markdown/CSV table column name -> claim kind. Matched case-insensitively
 # against the header cell with non-alnum chars stripped. Only exact-ish
-# matches map -- deliberately no bare "n" or "r" (too ambiguous across
+# matches map, no bare "n" or "r" (too ambiguous across
 # n_models/n_pairs/n_rows/n_problems and pearson_r/effect_r).
 COLUMN_KIND_MAP = {
     "kendalltau": "kendall_tau",
@@ -354,7 +354,7 @@ def _column_kind(norm_header: str) -> str | None:
     if norm_header in COLUMN_KIND_MAP:
         return COLUMN_KIND_MAP[norm_header]
     # compound headers, e.g. "dynamic_n_defined" / "ult_n_defined" /
-    # "kendall_tau_ci_lo" -- suffix/substring match against known keys,
+    # "kendall_tau_ci_lo", suffix/substring match against known keys,
     # longest key first so "n_defined" wins over a shorter accidental hit.
     for key in sorted(COLUMN_KIND_MAP, key=len, reverse=True):
         if norm_header.endswith(key):
@@ -375,7 +375,7 @@ def _tag_cell(claims: list[Claim], norm_header: str, raw_header: str,
     cell = cell.strip().strip("*")
     kind = _column_kind(norm_header)
     # n_models/n_defined columns are often plain integers (no decimal
-    # point) in the source CSVs/tables -- match those too, but only for
+    # point) in the source CSVs/tables. Match those too, but only for
     # count-type kinds, so a bare row index elsewhere isn't misread as a
     # correlation/p-value.
     if kind in _INT_KINDS and re.match(r"^-?\d+$", cell):
@@ -400,7 +400,7 @@ def _extract_pandas_tables(path: Path, text: str) -> list[Claim]:
     survivorship audit, COMPARISON_C_PROVENANCE.md's DiD tables). pandas
     right-justifies each column to a fixed width (= widest of header/any
     data value), so a header token's END position in the header line is a
-    stable column boundary for every row below it -- sliced by character
+    stable column boundary for every row below it, sliced by character
     position, not by splitting on whitespace runs (adjacent columns can be
     separated by as little as one space when both are near their column's
     max width, which breaks naive whitespace-split parsing)."""
@@ -469,7 +469,7 @@ def _extract_latex_macros(path: Path, text: str) -> list[Claim]:
     """Parse \\newcommand{\\Name}{value} definitions (paper/values.tex's own
     format), inferring each macro's statistic kind from its name suffix.
     Values that aren't a bare int/float (CI ranges, SD bands, etc.) are
-    skipped -- not every macro maps to a single checkable number."""
+    skipped. Not every macro maps to a single checkable number."""
     claims: list[Claim] = []
     for line_no, line in enumerate(text.splitlines(), start=1):
         m = _LATEX_MACRO_RE.search(line)
@@ -477,7 +477,7 @@ def _extract_latex_macros(path: Path, text: str) -> list[Claim]:
             continue
         macro_name, raw_value = m.group(1), m.group(2).strip()
         if not re.match(r"^-?\d+\.?\d*$", raw_value):
-            continue  # CI/range/count-pair strings -- not a single value
+            continue  # CI/range/count-pair strings, not a single value
         value = float(raw_value)
         kind = next((k for suf, k in MACRO_SUFFIX_KIND if macro_name.endswith(suf)), None)
         if kind is None:
@@ -502,8 +502,8 @@ def _extract(path: Path) -> list[Claim]:
 
 # paper/sections/*.tex prose must cite every result value via a \NumXXX
 # macro (defined once in paper/values.tex, read live from analysis/*.csv),
-# never as a bare literal -- otherwise a re-run after new data lands
-# silently leaves the old, now-wrong number sitting in the prose. Distinct
+# never as a bare literal. Otherwise a re-run after new data lands
+# leaves the old, now-wrong number sitting in the prose. Different
 # check from the MATCH/MISMATCH value-verification above: this doesn't ask
 # "does this number match the live source", it asks "does a literal number
 # exist here at all, when it should be a macro reference instead".
@@ -518,7 +518,7 @@ _BARE_NUMBER_RE = re.compile(r"(?<![\w\\-])(-?\d+\.\d+|-?\d+pp\b|-?\d+%)")
 # LaTeX's own comment syntax. Use for numbers that are genuinely not a
 # pipeline-derived result: a model's own published name/version fragment,
 # or a universal statistical convention (e.g. the p<0.05 significance
-# level) -- not for project-specific pre-registered constants, which
+# level), not for project-specific pre-registered constants, which
 # should get a real macro in build_paper_values.py instead (see
 # \HFiveTauThreshold, \HSixBandLow, \HSixBandHigh).
 _TEX_CITE_MARKER_RE = re.compile(r"%\s*cite:(historical|external)\b")
@@ -562,7 +562,7 @@ def _tolerance(kind: str, value: float = 0.0) -> float:
             break
     if kind == "p_value":
         # p-values are often quoted at 1-2 significant figures while the
-        # reference CSV/table stores full float precision -- widen
+        # reference CSV/table stores full float precision. Widen
         # proportionally so 0.331 vs 0.3312 (same value, different
         # rounding) doesn't read as a mismatch, without so wide a net
         # that a genuinely different p-value (e.g. 0.05 vs 0.20) matches.
@@ -612,7 +612,7 @@ def check_doc(doc_key: str, reference_index: dict[str, list[Claim]],
 
 def _discover_paper_sections() -> None:
     """Add every paper/sections/*.tex file to DOC_FILES under a
-    paper_section_<name> key -- called before argparse so --list/--only see
+    paper_section_<name> key, called before argparse so --list/--only see
     them. The file set changes as the paper is drafted; hardcoding it would
     go stale the moment a new section file is added."""
     sections_dir = ROOT / "paper" / "sections"
@@ -671,7 +671,7 @@ def main() -> None:
             print(f"      closest live value(s): {cand_str}")
         print()
 
-    # Hand-typed-number lint: paper/sections/*.tex only -- values.tex is
+    # Hand-typed-number lint: paper/sections/*.tex only. Values.tex is
     # exempt (it's the macro-DEFINITION file, its right-hand sides are
     # supposed to be literals).
     hand_typed_total = 0

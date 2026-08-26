@@ -1,5 +1,5 @@
 """Phase-1 follow-up: A/B test whether eval_checkpoints.py's extra generation
-knobs (no_repeat_ngram_size=4, 45s wall-clock stopping criteria — both absent
+knobs (no_repeat_ngram_size=4, 45s wall-clock stopping criteria, both absent
 from the original pre-finetune baseline eval) are what corrupts the
 "from under_test import <fn>" line that diagnose_collapse.py found broken in
 every single sample it inspected, including the "healthy" 7B bp_own control.

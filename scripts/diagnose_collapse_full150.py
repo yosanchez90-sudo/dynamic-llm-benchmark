@@ -1,11 +1,11 @@
 """Phase-1b decisive test: reproduce the EXACT real (epoch=30, instantiation=2)
-cell for qwen7b_bp_own — all 150 problems, not a 10-problem subset — using
+cell for qwen7b_bp_own, all 150 problems, not a 10-problem subset, using
 eval_checkpoints.py's actual functions unmodified, on the original V100
 hardware. The recorded CSV says this cell scored exec_rate=1.0. Every 10-
 problem diagnostic so far has scored 0/10 on this same checkpoint. This
 either confirms the 10-problem subset was unrepresentative (full 150 comes
 back ~1.0) or confirms the recorded 1.0 is wrong/stale (full 150 comes back
-~0.0) — a strictly more conclusive result than continuing to sample 10 at a
+~0.0), a strictly more conclusive result than continuing to sample 10 at a
 time.
 
 Usage: python scripts/diagnose_collapse_full150.py

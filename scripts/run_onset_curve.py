@@ -5,12 +5,12 @@ ULT seen/unseen + Dynamic L1/L2, not just Dynamic.
 
 Fixed subsample (data/raw/ult_plt/comparison_c_onset_curve_manifest.json,
 seed=20260726): same 50 seen-ULT + 50 unseen-ULT + 75 Dynamic-L1/L2-inst1
-problems at every epoch point -- paired trajectories, no per-epoch
+problems at every epoch point, paired trajectories, no per-epoch
 problem-set noise. Epochs {1,3,5,10,20} only; epoch 0 (PRE) and 30 (Stage
 3a/3b) already exist at full n and anchor the curve.
 
 Scoring: fast baseline-pass only (src/eval/test_gen_scorer's _write_case/
-_collect_ok/_run_pytest -- the real harness's isolated-subprocess path, no
+_collect_ok/_run_pytest, the real harness's isolated-subprocess path, no
 full mutation sweep), matching the supplementary study's own onset-curve
 metric. For the seen-ULT split only, also computes verbatim-match against
 the training target (data/finetune/train_ult_final.jsonl): exact (after

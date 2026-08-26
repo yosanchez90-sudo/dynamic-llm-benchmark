@@ -1,10 +1,10 @@
 """Regression tests for src/models/gemini_model.py:
 1. transient Gemini API errors (429/5xx) must be retried with backoff
-   rather than crashing the whole job — found in practice when a 503
+   instead of crashing the whole job, found in practice when a 503
    UNAVAILABLE ("high demand") on gemini-3.1-pro-preview killed a job
    25/75 problems in, despite the SDK's own internal retry.
 2. cost_usd must include usage_metadata.thoughts_token_count, not just
-   candidates_token_count — found 2026-08-08 by reconciling real AI
+   candidates_token_count, found 2026-08-08 by reconciling real AI
    Studio billing (~4x this project's own logged cost_usd sum for the
    same window) for gemini-3.1-pro-preview, a thinking-enabled model
    whose internal reasoning tokens are billed separately from the
@@ -79,8 +79,8 @@ def test_gives_up_after_max_retries(monkeypatch):
 
 def test_cost_includes_thinking_tokens(monkeypatch):
     """gemini-3.1-pro-preview bills thoughts_token_count at the output rate
-    (12.00 USD/Mtok, src/pricing.py) in addition to candidates_token_count
-    -- cost_usd must reflect both, not just the visible response tokens."""
+    (12.00 USD/Mtok, src/pricing.py) in addition to candidates_token_count.
+    cost_usd must reflect both, not just the visible response tokens."""
     model = _make_model()
     model.client.models.generate_content.return_value = _mock_response(thoughts_token_count=1000)
     cfg = GenerationConfig(max_new_tokens=2048, do_sample=True, temperature=0.2, top_p=1.0)
@@ -91,7 +91,7 @@ def test_cost_includes_thinking_tokens(monkeypatch):
     expected_cost = (1 / 1_000_000) * 2.00 + (1001 / 1_000_000) * 12.00
     assert out.cost_usd == pytest.approx(expected_cost)
     # output_tokens stays "visible response tokens" for cross-provider
-    # comparability -- thinking tokens are folded into cost_usd only, not
+    # comparability. Thinking tokens are folded into cost_usd only, not
     # counted here.
     assert out.output_tokens == 1
     assert out.runtime_info["thoughts_token_count"] == 1000
@@ -99,7 +99,7 @@ def test_cost_includes_thinking_tokens(monkeypatch):
 
 def test_cost_with_zero_thinking_tokens_unaffected(monkeypatch):
     """Non-thinking responses (thoughts_token_count=0/None) must cost exactly
-    what candidates_token_count alone implies -- the fix must not inflate
+    what candidates_token_count alone implies. The fix must not inflate
     cost for calls that genuinely have no thinking tokens."""
     model = _make_model()
     model.client.models.generate_content.return_value = _mock_response(thoughts_token_count=0)

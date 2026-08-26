@@ -1,10 +1,10 @@
-"""ULT / PLT dataset loader — the static benchmarks for Comparison A
+"""ULT / PLT dataset loader, the static benchmarks for Comparison A
 (Dynamic vs ULT) and Comparison B (ULT vs PLT).
 
 See data/raw/ult_plt/PROVENANCE.md for source, licensing, and the full
 reasoning behind every decision baked into this module. Summary:
 
-  - ULT (UnLeakedTestBench) is CC>=10 exclusively — there are zero L1/L2/L3
+  - ULT (UnLeakedTestBench) is CC>=10 exclusively. There are zero L1/L2/L3
     -equivalent problems in it. Every problem this loader produces is tagged
     tier="L4" regardless of benchmark, matching this project's own CC>=8
     band. PLT records with CC<8 are dropped so ULT and PLT stay comparable
@@ -14,7 +14,7 @@ reasoning behind every decision baked into this module. Summary:
   - Ground-truth tests (`tests` / `test_input` / `test_list` fields in the
     raw data) are never read. Exec@K/Cov/Mut@K only need `code` (the
     reference implementation) plus this project's own mutation engine,
-    exactly like the Dynamic benchmark — no external reference suite needed.
+    exactly like the Dynamic benchmark, no external reference suite needed.
   - `code` blobs sometimes include helper classes/functions the target
     function depends on; mutation is scoped to just the named function via
     generate_mutants(..., scope_fn_name=...) so helper code is never mutated
@@ -40,7 +40,7 @@ from src.data.test_gen import _build_messages  # noqa: E402  (identical promptin
 from src.eval.mutation_adapter import generate_mutants  # noqa: E402
 from src.eval.test_gen_problem import TestGenProblem  # noqa: E402
 
-CC_MIN = 8   # this project's own L4 threshold — see PROVENANCE.md
+CC_MIN = 8   # this project's own L4 threshold, see PROVENANCE.md
 TIER = "L4"
 
 
@@ -66,9 +66,9 @@ def _iter_records(benchmark: str):
 def cc_lookup(benchmark: str) -> dict[str, int]:
     """{template_id: cyclomatic_complexity} for every problem load() could
     produce for `benchmark`, computed on the target function only (not the
-    whole code blob) — matches how tier assignment/CC filtering work. Use
+    whole code blob), matches how tier assignment/CC filtering work. Use
     this to sub-stratify ULT/PLT by CC in analysis code, the same way
-    Dynamic sources are reconstructed on demand rather than stored on the
+    Dynamic sources are reconstructed on demand, not stored on the
     tidy record (see scripts/results_to_excel.py's _build_source_map).
     """
     prefix = benchmark.upper()
@@ -84,7 +84,7 @@ def cc_lookup(benchmark: str) -> dict[str, int]:
 def _stratified_sample(records: list[dict], max_n: int, sample_seed: int, n_bands: int = 4) -> list[dict]:
     """CC-stratified sample: quantile-bin by `_cc`, draw evenly from each
     band, cap at max_n. Matches PROJECT_BRIEF.md §9's "CC-stratified 300-500
-    subsample for closed-source APIs" design. Approximate, not exact — the
+    subsample for closed-source APIs" design. Approximate, not exact. The
     result may be a few records short of max_n on very small pools.
     """
     ccs = pd.Series([r["_cc"] for r in records])
@@ -116,18 +116,18 @@ def load(
 
     benchmark: "ult" or "plt".
     max_n: if given, draw a CC-stratified subsample of roughly this size
-        (see PROJECT_BRIEF.md §9 — "300-500 subsample for closed-source
+        (see PROJECT_BRIEF.md §9, "300-500 subsample for closed-source
         APIs, full set for local open-source"). None loads everything that
         passes the CC / overlap filters. Ignored if `task_ids` is given.
     exclude_ult_overlap: for benchmark="plt", drop task_ids that also
         appear in ULT (ULT's ids are a 100% subset of PLT's) so Comparison B
         isn't circular. Ignored for benchmark="ult".
     task_ids: if given, restrict to exactly these task_ids (post CC/overlap
-        filtering) instead of drawing a fresh sample — this is how a pinned
+        filtering) instead of drawing a fresh sample. This is how a pinned
         manifest (e.g. data/raw/ult_plt/subsample_manifest.json, see
-        load_manifest_subset()) is honoured exactly, rather than re-derived
+        load_manifest_subset()) is honoured exactly, not re-derived
         via max_n/sample_seed each run. Raises if any requested id is not in
-        the filtered candidate pool (signals data drift — don't guess).
+        the filtered candidate pool (signals data drift, don't guess).
     """
     benchmark = benchmark.lower()
     if benchmark not in ("ult", "plt"):
@@ -194,7 +194,7 @@ def load_manifest_subset(
     supports_system_role: bool = True,
 ) -> list[TestGenProblem]:
     """Load exactly the pinned task_ids for `tag` (e.g. "core_400", "qwen_1000")
-    from data/raw/ult_plt/subsample_manifest.json — the canonical, fixed
+    from data/raw/ult_plt/subsample_manifest.json, the canonical, fixed
     subsample every closed-source model (and Qwen's core_400 run) must share
     so per-problem paired comparisons are computed over identical problem
     sets. See scripts/generate_ult_plt_subsample.py for how the manifest is

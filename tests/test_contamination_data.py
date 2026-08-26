@@ -1,5 +1,5 @@
 """Unit tests for src/Contamination/data.py's CSV re-expansion logic, using
-a small synthetic epoch_perf-shaped CSV — no dependency on real fine-tuning
+a small synthetic epoch_perf-shaped CSV, no dependency on real fine-tuning
 results.
 """
 from __future__ import annotations
@@ -66,7 +66,7 @@ def test_train_instantiation_excluded_by_default(tmp_path):
 def test_multiple_draws_are_not_summed_together(tmp_path):
     # Without draw-filtering, greedy + 3 sampling draws for the same
     # (epoch, instantiation) would get concatenated and double/quadruple
-    # counted — this is exactly the correctness bug the new schema needs
+    # counted. This is exactly the correctness bug the new schema needs
     # guarding against.
     csv_path = tmp_path / "epoch_perf.csv"
     _write_csv_with_draw(csv_path, [

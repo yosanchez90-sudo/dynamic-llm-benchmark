@@ -1,6 +1,6 @@
 """Freeze the fixed problem subsample for Gate C Stage 3c's epoch-onset curve.
 
-Scope (per 2026-07-26 direction): epochs {1,3,5,10,20} only -- epoch 0 (PRE)
+Scope (per 2026-07-26 direction): epochs {1,3,5,10,20} only. Epoch 0 (PRE)
 and epoch 30 (Stage 3a/3b, already landed) anchor the curve and are not
 re-run. Per epoch point, the SAME fixed subsample (paired trajectories, no
 problem-set noise across points):

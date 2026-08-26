@@ -3,25 +3,25 @@ Comparison C fine-tune (PROJECT_BRIEF.md Sec 7/Sec 11, 2026-07-25 supervisor
 meeting): Qwen-1.5B LoRA fine-tuned on ULT, evaluated pre/post on ULT/PLT/
 Dynamic for the 2x3 DiD table.
 
-This is deliberately NOT scripts/prepare_finetune_data.py's approach. That
+This is NOT scripts/prepare_finetune_data.py's approach. That
 script (used for the six *supplementary* memorisation-stability runs) pairs
 a prompt with a MODEL'S OWN extracted test output (self-distillation). This
-script pairs a prompt with ULT's OWN SHIPPED ground-truth `tests` field —
+script pairs a prompt with ULT's OWN SHIPPED ground-truth `tests` field,
 see data/raw/ult_plt/PROVENANCE.md's "Known discrepancy" note: ULT.jsonl
 contains real pytest assertions despite the source repo's README claiming
 ground-truth tests are withheld. That discrepancy is exactly what this
 experiment simulates: "the whole static benchmark leaked into training."
 
 Scope (2026-07-25 supervisor-meeting default, approved): the FULL effective ULT
-(CC>=8 filtered, ~3,676 problems -- same filter src/data/ult_plt.py:load()
+(CC>=8 filtered, ~3,676 problems, same filter src/data/ult_plt.py:load()
 applies for evaluation, so training and eval prompts are byte-identical for
 any shared task_id). core_400 is a subsample of this same pool by
-construction, so every core_400 problem is guaranteed seen-in-training --
+construction, so every core_400 problem is guaranteed seen-in-training,
 checked below, not assumed. No held-out split: deliberate contamination is
 the point of this experiment, not a confound to control for.
 
 Each ULT record's `tests` field is 5 short pytest functions, not a complete
-file -- build_test_file() concatenates them under a `from under_test import
+file. build_test_file() concatenates them under a `from under_test import
 ...` header matching this project's expected model-output format
 (src/data/test_gen.py:SYSTEM_INSTRUCTION). ~19% of ULT `code` blobs define
 helper classes/functions the target function depends on (PROVENANCE.md);
@@ -89,12 +89,12 @@ def build_test_file(func_name: str, code: str, tests: list[str]) -> str:
     """Concatenate ULT's ground-truth test functions into one pytest file.
 
     Imports the target function plus any module-level helper (class,
-    function, or constant) the test bodies actually reference -- not every
+    function, or constant) the test bodies actually reference, not every
     helper `code` defines, only the ones a test needs, keeping the import
     line minimal and matching how a real model response would import
     exactly what it uses. Also adds a bare `import pytest` when a test body
     references the name `pytest` (e.g. `pytest.approx`, `pytest.raises`) and
-    it isn't already one of `code`'s own helper names -- ULT's shipped test
+    it isn't already one of `code`'s own helper names. ULT's shipped test
     snippets are bare function bodies with no import preamble of their own.
     """
     helpers = _module_level_names(code, exclude=func_name)

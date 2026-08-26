@@ -4,18 +4,18 @@ scripts/repair_ult_ground_truth.py verifies each pair is functionally
 correct (baseline_passed=True); it says nothing about whether the pair
 actually FITS the fine-tune's context window. Checked while preparing STOP
 GATE B: a handful of ULT `code` blobs are enormous (max ~116k tokens in a
-300-example sample -- one exceeds even Qwen2.5-Coder-1.5B's own 32,768-token
+300-example sample. One exceeds even Qwen2.5-Coder-1.5B's own 32,768-token
 position-embedding limit). configs/finetune_qwen1_5b_ult_30ep.yaml's
 max_length=3072 (matching the six existing runs) would silently truncate
 these mid-`code`-block, before the sequence ever reaches the assistant's
-test-file completion -- training on a truncated example like that spends a
+test-file completion. Training on a truncated example like that spends a
 full step's compute for zero actual learning signal on the target, not a
 harmless approximation.
 
 This script tokenizes every verified pair with the actual target-model
 tokenizer and drops any example whose full (system+user+assistant)
 token count exceeds `--max-length`, writing the survivors to
-data/finetune/train_ult_final.jsonl -- the file the fine-tune config should
+data/finetune/train_ult_final.jsonl, the file the fine-tune config should
 actually point at. scripts/build_comparison_c_seen_manifest.py must be
 re-run after this (it reads whichever file is passed via --train-file) so
 the frozen seen-manifest reflects what was actually trained on, not merely

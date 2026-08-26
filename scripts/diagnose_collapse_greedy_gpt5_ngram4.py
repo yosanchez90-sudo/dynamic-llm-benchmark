@@ -1,9 +1,9 @@
 """Phase-1c follow-up: (1) fill the missing
 greedy + no_repeat_ngram_size=4 cell for factorial completeness; (2) measure
-per-generation wall-clock time, specifically for generations that run to the
+per-generation wall-clock time, for generations that run to the
 full max_new_tokens=2048 (the worst case), to size the wall-clock guard
-deliberately rather than inherit the old 45s value. Runs on bp_gpt5(7B)
-epoch30 (the most verbose/complex condition — worst case for timing) plus a
+instead of inheriting the old 45s value. Runs on bp_gpt5(7B)
+epoch30 (the most verbose/complex condition, worst case for timing) plus a
 few problems from bp_own(7B) for contrast.
 
 Usage: python scripts/diagnose_collapse_greedy_gpt5_ngram4.py
@@ -64,7 +64,7 @@ def main() -> None:
     peft_model = PeftModel.from_pretrained(base, str(ckpt_dir))
     peft_model.eval()
 
-    # ---- Part C: missing cell — greedy + no_repeat_ngram_size=4 ----
+    # ---- Part C: missing cell, greedy + no_repeat_ngram_size=4 ----
     print("\n=== greedy + no_repeat_ngram_size=4 (missing factorial cell) ===")
     gen_config = GenerationConfig(
         max_new_tokens=2048, do_sample=False, repetition_penalty=1.1,

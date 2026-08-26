@@ -3,7 +3,7 @@ _score_fast functions directly (imported, not reimplemented) to rule out a
 transcription bug in diagnose_collapse.py/diagnose_collapse_ab.py as the
 explanation for why they showed 0/10 exec_ok on a checkpoint whose real,
 already-recorded CSV row shows 150/150 (1.0) on the exact same
-(epoch, instantiation) — a direct contradiction that needs to be resolved
+(epoch, instantiation), a direct contradiction that needs to be resolved
 before any diagnosis is trusted.
 
 Usage: python scripts/diagnose_collapse_direct.py

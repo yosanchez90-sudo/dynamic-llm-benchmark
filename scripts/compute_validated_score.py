@@ -5,7 +5,7 @@ hand-inspected equivalent-mutant sample in inspection_sheet.xlsx.
 
 equivalent_rate_tier is estimated from that tier's 30-mutant inspection
 sample: Wilson 95% CI on equivalent / (equivalent + non-equivalent).
-"unsure" verdicts are excluded from that denominator by default -- pass
+"unsure" verdicts are excluded from that denominator by default. Pass
 --unsure-policy to change this (they are a genuine "don't know", not
 evidence for either side; folding them into one side without justification
 would bias the estimate).

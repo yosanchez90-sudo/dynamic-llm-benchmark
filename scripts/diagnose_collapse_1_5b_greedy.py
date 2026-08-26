@@ -65,7 +65,7 @@ def main() -> None:
     gen_config = GenerationConfig(
         max_new_tokens=2048, do_sample=False, repetition_penalty=1.1,
         eos_token_id=tokenizer.eos_token_id, pad_token_id=tokenizer.pad_token_id,
-    )  # greedy, no no_repeat_ngram_size — the policy confirmed clean for 7B
+    )  # greedy, no no_repeat_ngram_size, the policy confirmed clean for 7B
 
     configs = [
         ("finetune_qwen1_5b_bp_own_30ep", "checkpoint-60"),

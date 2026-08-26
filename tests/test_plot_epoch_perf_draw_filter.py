@@ -5,7 +5,7 @@ data/results/finetune_rebuild/epoch_perf_*.csv (written by the post-
 extra sampling_seed{42,43,44} rows at epoch 30 only. plot() groups purely
 by (instantiation, epoch) x-position with no draw awareness, so without
 filtering, epoch 30 would get 4 stacked points per instantiation instead
-of one -- a zigzag, not a curve. main() must filter to a single --draw
+of one, a zigzag, not a curve. main() must filter to a single --draw
 value (default "greedy") before rows reach plot().
 """
 import csv

@@ -1,10 +1,10 @@
 """Plot Gate C Stage 3c's epoch-onset curve, styled to mirror
-scripts/plot_epoch_perf.py (the supplementary study's own epoch curves) --
+scripts/plot_epoch_perf.py (the supplementary study's own epoch curves),
 same colour/linestyle language (seen=red solid, unseen=blue dashed,
 dynamic=purple dotted) so the two experiments read as mirror images.
 
 Left panel: baseline_pass_rate, all three splits (seen/unseen/dynamic_l1l2).
-Right panel: verbatim-match rate (exact), seen split only -- the sharper
+Right panel: verbatim-match rate (exact), seen split only, the sharper
 memorization-onset diagnostic this canonical experiment adds. Both panels
 include epoch 0 (PRE, hardcoded 0%) and epoch 30 (Stage 3a/3b, full n=112/
 288/150) as anchors alongside the epochs {1,3,5,10,20} subsample.

@@ -1,5 +1,5 @@
 """Difference-in-differences (DiD) estimator for Comparison C (RQ1 / H2):
-the 2x3 design — pre/post fine-tune x {Dynamic, ULT, PLT}.
+the 2x3 design, pre/post fine-tune x {Dynamic, ULT, PLT}.
 
 Dynamic is the control benchmark (fine-tuning data is never drawn from a
 fresh Dynamic instantiation); ULT/PLT are the "treatment" benchmarks the
@@ -14,7 +14,7 @@ A DiD_B reliably above zero (CI excludes 0) is the contamination signal
 PROJECT_BRIEF.md §7 describes: gain on B beyond what's explained by the
 general improvement fine-tuning gives on the control benchmark.
 
-This module is deliberately source-agnostic — it only needs two tidy,
+This module is source-agnostic. It only needs two tidy,
 problem-level frames (`pre`, `post`) with a benchmark column and a metric
 column. See src/Contamination/data.py for assembling those frames from this
 project's actual result files.
@@ -56,7 +56,7 @@ def _bootstrap_did_ci(
 ) -> tuple[float, float]:
     """Percentile bootstrap CI for (post_b-pre_b) - (post_c-pre_c), resampling
     each of the 4 cells independently with replacement (problems are treated
-    as exchangeable within a cell — no paired-problem structure is assumed,
+    as exchangeable within a cell. No paired-problem structure is assumed,
     since pre/post problem sets aren't guaranteed to be the same size).
     """
     rng = np.random.default_rng(seed)
@@ -85,7 +85,7 @@ def compute_did(
     """Compute DiD for each treatment benchmark vs the control benchmark.
 
     A treatment benchmark (or the control) missing from EITHER `pre` or
-    `post` is silently skipped, not zero-filled — check which benchmarks
+    `post` is silently skipped, not zero-filled. Check which benchmarks
     came back (`[r.benchmark for r in results]`) before treating a table as
     complete; a short list means real data is still missing, not that the
     effect is zero.

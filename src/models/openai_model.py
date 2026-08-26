@@ -42,7 +42,7 @@ class OpenAIModel(Model):
             time.sleep(wait)
 
         # OpenAI accepts the messages list directly, including a leading
-        # system role — no need to split.
+        # system role, no need to split.
         temperature = 0.0 if not cfg.do_sample else (cfg.temperature or 1.0)
 
         api_kwargs: dict[str, Any] = {

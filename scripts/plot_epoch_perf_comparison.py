@@ -7,7 +7,7 @@ two bugs:
 
   1. Drew every row for every epoch, including the 3 extra
      sampling_seed{42,43,44} rows recorded at epoch 30 only (alongside the
-     always-present "greedy" row) -- stacking 4 points at x=30 per
+     always-present "greedy" row), stacking 4 points at x=30 per
      instantiation into a zigzag / spurious drop instead of a single
      point. Fixed here by filtering to one --draw value (default "greedy",
      the only draw present at every epoch).
@@ -21,12 +21,12 @@ two bugs:
      3 conditions x 2 (seen/unseen) = 6 lines total, not 9, and every
      condition keeps a stable colour across the whole figure.
 
-Column names are auto-detected via the candidate lists below rather than
+Column names are auto-detected via the candidate lists below, not
 hardcoded, so minor schema drift in eval_checkpoints.py's CSV output
-doesn't require a code change here -- extend a list if a real column name
+doesn't require a code change here. Extend a list if a real column name
 isn't in it yet. tests/test_plot_epoch_perf_comparison.py checks these
 lists against the real data/results/finetune_rebuild/epoch_perf_*.csv
-schema (skipped if that data isn't present, e.g. a fresh clone -- data/ is
+schema (skipped if that data isn't present, e.g. a fresh clone. Data/ is
 gitignored).
 
 This script is intentionally standalone (no imports from
@@ -58,11 +58,11 @@ Hardening notes (2026-07-15, external review):
     not yet in DRAW_COLS, --draw filtering silently does nothing and a
     zero-valued sampling row would overwrite/stack on the real one. The
     duplicate-row guard is what actually catches that, not the filter.
-  - Missing epoch 0 (no pre-fine-tune baseline anchor -- the other symptom
+  - Missing epoch 0 (no pre-fine-tune baseline anchor, the other symptom
     the old legacy figures had) prints a warning to stderr by default, or
     raises with --strict.
-  - main() refuses to plot CSVs that span more than one model value --
-    exits with the offending model list rather than silently blending
+  - main() refuses to plot CSVs that span more than one model value,
+    exits with the offending model list instead of silently blending
     them into one "Model A & Model B" title.
   - _pass_rate() raises if a rate-column value exceeds 1.0: PASS_RATE_COLS
     assumes a 0-1 fraction (true of the real 'baseline_pass' column); a
@@ -146,7 +146,7 @@ CONDITION_COLORS = {
 
 def _condition_from_filename(path: Path) -> str:
     name = path.stem
-    # bp_gpt5/bp_own checked before inst1 -- none are substrings of each
+    # bp_gpt5/bp_own checked before inst1. None are substrings of each
     # other in practice, but keep the more specific tokens first anyway.
     for cond in ("bp_gpt5", "bp_own", "inst1"):
         if cond in name:
@@ -294,7 +294,7 @@ def gap_table(conditions: dict[str, dict]) -> list[dict]:
         rows.append({
             "condition": cond,
             "epoch": final_epoch,
-            # Column names spell out the metric explicitly -- this script only
+            # Column names spell out the metric explicitly. This script only
             # ever plots PASS_RATE_COLS (baseline_pass and its aliases, see
             # module docstring), never exec_rate, but the bare "seen_pct" name
             # read ambiguously. Flagged 2026-07-26.
@@ -373,12 +373,12 @@ def main() -> None:
     if args.gap_csv is not None:
         write_gap_csv(rows, args.gap_csv)
 
-    # analysis/figures/ is entirely gitignored (.gitignore:49) -- sidecar
+    # analysis/figures/ is entirely gitignored (.gitignore:49), sidecar
     # written to analysis/ root instead (only ignored for .csv/.xlsx),
     # matching plot_comparison_c_onset_curve.py's convention. Added
     # 2026-08-05: this script previously had no provenance stamping at all
     # (analysis/FIGURE_AUDIT.md). Only for real output under
-    # analysis/figures/ -- guards against tests/ad hoc runs with an
+    # analysis/figures/. Guards against tests/ad hoc runs with an
     # arbitrary --out (e.g. a pytest tmp_path) leaking a stray sidecar into
     # the tracked repo, which happened once (analysis/out_PROVENANCE.md,
     # found and removed 2026-08-05).

@@ -1,10 +1,10 @@
-"""Ranking-matrix heatmap -- one argument per figure: does the low
+"""Ranking-matrix heatmap, one argument per figure: does the low
 Dynamic<->ULT rank agreement generalise across metrics, or is it specific
 to conditional Mut@K? Rows = the 4 metrics (exec_rate, baseline_pass_rate,
 conditional Mut@K, coverage-adjusted Mut@K), columns = the 3 benchmark
 pairs (Dynamic<->ULT, Dynamic<->BigCodeBench, ULT<->BigCodeBench), cells =
 Kendall tau, colour-scaled on a diverging map centred at tau=0 (tau is a
-genuinely bipolar statistic -- see dataviz skill's diverging-data rule).
+genuinely bipolar statistic, see dataviz skill's diverging-data rule).
 Two panels: canonical-9 and canonical+cross-family-13, side by side, same
 colour scale, so the two scopes are directly comparable by eye.
 
@@ -34,7 +34,7 @@ METRIC_LABELS = {
 PAIRS = ["Dynamic<->ULT", "Dynamic<->BigCodeBench", "ULT<->BigCodeBench"]
 # "(pooled)" is load-bearing, not decorative: the Dynamic side of every pair
 # here is pooled across all four CC tiers, not the CC-matched Dynamic-L4
-# slice Comparison A uses -- see analysis/TIER_SYMMETRY_AUDIT.md's reverse
+# slice Comparison A uses, see analysis/TIER_SYMMETRY_AUDIT.md's reverse
 # check (defect #1). Every other RQ5 figure in this project states this in
 # its axis label; this one didn't, and a reader who only ever sees this
 # figure standalone (e.g. pasted into a chapter with its own caption) had no
@@ -57,9 +57,9 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm):
             grid[i, j] = tau
             p_raw = r["kendall_p_perm"]
             p_holm = r["kendall_p_holm"]
-            # distinct markers for raw-significant vs Holm-significant vs
+            # different markers for raw-significant vs Holm-significant vs
             # neither, per the dataviz skill's "identity never colour-alone"
-            # rule -- significance is encoded in the annotation text/symbol,
+            # rule. Significance is encoded in the annotation text/symbol,
             # not inferred from colour intensity alone.
             if p_holm < 0.05:
                 sig = "**"  # survives Holm correction

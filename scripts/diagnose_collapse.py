@@ -3,7 +3,7 @@ for specific fine-tuned checkpoints on held-out problems, to determine why
 held-out exec_rate collapsed to ~0 for three of six Comparison-C conditions.
 
 Raw completions are never persisted anywhere else in the pipeline
-(eval_checkpoints.py scores and discards them) — this is the zero-cost-first
+(eval_checkpoints.py scores and discards them). This is the zero-cost-first
 check confirmed absent, so this script is the cheapest way to actually see
 what the collapsed checkpoints produce.
 
@@ -13,7 +13,7 @@ so this reproduces precisely what generated the zero-exec results, not a
 cleaned-up config that might behave differently. The ORIGINAL pre-finetune
 baseline eval (src/models/local.py) used max_new_tokens=2048, do_sample=True,
 temperature=0.2, top_p=1.0, seed=42 with NO extra stopping criteria and NO
-no_repeat_ngram_size — that delta is itself part of what this script's
+no_repeat_ngram_size. That delta is itself part of what this script's
 output should let us evaluate (n_new_tokens close to 2048 and
 finished_naturally_with_eos=False both distinguish "hit the wall-clock cap
 mid-stream" from "model emitted EOS and stopped cleanly").
@@ -21,10 +21,10 @@ mid-stream" from "model emitted EOS and stopped cleanly").
 Output: data/results/debug_collapse/<config_name>__<label>__raw.jsonl
 Fields: template_id, tier, instance_seed, raw_response, n_new_tokens,
 finished_naturally_with_eos, extracted_test_file, sanitized_test_file,
-sanitize_repairs — i.e. the raw text AND what our actual current extraction
+sanitize_repairs, i.e. the raw text AND what our actual current extraction
 function does with it, so extraction failures are visible directly.
 
-Usage (submit via SLURM — see scripts/slurm/run_diagnose_collapse.slurm):
+Usage (submit via SLURM, see scripts/slurm/run_diagnose_collapse.slurm):
     python scripts/diagnose_collapse.py
 """
 from __future__ import annotations
@@ -69,7 +69,7 @@ GEN_CFG = dict(
 
 
 class _TimeLimitCriteria:
-    """Identical to eval_checkpoints.py's — reproducing its exact behavior,
+    """Identical to eval_checkpoints.py's. Reproducing its exact behavior,
     not a cleaned-up version, is the point of this diagnostic."""
 
     def __init__(self, max_seconds: float):

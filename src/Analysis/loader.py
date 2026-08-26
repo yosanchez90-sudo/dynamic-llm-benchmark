@@ -6,11 +6,11 @@ for cross-run analysis (stability, comparisons).
 distinguishes a base model from a LoRA-adapted variant of the same
 model/model_revision (adapters don't change the base checkpoint's SHA, so
 those two fields alone can't tell them apart). Records written before that
-change don't have it — for those we fall back to deriving it from the
+change don't have it. For those we fall back to deriving it from the
 filename, which follows the same convention:
     <model_label>__<benchmark>__<prompting_condition>__inst<N>__<...>.jsonl
 (see scripts/migrate_add_model_label.py, which backfills the field in place
-for exactly this reason — the fallback here is defense in depth for any
+for exactly this reason. The fallback here is defense in depth for any
 record that predates both the field and the migration).
 """
 from __future__ import annotations
@@ -32,7 +32,7 @@ _RECORD_COLUMNS = [
 _BENCHMARKS = ("dynamic", "ult", "plt")
 
 # Natural key for one (model variant, problem) evaluation. Superseded reruns
-# (a stale partial-tier retry file left behind after a later complete rerun —
+# (a stale partial-tier retry file left behind after a later complete rerun,
 # seen for claude-sonnet-4-6/claude-haiku-4-5 dynamic inst1-4, ~560 keys,
 # 2026-07-25 audit) share this key across two source files; load_records
 # keeps only the newest by timestamp so aggregates (StableMut@K, Kendall tau)
@@ -41,23 +41,23 @@ _BENCHMARKS = ("dynamic", "ult", "plt")
 # DEDUP POLICY: keep-latest-by-timestamp, not "keep whichever scored higher"
 # or any content-based rule. Rationale (2026-07-26 audit,
 # scripts/audit_result_integrity.py): of the 559 duplicate keys found, 117
-# are "content-conflicting" -- the same (model, instantiation, template,
+# are "content-conflicting". The same (model, instantiation, template,
 # seed, tier) has two DIFFERENT recorded outcomes, all in API models
 # (claude-sonnet-4-6 / claude-haiku-4-5-20251001), traced to a resume-matcher
 # bug that let a later retry job regenerate a problem that had already been
 # scored (see src/eval/test_gen_runner.py's _tier_signature fix). For an API
 # model, generation is not reproducibible from a "seed" parameter the way
 # local HF sampling is (see src/models/local.py's torch.manual_seed vs
-# whatever an API provider does internally) -- so when two rows conflict,
+# whatever an API provider does internally). So when two rows conflict,
 # NEITHER is more "correct" than the other; both are equally legitimate
 # draws from the same model's output distribution for that prompt. Given
 # that, "keep latest" isn't a correctness claim, it's a deterministic,
 # reproducible tie-break that matches this project's general convention
-# elsewhere (a later measurement supersedes an earlier one -- e.g. the
+# elsewhere (a later measurement supersedes an earlier one, e.g. the
 # quarantine-then-correct pattern in analysis/README_QUARANTINE.md) and
 # requires no per-row judgment call. For the other 442 (identical-content)
-# duplicates -- a stale partial file sitting next to its complete
-# replacement -- the choice doesn't matter at all, since both rows agree.
+# duplicates, a stale partial file sitting next to its complete
+# replacement, the choice doesn't matter at all, since both rows agree.
 _DEDUP_KEY = [
     "model_label", "benchmark", "instantiation_id", "template_id",
     "instance_seed", "tier", "K", "prompting_condition",
@@ -65,7 +65,7 @@ _DEDUP_KEY = [
 
 
 def _model_label_from_filename(path: Path) -> str:
-    """Fallback for records written before model_label existed — derive it
+    """Fallback for records written before model_label existed, derive it
     from the filename, keeping any fine-tune/adapter suffix that precedes
     the benchmark name (see module docstring).
     """
@@ -81,7 +81,7 @@ def load_records(results_dir: str | Path, benchmark: str | None = "dynamic") -> 
     """Load every *.jsonl file in `results_dir` into one flat DataFrame.
 
     One row per (model variant, problem) evaluation, deduplicated on
-    `_DEDUP_KEY` (keeping the newest by `timestamp`) — a superseded rerun
+    `_DEDUP_KEY` (keeping the newest by `timestamp`). A superseded rerun
     left in the same directory as its complete replacement must not be
     double-counted in an aggregate mean. Pass benchmark=None to load all
     benchmarks (dynamic/ult/plt) together instead of filtering.

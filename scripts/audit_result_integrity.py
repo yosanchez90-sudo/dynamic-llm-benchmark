@@ -2,11 +2,11 @@
 
 Triggered by finding that src/eval/test_gen_runner.py's resume-file matcher
 (_find_resume_file) matches on (model_label, benchmark, prompting_condition,
-instantiation_id) only -- NOT tier. Two SLURM jobs targeting the same
+instantiation_id) only, NOT tier. Two SLURM jobs targeting the same
 (benchmark, instantiation) with overlapping runtimes (confirmed via job
 logs for several models' inst4/inst5 dynamic backfill, 2026-07-14) could
-in principle race on the same output file. This script checks what
-actually happened to the data, rather than reasoning about what could have:
+race on the same output file. This script checks what
+actually happened to the data, instead of reasoning about what could have:
 
   1. STRICT PARSE: every line in every non-.bak .jsonl file must be valid
      JSON. Reports file + line number for any failure (malformed/truncated
@@ -15,15 +15,15 @@ actually happened to the data, rather than reasoning about what could have:
      unique within one benchmark directory. Reports every duplicate,
      including whether the two rows agree in content (byte-identical
      concatenation of the fields load_records() reads) or genuinely
-     conflict (would silently bias an aggregate mean, not just double-count
+     conflict (would bias an aggregate mean, not just double-count
      a screenshot of the same value).
   3. ROW COUNT: physical line count per (model_label, benchmark, tier,
      instantiation) cell vs count of DISTINCT (template_id, instance_seed)
-     pairs -- a gap between the two is exactly what a race would produce
+     pairs. A gap between the two is exactly what a race would produce
      (N rows for M<N distinct problems).
 
 Read-only. Does not modify or delete anything. Run directly (pure Python,
-JSON parsing over ~10-20k lines total -- not GPU/CPU research compute).
+JSON parsing over ~10-20k lines total, not GPU/CPU research compute).
 
 Usage: python scripts/audit_result_integrity.py
 """

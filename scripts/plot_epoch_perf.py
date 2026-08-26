@@ -46,7 +46,7 @@ INST_LABELS = {
     3: "inst3 (held-out)",
 }
 
-# Colours and styles per instantiation — consistent across plots
+# Colours and styles per instantiation, consistent across plots
 INST_STYLE = {
     1: {"color": "#d62728", "linestyle": "-",  "marker": "o"},  # red, solid
     2: {"color": "#1f77b4", "linestyle": "--", "marker": "s"},  # blue, dashed
@@ -147,13 +147,13 @@ def main() -> None:
     out_path = args.out or ROOT / "analysis/figures/epoch_perf.pdf"
     plot(all_rows, args.metric, title, out_path)
 
-    # analysis/figures/ is entirely gitignored (.gitignore:49) -- a sidecar
+    # analysis/figures/ is entirely gitignored (.gitignore:49). A sidecar
     # written there would never be committed, so (matching
     # plot_comparison_c_onset_curve.py / plot_rq5_correlation.py's
     # convention) it's written to analysis/ root instead, which is only
     # ignored for .csv/.xlsx. Added 2026-08-05: this script previously had
     # no provenance stamping at all (analysis/FIGURE_AUDIT.md). Only for
-    # real output under analysis/figures/ -- guards against
+    # real output under analysis/figures/. Guards against
     # tests/ad hoc runs with an arbitrary --out (e.g. a pytest tmp_path)
     # leaking a stray sidecar into the tracked repo, which happened once
     # (analysis/out_PROVENANCE.md, found and removed 2026-08-05).

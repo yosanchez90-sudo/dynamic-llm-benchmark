@@ -40,13 +40,13 @@ def main() -> None:
     # SFTConfig.completion_only_loss is None (our config's default, not set
     # explicitly), it resolves to `"prompt" in sample and "completion" in
     # sample`. Our records only have "messages" -> mapped to a flat "text"
-    # field by finetune_qwen7b.py's apply_template() -- no "prompt"/
+    # field by finetune_qwen7b.py's apply_template(). No "prompt"/
     # "completion" keys ever exist, so completion_only_loss resolves False
     # and SFTConfig.assistant_only_loss defaults False too (not set in our
     # config). CONCLUSION: loss is computed over the FULL formatted sequence
     # (system + user "Function under test" block + assistant test file),
     # not completion-only. This is unchanged from all six existing
-    # supplementary runs (same script, same config shape) -- documenting it
+    # supplementary runs (same script, same config shape), documenting it
     # here, not treating it as a defect to fix on this run alone.
     sample = records[0]
     assert set(sample.keys()) >= {"messages"}, "expected a 'messages' key"
@@ -62,14 +62,14 @@ def main() -> None:
     # Simulates TRL's own add_eos() (sft_trainer.py:1466-1469): appends
     # tok.eos_token to the formatted "text" if it doesn't already end with
     # it. Qwen's chat template ends an assistant turn with "<|im_end|>\n"
-    # (note trailing newline) -- text.endswith(eos_token) is therefore
+    # (note trailing newline). text.endswith(eos_token) is therefore
     # False, so TRL appends a SECOND "<|im_end|>", yielding
     # "...<|im_end|>\n<|im_end|>" (final tokenized sequence literally ends
     # in two EOS tokens with an interstitial newline). Confirmed harmless in
     # practice: greedy/sampling generation halts at the FIRST emitted EOS,
     # so the redundant second one and the newline before it are never
-    # exercised at inference time -- but the double-EOS shape itself is
-    # asserted here rather than assumed.
+    # exercised at inference time, but the double-EOS shape itself is
+    # asserted here, not assumed.
     n_checked = min(50, len(records))
     for d in records[:n_checked]:
         text = tok.apply_chat_template(d["messages"], tokenize=False, add_generation_prompt=False)

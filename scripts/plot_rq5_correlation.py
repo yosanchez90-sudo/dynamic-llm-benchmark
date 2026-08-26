@@ -1,4 +1,4 @@
-"""RQ5/H6 correlation scatter figure(s) -- one panel per benchmark pair
+"""RQ5/H6 correlation scatter figure(s), one panel per benchmark pair
 that has data (analysis/rq5_model_ranking.csv), each point labelled with
 its model's short name. Styled consistent with this project's other
 figures (scripts/plot_epoch_perf.py, scripts/plot_comparison_c_onset_curve.py).

@@ -1,5 +1,5 @@
 """Unit tests for src/data/ult_plt.py using small synthetic ULT/PLT-shaped
-fixtures — fast, deterministic, and independent of the real 48MB vendored
+fixtures, fast, deterministic, and independent of the real 48MB vendored
 files (see data/raw/ult_plt/PROVENANCE.md for those).
 """
 from __future__ import annotations
@@ -12,7 +12,7 @@ from src.data import ult_plt
 
 # CC>=8 needs real branching; these bodies are hand-picked so their CC under
 # this project's own compute_cc() lands on the intended side of the CC_MIN=8
-# threshold (see PROVENANCE.md for why we recompute rather than trust the
+# threshold (see PROVENANCE.md for why we recompute instead of trusting the
 # vendored `cyclomatic_complexity` field).
 HIGH_CC_SOURCE = """def high_cc(a, b, c, d, e, f, g, h):
     if a:

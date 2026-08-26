@@ -4,7 +4,7 @@ estimator itself stays source-agnostic and unit-testable without real data.
 
 SOURCE (updated 2026-07-12): data/results/finetune_rebuild/epoch_perf_*.csv,
 written by the patched scripts/eval_checkpoints.py, is now the default and
-recommended source for BOTH pre and post — see analysis/README.md for why
+recommended source for BOTH pre and post, see analysis/README.md for why
 the old analysis/epoch_perf_*.csv files are quarantined (they were measured
 under a generation config, no_repeat_ngram_size=4, that fabricated a
 collapse in 3 of 6 fine-tuning conditions).
@@ -13,7 +13,7 @@ This also resolves a measurement-instrument gap that existed before:
 eval_checkpoints.py now supports --baseline (epoch=0, no adapter), measured
 through the exact same exec/baseline check as every other epoch. Loading
 BOTH pre and post from the same CSV (see load_pre_post_same_instrument)
-means the two sides are no longer measured by two different tools — the old
+means the two sides are no longer measured by two different tools. The old
 cross-source loader (pre from data/results/dynamic/'s test_gen_scorer.py
 `pytest --collect-only`; post from eval_checkpoints.py's bare
 `python -c "import test_generated"`) is kept below for callers that need
@@ -22,12 +22,12 @@ default.
 
 Every result row in the new CSVs also carries a `draw` column (e.g.
 "greedy", "sampling_seed42") since eval_checkpoints.py can now record
-multiple draws per (epoch, instantiation) — callers MUST filter to one draw
+multiple draws per (epoch, instantiation). Callers MUST filter to one draw
 before aggregating, or rows from different draws get summed together.
 load_post_finetune_dynamic defaults to draw="greedy", the primary policy
 the checkpoint-selection rule gates on.
 
-ULT/PLT: no model has been evaluated against them yet (pre OR post) — there
+ULT/PLT: no model has been evaluated against them yet (pre OR post). There
 is nothing to load. did.compute_did() already handles a benchmark missing
 from either side gracefully (skips it, doesn't zero-fill); add loaders here
 once src/data/ult_plt.py-based evaluation runs exist.
@@ -49,7 +49,7 @@ DEFAULT_DRAW = "greedy"                # the primary measurement policy
 DEFAULT_RESULTS_ROOT = Path("data/results/finetune_rebuild")  # see module docstring
 
 # Base (non-adapted) model's label is just compute_model_label() with no
-# adapter — kept as its own name here for read­ability at call sites that
+# adapter, kept as its own name here for read­ability at call sites that
 # are specifically about identifying a *base* model's result file.
 hf_id_to_model_label = compute_model_label
 
@@ -57,10 +57,10 @@ hf_id_to_model_label = compute_model_label
 def load_pre_finetune_dynamic(
     model_label: str, results_dir: str | Path = "data/results/dynamic",
 ) -> pd.DataFrame:
-    """Base (non-fine-tuned) model's Dynamic-benchmark problem-level scores
-    — the "pre" side for benchmark="dynamic". Real per-problem exec_rate,
+    """Base (non-fine-tuned) model's Dynamic-benchmark problem-level scores,
+    the "pre" side for benchmark="dynamic". Real per-problem exec_rate,
     baseline_pass, and mutation_score (mutation_score usable here even
-    though the post side won't have it — just don't request that metric
+    though the post side won't have it, just don't request that metric
     from compute_did() until a post-finetune mutation-scored source exists).
     """
     df = load_records(results_dir, benchmark="dynamic")
@@ -71,9 +71,9 @@ def load_pre_finetune_dynamic(
 
 def _expand_epoch_perf_rows(rows: list[dict]) -> pd.DataFrame:
     """(n, rate) per selected row -> problem-level 0/1 columns. Lossless for
-    the mean/variance of a boolean rate — the multiset of 0/1 values is
+    the mean/variance of a boolean rate. The multiset of 0/1 values is
     exactly recoverable from (n, rate), only *which specific problem* each 1
-    belongs to isn't — so this is a re-expansion of what's already reported,
+    belongs to isn't. So this is a re-expansion of what's already reported,
     not fabricated data. exec_rate and baseline_pass are reconstructed
     independently (the CSV never records their joint per-problem pairing):
     do not treat same-index rows across the two columns as the same
@@ -105,13 +105,13 @@ def load_post_finetune_dynamic(
     problem-level rows from eval_checkpoints.py's aggregate CSV.
 
     epoch: which checkpoint epoch counts as "post" (default: the last epoch
-        present in the file — the most fine-tuned checkpoint).
-    instantiations: which Dynamic instantiations to include (default 2,3 —
+        present in the file, the most fine-tuned checkpoint).
+    instantiations: which Dynamic instantiations to include (default 2,3,
         the HELD-OUT instantiations). Every current fine-tune config trains
         on instantiation 1, so including it here would make the control's
         own pre->post "improvement" partly circular (the model was directly
         optimised against that exact instantiation's outputs).
-    draw: which measurement draw to use (default "greedy" — the primary
+    draw: which measurement draw to use (default "greedy", the primary
         policy). The CSV can hold multiple draws (greedy + several sampling
         seeds) per (epoch, instantiation); NOT filtering by draw would sum
         rows from different draws together.

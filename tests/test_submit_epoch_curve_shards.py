@@ -1,6 +1,6 @@
 """Unit tests for scripts/submit_epoch_curve_shards.py's per-shard --mem
 sizing, added after a flat 16G request (regardless of model size or
-condition) OOM-killed 3 of the first 66 shards (all bp_gpt5 — the
+condition) OOM-killed 3 of the first 66 shards (all bp_gpt5, the
 long-output condition; 2x 1.5B, 1x 7B). See analysis/README_QUARANTINE.md.
 """
 import sys

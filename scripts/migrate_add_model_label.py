@@ -2,23 +2,23 @@
 data/results/{dynamic,smoke}/*.jsonl files written before it became a
 first-class TestGenRecord field (2026-07-09). Uses the exact same
 filename-derivation logic src/Analysis/loader.py already used as its
-fallback (_model_label_from_filename) — same algorithm, just applied once
+fallback (_model_label_from_filename), same algorithm, just applied once
 and written to disk instead of recomputed on every load.
 
-adapter_path/adapter_hash are NOT backfilled here, deliberately: we don't
+adapter_path/adapter_hash are NOT backfilled here: we don't
 have provable evidence of which exact adapter snapshot was loaded at
 generation time for these older runs (the current data/finetune/*/adapter_
-final files could in principle differ from what was live back then), and
+final files could differ from what was live back then), and
 stamping an unverifiable value into a result record would be worse than
 leaving it null. New runs get these fields natively via src/models/local.py.
 
 Idempotent: skips a file if every record already has a non-empty
 model_label. Backs up each file (byte-identical copy) before writing, then
 rewrites in place and verifies line-count and every-other-field parity
-before the rewrite is allowed to replace the original — this is a
+before the rewrite is allowed to replace the original. This is a
 metadata-only backfill of a value already fully determined by the
 filename, not a re-scoring, so treating it as append-only-file-plus-verified
--backup (rather than skip entirely or scatter parallel copies) keeps
+-backup (instead of skipping entirely or scattering parallel copies) keeps
 downstream code pointed at one canonical file per run.
 
 Usage:

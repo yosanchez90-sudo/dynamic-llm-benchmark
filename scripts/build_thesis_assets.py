@@ -1,21 +1,21 @@
 """Single-command registry for regenerating this project's thesis-facing
 analysis tables and figures. Each entry is a no-argument script that reads
 whatever result files currently exist on disk and (re)writes its own
-analysis/*.csv, analysis/*.md, and/or analysis/figures/* outputs -- all of
-which are regenerable (see each script's own docstring for its specific
+analysis/*.csv, analysis/*.md, and/or analysis/figures/* outputs. All of
+these are regenerable (see each script's own docstring for its specific
 "safe to re-run any time" note) and gitignored except the provenance/
 interpretation .md files. One entry (research_questions_md) instead
-mirrors docs/Research_questions.xlsx to docs/RESEARCH_QUESTIONS.md -- same
+mirrors docs/Research_questions.xlsx to docs/RESEARCH_QUESTIONS.md, same
 no-argument/reads-current-disk-state/safe-to-rerun shape, different output
 directory since it tracks a hand-maintained reference doc, not a
 generated analysis table.
 
-Deliberately excludes scripts that take required CLI arguments and are
-invoked once per condition rather than once per thesis asset (e.g.
+Excludes scripts that take required CLI arguments and are
+invoked once per condition, not once per thesis asset (e.g.
 scripts/plot_epoch_perf.py, one call per fine-tune condition;
 scripts/build_ult_training_pairs.py / build_onset_curve_manifest.py /
 build_comparison_c_seen_manifest.py, one-off data-preparation steps that
-freeze a manifest rather than regenerate a thesis table/figure) -- those
+freeze a manifest, not regenerate a thesis table/figure). Those
 stay manual, invoked directly per their own usage docstring.
 
 Usage:
@@ -33,7 +33,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PYTHON = sys.executable
 
-# (key, script path, description) -- run in this order; later steps don't
+# (key, script path, description), run in this order; later steps don't
 # depend on earlier ones completing successfully, each runs regardless.
 STEPS: list[tuple[str, str, str]] = [
     ("comparison_ab", "scripts/build_comparison_tables.py",

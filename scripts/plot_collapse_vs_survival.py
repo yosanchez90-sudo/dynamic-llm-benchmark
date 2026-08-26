@@ -1,4 +1,4 @@
-"""Collapse vs survival -- one argument per figure: raw conditional Mut@K's
+"""Collapse vs survival, one argument per figure: raw conditional Mut@K's
 correlation with BigCodeBench collapses once family diversity breaks the
 all-Qwen n=3 size-sweep confound; the coverage-adjusted score's does not.
 2x2 panels: rows = metric (raw Mut@K, coverage-adjusted), columns = scope
@@ -6,7 +6,7 @@ all-Qwen n=3 size-sweep confound; the coverage-adjusted score's does not.
 (Complete-split). The n=3 columns are marked uninformative-by-construction:
 only 3!=6 possible orderings exist at n=3, so the minimum achievable
 two-sided permutation p-value is 2/6~=0.33 (verified directly against this
-project's own permutation test in src/Analysis/correlation.py -- NOT 1/6
+project's own permutation test in src/Analysis/correlation.py, NOT 1/6
 (~0.167), which would be a one-sided-only floor this project's own
 two-sided |stat|>=|observed| test does not implement).
 

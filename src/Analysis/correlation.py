@@ -1,6 +1,6 @@
 """Cross-benchmark correlation helper (RQ5/H6): Pearson r, Spearman rho, and
 Kendall tau between two per-model score/ranking vectors, with bootstrap CIs
-and permutation p-values -- the small-N (7-9 models) reporting standard
+and permutation p-values, the small-N (7-9 models) reporting standard
 recorded in analysis/RQ5_ANALYSIS_PLAN.md ("bootstrap CI... rather than a
 parametric p-value, given N is too small for the normal approximation to be
 trustworthy").
@@ -68,7 +68,7 @@ def compute_correlations(
 ) -> CorrelationResult:
     """x, y: paired per-model score vectors (same model order). n < ~10 is
     expected and handled (bootstrap/permutation both work at small n, just
-    with wide CIs -- that width IS the power-limitation finding, not a bug).
+    with wide CIs. That width IS the power-limitation finding, not a bug).
     """
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)

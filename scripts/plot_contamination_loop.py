@@ -1,7 +1,7 @@
 """Plot a simple three-step contamination-loop diagram for the slide deck
 and, optionally, the supporting report: a benchmark is published, its
 content is scraped or logged into a future training corpus, and a model
-evaluated on that benchmark later scores on recall rather than the
+evaluated on that benchmark later scores on recall, not the
 capability the benchmark was meant to measure.
 
 Structural, not data-derived; no PROVENANCE.md sidecar, same reasoning

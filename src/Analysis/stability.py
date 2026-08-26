@@ -16,19 +16,19 @@ from scipy.stats import kendalltau
 def mut_at_k(df: pd.DataFrame, group_cols: list[str], metric_col: str = "mutation_score") -> pd.DataFrame:
     """Aggregate a per-problem metric per group: mean of `metric_col` over
     rows where it's defined (not None). Gate-failed problems are excluded
-    from the mean, not zero-filled — matches the existing convention in
+    from the mean, not zero-filled. Matches the existing convention in
     scripts/results_to_excel.py's Summary sheet. `n_scored` / `n_total` are
-    reported alongside so a group with a low scorable fraction is visible
-    rather than hidden in the mean.
+    reported alongside so a group with a low scorable fraction is visible,
+    not hidden in the mean.
 
     `metric_col` generalises this beyond `mutation_score` (the default,
-    used throughout RQ4.1/H5) to any per-row 0/1-or-float column --
+    used throughout RQ4.1/H5) to any per-row 0/1-or-float column.
     `exec_rate` and `baseline_passed` are both always-defined (never None)
     for every row, so for those two this reduces to a plain mean with no
     conditioning; used by analysis/RANKING_MATRIX.md's per-metric
     reliability table (added 2026-08-04) so every metric shares the exact
-    same aggregation/CI machinery rather than each being computed ad hoc.
-    Boolean columns (e.g. `baseline_passed`) are cast to float first --
+    same aggregation/CI machinery, not each being computed ad hoc.
+    Boolean columns (e.g. `baseline_passed`) are cast to float first.
     pandas' own bool-mean works fine, but an explicit cast keeps the output
     dtype consistent across metric_col choices.
     """
@@ -73,16 +73,16 @@ def stable_mut_at_k(
     One row per model (or per model x extra_group_cols, e.g. pass
     extra_group_cols=("tier",) for a per-tier breakdown). An instantiation
     that has zero scorable problems for a model is excluded from that
-    model's mean/SD rather than counted as 0 — `n_instantiations` reports
+    model's mean/SD, not counted as 0. `n_instantiations` reports
     how many instantiations actually contributed.
 
     coverage_adjust=True computes StableMut@K on the coverage-adjusted score
-    (Mut@K x baseline_pass_rate per instantiation) instead of raw Mut@K --
+    (Mut@K x baseline_pass_rate per instantiation) instead of raw Mut@K,
     see _apply_coverage_adjustment. Only meaningful with the default
     metric_col="mutation_score" (coverage_adjust=True with a different
     metric_col raises via _apply_coverage_adjustment's own precondition).
 
-    metric_col: see mut_at_k()'s docstring -- generalises this beyond
+    metric_col: see mut_at_k()'s docstring, generalises this beyond
     mutation_score to exec_rate/baseline_passed for the per-metric
     reliability comparison in analysis/RANKING_MATRIX.md.
     """
@@ -125,10 +125,10 @@ def pairwise_kendall_tau(
     NaN if fewer than 2).
 
     coverage_adjust=True ranks models by the coverage-adjusted score
-    (Mut@K x baseline_pass_rate per instantiation) instead of raw Mut@K --
+    (Mut@K x baseline_pass_rate per instantiation) instead of raw Mut@K,
     see _apply_coverage_adjustment; only valid with the default metric_col.
 
-    metric_col: see mut_at_k()'s docstring -- generalises this beyond
+    metric_col: see mut_at_k()'s docstring, generalises this beyond
     mutation_score to exec_rate/baseline_passed for the per-metric
     reliability comparison in analysis/RANKING_MATRIX.md.
     """
@@ -179,7 +179,7 @@ def mean_pairwise_tau_scoped(
     """mean_pairwise_tau(), restricted to pairs where BOTH instantiations are
     in `instantiations` (None = no restriction, identical to
     mean_pairwise_tau). Exists so callers share one implementation of a named
-    scope instead of re-deriving the pair-filter inline -- e.g. this
+    scope instead of re-deriving the pair-filter inline, e.g. this
     project's N=4 target scope (PROJECT_BRIEF.md Sec 11, instantiations
     {"1","2","3","4"}, excluding the deferred/partial instantiation 5) is
     used both by analyze_stability.py's own reporting and by

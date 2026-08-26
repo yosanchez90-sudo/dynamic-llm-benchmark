@@ -5,7 +5,7 @@ draw-blind plotting stacking 4 points at epoch 30 into a zigzag, and
 colouring by instantiation instead of by condition so overlaid conditions
 were indistinguishable. Also checks the column-detection candidate lists
 against the real epoch_perf_*.csv schema when that data is present
-(data/ is gitignored, so it won't exist on a fresh clone -- skipped then,
+(data/ is gitignored, so it won't exist on a fresh clone, skipped then,
 not failed), and the 2026-07-15 hardening fixes: duplicate-row guard,
 missing-epoch-0 warning/--strict, mixed-model refusal, and the >1.0
 pass-rate unit-sanity check.
@@ -90,7 +90,7 @@ def test_draw_filter_leaves_one_row_per_epoch_per_instantiation(tmp_path):
     data = pepc.load_condition(csv_path, draw="greedy")
 
     assert data["epochs"] == [0, 1, 30]
-    # seen (inst1) should be 0.5 at every epoch -- the sampling rows (0.9) must
+    # seen (inst1) should be 0.5 at every epoch. The sampling rows (0.9) must
     # never leak in, since that's exactly what caused the old zigzag/fake drop.
     assert data["seen"] == pytest.approx([0.5, 0.5, 0.5])
     assert data["unseen"] == pytest.approx([0.1, 0.1, 0.1])
@@ -250,7 +250,7 @@ def test_duplicate_row_message_names_detected_draw_column(tmp_path):
     assert "draw column: 'draw'" in str(exc_info.value)
 
 
-# ── hardening fix 2: missing epoch 0 -- warn by default, raise with --strict ─
+# ── hardening fix 2: missing epoch 0, warn by default, raise with --strict ─
 
 def _no_epoch0_csv(path: Path) -> None:
     rows = [_row(ep, inst, "greedy", 0.5) for ep in (1, 3, 30) for inst in (1, 2, 3)]

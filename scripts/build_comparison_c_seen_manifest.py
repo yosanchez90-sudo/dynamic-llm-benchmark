@@ -2,19 +2,19 @@
 
 The repair pipeline (scripts/repair_ult_ground_truth.py) only reaches
 verified-training-pair status for 112/400 (28.0%) of core_400's ULT
-problems -- far short of "every evaluated problem guaranteed seen." Decided
+problems, far short of "every evaluated problem guaranteed seen." Decided
 (2026-07-25): proceed with the 1,017-record verified training set as-is,
 and analyse core_400 POST results split by seen-in-training vs not, instead
 of pretending full coverage. This script:
 
-  1. Writes data/raw/ult_plt/comparison_c_seen_manifest.json -- for every
+  1. Writes data/raw/ult_plt/comparison_c_seen_manifest.json, for every
      core_400 ULT task_id: whether it has a verified training pair (and if
      so, which repair category), fixed once training data is frozen so
-     later re-runs of the repair pipeline can't silently redefine "seen"
+     later re-runs of the repair pipeline can't redefine "seen"
      for an experiment already in flight.
   2. Confounder audit: compares the seen (112) vs unseen (288) split on CC,
      code length, and the ALREADY-LANDED Qwen-1.5B PRE-baseline eval
-     (data/results/ult/.../instcore_400/...) -- exec_rate and
+     (data/results/ult/.../instcore_400/...), exec_rate and
      mutation_score. DiD differencing plus the Dynamic-benchmark control
      already address most difficulty-confound concerns, but the numbers
      should be visible, not assumed.

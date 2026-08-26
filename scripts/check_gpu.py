@@ -1,10 +1,10 @@
 """Sanity check: confirm GPU access from inside the current environment.
 
 Inputs: none (reads the live torch/CUDA environment). Outputs: none written to
-disk -- prints Python/host/PyTorch/CUDA/GPU details to stdout, exits nonzero if
+disk, prints Python/host/PyTorch/CUDA/GPU details to stdout, exits nonzero if
 no CUDA device is visible.
 
-Position in the pipeline: not part of the result-generating pipeline itself --
+Position in the pipeline: not part of the result-generating pipeline itself,
 a standalone pre-flight check, run via scripts/slurm/check_gpu.slurm before a
 GPU job, to catch a missing CUDA module or a mismatched torch wheel before it
 wastes a SLURM allocation.

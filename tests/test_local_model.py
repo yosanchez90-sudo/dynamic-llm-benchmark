@@ -1,6 +1,6 @@
 """Regression test: local generation must not silently inherit
 repetition_penalty/top_k from the checkpoint's generation_config.json
-without resolving and logging them — the same failure class as the
+without resolving and logging them, the same failure class as the
 no_repeat_ngram_size collapse (analysis/README_QUARANTINE.md), just via a
 different unlogged default."""
 from unittest.mock import MagicMock
@@ -63,7 +63,7 @@ def test_repetition_penalty_and_top_k_pinned_from_checkpoint_and_logged():
 
 
 def test_different_checkpoint_repetition_penalty_reflected_exactly():
-    """32B ships repetition_penalty=1.05, not 1.1 — must not be hardcoded."""
+    """32B ships repetition_penalty=1.05, not 1.1, must not be hardcoded."""
     model = _make_model(repetition_penalty=1.05, top_k=20)
     cfg = GenerationConfig(max_new_tokens=2048, do_sample=True, temperature=0.2, top_p=1.0)
 
@@ -125,7 +125,7 @@ def test_prompt_delivery_mode_system_role_when_present():
 
 def test_prompt_delivery_mode_folded_when_no_system_message():
     """StarCoder2-15B accommodation (2026-07-28): inferred from the actual
-    messages received, not from config -- reflects what was really sent."""
+    messages received, not from config, reflects what was really sent."""
     model = _make_model()
     cfg = GenerationConfig(max_new_tokens=2048, do_sample=True, temperature=0.2, top_p=1.0)
 

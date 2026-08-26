@@ -5,7 +5,7 @@ scripts/check_doc_citations.py like every other number in that document,
 instead of silently drifting the way it did across 136/141/145/152 at
 different points in this project's history.
 
-Runs `pytest --collect-only -q` (collection only -- no test execution, so
+Runs `pytest --collect-only -q` (collection only, no test execution, so
 this step stays cheap and side-effect-free like every other
 build_thesis_assets.py step) and parses the "N tests collected" summary
 line.

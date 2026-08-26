@@ -1,20 +1,20 @@
 """Metric-agnostic ranking matrix (supervisor reframe, 2026-08-04): report
-model rankings under every metric side by side -- exec_rate,
-baseline_pass_rate, conditional Mut@K, coverage-adjusted Mut@K -- rather
-than arguing which Mut@K definition is canonical. The conditional-Mut@K
+model rankings under every metric side by side: exec_rate,
+baseline_pass_rate, conditional Mut@K, coverage-adjusted Mut@K, not
+arguing which Mut@K definition is canonical. The conditional-Mut@K
 "anomaly" (analysis/RQ5_CROSS_DEFINITION_AUDIT.md) is one row of this
 matrix, not a separate definitional dispute.
 
 Outputs:
-  analysis/ranking_matrix_scores.csv        -- metric x scope x benchmark x
+  analysis/ranking_matrix_scores.csv,        metric x scope x benchmark x
                                                 model -> score/rank/n/n_defined
-  analysis/ranking_matrix_correlations.csv  -- metric x benchmark-pair ->
+  analysis/ranking_matrix_correlations.csv,  metric x benchmark-pair ->
                                                 tau/rho/CI/p/holm_p (canonical scope)
-  analysis/ranking_matrix_noise_floor.csv   -- metric -> between-model spread,
+  analysis/ranking_matrix_noise_floor.csv,   metric -> between-model spread,
                                                 mean within-model SD, ratio
-  analysis/ranking_matrix_reliability.csv   -- metric -> mean pairwise Kendall
+  analysis/ranking_matrix_reliability.csv,   metric -> mean pairwise Kendall
                                                 tau across instantiations
-  analysis/RANKING_MATRIX.md                -- readable assembly of all of the above
+  analysis/RANKING_MATRIX.md,                readable assembly of all of the above
 
 Usage: python scripts/build_ranking_matrix.py
 """
@@ -120,7 +120,7 @@ def main() -> None:
                     **cell,
                 })
             # BigCodeBench: one published number, same value used as the (d)
-            # column for every metric row -- not computed per-metric, since
+            # column for every metric row, not computed per-metric, since
             # BigCodeBench has no exec/baseline/mutation-score concept of its
             # own. Flagged explicitly in the written table, not silently
             # repeated as if it were 4 independent measurements.
@@ -151,7 +151,7 @@ def main() -> None:
     # Canonical scope is THE deliverable ("ONE table" in the written MD,
     # below); canonical+cross-family is computed too (same pairs/metrics)
     # so the ranking-matrix heatmap figure can show both scopes side by
-    # side -- Holm-corrected SEPARATELY per scope (each is its own 12-test
+    # side, Holm-corrected SEPARATELY per scope (each is its own 12-test
     # family, same discipline as RQ4/H5's N=4-vs-all-pairs split), not
     # pooled into one 24-test correction.
     pairs = [
@@ -195,7 +195,7 @@ def main() -> None:
     corr_df_all_scopes = pd.concat(all_corr_frames, ignore_index=True)
     corr_df_all_scopes.to_csv(ANALYSIS_DIR / "ranking_matrix_correlations.csv", index=False)
     # The written MD table (below) reports canonical only, per the original
-    # "ONE table" deliverable -- kept as a plain variable name for the
+    # "ONE table" deliverable, kept as a plain variable name for the
     # f-string block further down, unchanged from before this scope
     # extension.
     corr_df = corr_df_all_scopes[corr_df_all_scopes["scope"] == "canonical"].drop(columns=["scope"])

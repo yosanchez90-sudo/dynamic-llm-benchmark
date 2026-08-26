@@ -1,10 +1,10 @@
-"""RQ5 diagnostic follow-up — all post-hoc, all zero-compute (no new GPU/
+"""RQ5 diagnostic follow-up, all post-hoc, all zero-compute (no new GPU/
 API work; every number here comes from data already on disk).
 scripts/analyze_rq5.py's pooled-Mut@K result remains the pre-registered
-PRIMARY result (analysis/RQ5_ANALYSIS_PLAN.md) — this script exists to
+PRIMARY result (analysis/RQ5_ANALYSIS_PLAN.md). This script exists to
 DIAGNOSE why Dynamic(pooled)<->ULT rank agreement came out low in the
 original n=7 measurement (Kendall tau=0.143), not to replace or flatter
-that result. The current reading moves as data lands — see this script's
+that result. The current reading moves as data lands, see this script's
 own generated analysis/RQ5_DIAGNOSTICS.md for the live number, computed
 fresh on every run, not this docstring.
 
@@ -14,25 +14,25 @@ Diagnostics, in order:
      THIN_N_DEFINED-filtered version excluding any model whose own
      per-tier/pooled mean rests on fewer than 20 baseline-passing problems.
   2. Discrimination audit: score spread (range, SD, adjacent-rank gaps)
-     per tier and pooled -- quantifies the ceiling-effect compression
+     per tier and pooled, quantifies the ceiling-effect compression
      visible in analysis/figures/rq5_correlation.png.
   2b. Noise-floor / resolving-power audit: for pooled and each tier,
      compares the between-model score spread (sec 2) against the mean
-     within-model between-instantiation SD (RQ4.1 stability data) --
-     when the former is smaller than the latter, the benchmark cannot
-     actually resolve those models' rank order; it's noise, not signal.
+     within-model between-instantiation SD (RQ4.1 stability data).
+     When the former is smaller than the latter, the benchmark cannot
+     resolve those models' rank order; it's noise, not signal.
   3. Conditioning/survivorship audit: Mut@K is only defined where
      baseline_passed=True, so each model is scored on a DIFFERENT subset
      of problems, and L4 coverage is thin or entirely missing for several
      models, not just one (checked explicitly, not assumed). Reports
      n_defined + baseline_pass_rate per model/tier, a coverage-adjusted
      score (Mut@K x baseline_pass_rate, which does NOT drop the
-     conditioning -- see caveat below), and re-runs the rank correlation on
+     conditioning, see caveat below), and re-runs the rank correlation on
      that adjusted score, both unfiltered and with thin cells excluded.
   4. Attenuation: disattenuates the observed cross-benchmark tau using
      RQ4.1's within-Dynamic reliability ceiling (N=4 mean pairwise Kendall
-     tau, computed live from CANONICAL_MODELS-filtered data -- see
-     src.Analysis.stability.mean_pairwise_tau_scoped -- not a hard-coded
+     tau, computed live from CANONICAL_MODELS-filtered data, see
+     src.Analysis.stability.mean_pairwise_tau_scoped, not a hard-coded
      constant, since analysis/STABILITY.md's own point estimate moves as
      data lands) via the classical
      rho_disattenuated = rho_observed / sqrt(reliability_x * reliability_y)
@@ -40,9 +40,9 @@ Diagnostics, in order:
      Pearson r under classical test theory; applying it to Kendall tau is
      an approximation, not a rigorously derived correction for rank
      statistics). No repeat-measure reliability estimate exists for ULT in
-     this project (K=1, no instantiation concept for a static benchmark) --
-     stated plainly rather than assumed. Reports the reliability figure's
-     own n and per-model instantiation counts (they vary -- not a single
+     this project (K=1, no instantiation concept for a static benchmark),
+     stated plainly, not assumed. Reports the reliability figure's
+     own n and per-model instantiation counts (they vary, not a single
      clean n).
 
 Output: analysis/RQ5_DIAGNOSTICS.md
@@ -342,7 +342,7 @@ def main() -> None:
                    f"{r['ult_bp_rate']:.3f} | {r['ult_mutk']:.3f} | {r['ult_coverage_adj']:.4f} |")
     out.append("")
 
-    # --- L4 coverage flag, computed generally -- NOT just Qwen-1.5B --------
+    # --- L4 coverage flag, computed generally, NOT just Qwen-1.5B --------
     def _l4_status(n_total, n_defined) -> str:
         if n_total == 0:
             return "MISSING (never attempted, data-collection gap, not a capability result)"
@@ -457,9 +457,9 @@ def main() -> None:
     tau_n4_adj = mean_pairwise_tau_scoped(pairwise_adj, N4_INSTANTIATIONS)
     # Per-pair n_models/p_value for the N4-scoped adjusted table, computed live
     # so the "not a degenerate small-n artifact" claim below cites the actual
-    # current n rather than a number frozen from an earlier, smaller data landing
-    # (the exact bug class this section already warns about for RANKING_MATRIX.md's
-    # reliability figure -- a hard-coded n here would go stale the same way).
+    # current n, not a number frozen from an earlier, smaller data landing
+    # (the bug class this section already warns about for RANKING_MATRIX.md's
+    # reliability figure. A hard-coded n here would go stale the same way).
     _adj_n4_pairs = pairwise_adj[
         pairwise_adj["instantiation_a"].isin(N4_INSTANTIATIONS)
         & pairwise_adj["instantiation_b"].isin(N4_INSTANTIATIONS)

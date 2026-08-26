@@ -2,7 +2,7 @@
 per-model after the first submission attempt was rejected: OpenAI requires
 one model per batch, and the originally-prepared files interleaved
 gpt-5/gpt-5-mini). Exit 0 if all six are `completed`; exit 1 otherwise
-(prints per-batch status either way). Read-only — never resubmits, never
+(prints per-batch status either way). Read-only, never resubmits, never
 scores anything.
 
 Used by scripts/slurm/poll_openai_batches.slurm to decide whether to keep
@@ -32,7 +32,7 @@ STATE_FILES = [
     ("ULT/PLT / gpt-5-mini (800 req)", "data/batches/batch_state_20260806T195356f__ultplt__gpt5mini.json"),
 ]
 # Superseded by the split above (OpenAI rejected these: "Each batch must
-# contain requests for a single model" -- both models were interleaved in
+# contain requests for a single model". Both models were interleaved in
 # one file). Rejected at validation, request_counts completed=0/0 on all
 # three, no charge incurred. Kept here as a record, not polled.
 _FAILED_MIXED_MODEL_STATE_FILES = [

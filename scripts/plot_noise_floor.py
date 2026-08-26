@@ -1,4 +1,4 @@
-"""Noise floor -- one argument per figure: which metrics can resolve model
+"""Noise floor, one argument per figure: which metrics can resolve model
 differences at all, and does this hold within every Dynamic tier or just
 pooled? Between-model score spread (max-min across the 9 canonical models)
 vs the mean within-model between-instantiation SD, per metric per tier
@@ -10,8 +10,8 @@ pooled-only version of this; this figure adds the per-tier breakdown).
 The specific 4-model unresolvable cluster found in
 analysis/RQ5_DIAGNOSTICS.md (Claude Haiku > Claude Sonnet > Qwen 32B >
 Gemini Flash-Lite, pooled conditional Mut@K spread 0.002 vs individual
-SDs 0.003-0.005) is annotated by name on the conditional-Mut@K/pooled bar
--- it is a pooled-conditional-Mut@K-specific finding, not something this
+SDs 0.003-0.005) is annotated by name on the conditional-Mut@K/pooled bar.
+It is a pooled-conditional-Mut@K-specific finding, not something this
 figure re-derives generically for every cell.
 
 Usage: python scripts/plot_noise_floor.py
@@ -125,7 +125,7 @@ def main() -> None:
     ax.set_ylim(0, 62)  # headroom above the tallest bar (~45) for the annotation below
 
     # Annotate the specific 4-model unresolvable cluster on conditional
-    # Mut@K's pooled bar (analysis/RQ5_DIAGNOSTICS.md) -- a real, named
+    # Mut@K's pooled bar (analysis/RQ5_DIAGNOSTICS.md), a real, named
     # finding, not re-derived generically here. Box placed entirely above
     # the tallest bar (headroom reserved via ylim above) so it never
     # overlaps plotted data.

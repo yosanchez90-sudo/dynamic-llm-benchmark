@@ -4,7 +4,7 @@ SAME harness class (src.models.local.LocalModel) that scripts/run_eval.py
 will use, and what's the resolved generation config (repetition_penalty/
 top_k are inherited from the base checkpoint's own generation_config.json,
 not logged in the 2026-07-13 PRE file since that logging fix landed a day
-later -- see configs/qwen_coder_1_5b_ft_ult_30ep__ult__core400.yaml's
+later, see configs/qwen_coder_1_5b_ft_ult_30ep__ult__core400.yaml's
 comment). Generates one real completion end to end as a load-bearing check,
 not just "does __init__ not raise".
 

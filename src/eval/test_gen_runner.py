@@ -4,7 +4,7 @@ PARALLELISM ARCHITECTURE
 ------------------------
 Level 1 (within a problem): multiprocessing.Pool in test_gen_scorer.py covers
 the ~20-30 mutants per problem. Pool size = mutation_workers in config, which
-MUST equal --cpus-per-task in the SLURM script — don't oversubscribe.
+MUST equal --cpus-per-task in the SLURM script, don't oversubscribe.
 
 Level 2 (across problems): SLURM array jobs via scripts/slurm/run_mutation_array.slurm.
 The 1,500 problems are split into N shards; each array task handles one shard
@@ -12,7 +12,7 @@ and writes its own JSONL. Merging is trivial (glob + concat).
 
 Shard slicing uses stride (problems[shard_id::n_shards]) to balance load across
 shards: this interleaves L1 and L2 problems so each shard has a representative
-mix rather than one shard getting all L1 (fast) and another all L2 (slower).
+mix instead of one shard getting all L1 (fast) and another all L2 (slower).
 
 INFERENCE VS SCORING SEPARATION (local models)
 ----------------------------------------------
@@ -44,14 +44,14 @@ load_dotenv()
 
 def _tier_signature(config: dict[str, Any]) -> str:
     """Short tag identifying which tiers a Dynamic config targets (e.g.
-    "L1L2", "L3L4", "L1L2L3L4") -- empty for ULT/PLT, which have no `tiers`
+    "L1L2", "L3L4", "L1L2L3L4"), empty for ULT/PLT, which have no `tiers`
     key and are always tier="L4" by construction (src/data/ult_plt.py).
 
     Load-bearing for _find_resume_file / output-filename uniqueness: two
     Dynamic configs for the SAME (model, instantiation) but DIFFERENT tier
     sets (e.g. L1L2 vs L3L4, the standard tier-group split for this project)
     used to be indistinguishable to the resume matcher, which keyed only on
-    (model, benchmark, instantiation) -- see the 2026-07-26 race audit
+    (model, benchmark, instantiation), see the 2026-07-26 race audit
     (CLAUDE.md) for the real duplicate/conflicting rows this caused when two
     such configs' jobs had overlapping runtimes.
     """
@@ -78,7 +78,7 @@ def _find_resume_file(
     appends to the same file so the completed run is a single contiguous JSONL.
 
     `tier_sig` (see _tier_signature) narrows the glob to files from a config
-    targeting the SAME tier set -- required so two Dynamic configs for the
+    targeting the SAME tier set, required so two Dynamic configs for the
     same (model, instantiation) but different tiers (e.g. L1L2 vs L3L4) never
     match each other's resume file.
     """
@@ -117,14 +117,14 @@ def _find_resume_file(
 def _load_problems(config: dict[str, Any]) -> list:
     """Dispatch to the Dynamic loader or the ULT/PLT static-benchmark loader
     based on config["benchmark"]. ULT/PLT are always tier="L4" (CC>=8) and
-    have no instantiations — they take either a pinned manifest subsample
+    have no instantiations. They take either a pinned manifest subsample
     (production: the same fixed problem set every model shares, see
     data/raw/ult_plt/subsample_manifest.json) or an ad hoc max_n/sample_seed
     draw (dry runs / exploration), never both.
 
     config["model"]["supports_system_role"] (default True) controls whether
     the system instruction is sent as its own role="system" message or
-    folded into the first user turn -- for models whose chat_template
+    folded into the first user turn, for models whose chat_template
     rejects role="system" outright (found 2026-07-28,
     StarCoder2-15B-Instruct-v0.1). Read from the model block, not
     special-cased by model identity anywhere in this function.
@@ -168,7 +168,7 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
     problems = _load_problems(config)
 
     # Level 2 parallelism: slice this task's shard of the problem list.
-    # Strided slicing balances the workload — each shard gets a mix of tiers.
+    # Strided slicing balances the workload. Each shard gets a mix of tiers.
     n_shards = config.get("n_shards", 1)
     shard_id = config.get("shard_id", 0)
     if n_shards > 1:
@@ -186,7 +186,7 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
 
     run_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
     adapter_path = config["model"].get("adapter_path")
-    # Fine-tuned models share the same base model id — the adapter tag in
+    # Fine-tuned models share the same base model id. The adapter tag in
     # safe_model keeps their output files from colliding with baseline runs
     # or each other; compute_model_label() is also what gets stamped into
     # each record's model_label field below, so filename and field agree.
@@ -196,8 +196,8 @@ def run_test_gen_experiment(config: dict[str, Any]) -> Path:
 
     # Resume detection: if a partial run exists for this exact experiment,
     # reuse its file and skip already-completed problems. tier_sig prevents
-    # matching a DIFFERENT tier-group's file for the same (model, instantiation)
-    # -- see _tier_signature / the 2026-07-26 race audit.
+    # matching a DIFFERENT tier-group's file for the same (model, instantiation),
+    # see _tier_signature / the 2026-07-26 race audit.
     tier_sig = _tier_signature(config)
     tier_part = f"__tiers{tier_sig}" if tier_sig else ""
     resume_path, done_pairs = _find_resume_file(

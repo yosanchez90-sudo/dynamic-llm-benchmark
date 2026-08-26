@@ -27,7 +27,7 @@ from src.Analysis.stability import (  # noqa: E402
 # figure is pairs among instantiations 1-4 only, excluding instantiation 5
 # (deferred K=5 sensitivity sweep, only ever partially run). Shared with
 # analyze_rq5_diagnostics.py's attenuation correction via
-# mean_pairwise_tau_scoped() -- do not hard-code this figure elsewhere.
+# mean_pairwise_tau_scoped(). Do not hard-code this figure elsewhere.
 N4_INSTANTIATIONS = {"1", "2", "3", "4"}
 STABILITY_MD = ROOT / "analysis" / "STABILITY.md"
 
@@ -47,14 +47,14 @@ def main() -> None:
         print(f"No records found in {args.results_dir}")
         sys.exit(1)
 
-    # Restrict to the 9 canonical models -- fine-tuned adapter variants
+    # Restrict to the 9 canonical models. Fine-tuned adapter variants
     # (Comparison C / supplementary-study artifacts) and any future
     # cross-family RQ5 model are a different model identity and must never
-    # silently enter the reliability figure. Confirmed 2026-07-28: without
+    # enter the reliability figure. Confirmed 2026-07-28: without
     # this filter, the two LoRA adapter labels (Qwen 1.5B/7B fine-tunes) fed
     # the instantiation-1-3 pairwise Kendall tau once their POST Dynamic eval
     # landed, moving the N=4 mean from 0.675 to 0.701 with no scope decision
-    # behind it -- same bug class as comparison_b_paired.csv's spurious 8th
+    # behind it, same bug class as comparison_b_paired.csv's spurious 8th
     # model (scripts/build_comparison_tables.py).
     excluded = sorted(set(df["model_label"].unique()) - set(CANONICAL_MODELS))
     df = df[df["model_label"].isin(CANONICAL_MODELS)]
@@ -102,7 +102,7 @@ def main() -> None:
     # Two SEPARATE corrections, not one pooled across both: the N=4 set (6
     # pairs among instantiations 1-4, the headline scope) and the all-pairs
     # set (10 pairs, incl. instantiation 5) are two different reported
-    # families, not one 16-test family -- correcting them together would
+    # families, not one 16-test family. Correcting them together would
     # conflate a scope decision with a multiple-comparisons one.
     pairwise = pairwise.copy()
     pairwise["p_value_holm"] = holm_bonferroni(pairwise["p_value"].tolist())

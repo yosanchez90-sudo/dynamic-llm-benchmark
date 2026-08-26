@@ -1,14 +1,14 @@
 """Does ULT's own shipped `tests` field actually pass against ULT's own
 shipped `code` field? A pre-flight check for the canonical Comparison C
-training-pair build (scripts/build_ult_training_pairs.py) -- STOP GATE A's
+training-pair build (scripts/build_ult_training_pairs.py). STOP GATE A's
 5-sample preview found 0/5 samples fully passing, which is unexpected enough
-to warrant a full check rather than a shrug: a real denominator across the
+to warrant a full check, not a shrug: a real denominator across the
 whole corpus, not a 5-sample impression, is what the scope-down decision
 below is actually based on.
 
 Runs each record's ground-truth test functions in a forked subprocess
 (timeout-guarded, since some real-world ULT functions loop/print heavily)
-against the record's own code -- no pytest/mutation machinery, just
+against the record's own code, no pytest/mutation machinery, just
 does-it-pass. CPU-bound across ~3,676 records: submit via SLURM
 (scripts/slurm/run_check_ult_baseline.slurm), do not run on the login node.
 
@@ -49,7 +49,7 @@ def _target_function_node(code: str, func_name: str):
 
 
 def _worker(code: str, tests: list[str], q: mp.Queue) -> None:
-    # ULT `code` blobs are arbitrary scraped real-world functions -- some do
+    # ULT `code` blobs are arbitrary scraped real-world functions. Some do
     # relative-path file I/O as part of normal operation (confirmed: an
     # earlier run of this script, executed with cwd left at the repo root,
     # littered the repo with fort.*/moldyn.vel/control/exe-style side-effect

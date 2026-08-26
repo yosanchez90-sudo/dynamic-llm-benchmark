@@ -1,6 +1,6 @@
-"""H3 (RQ2) -- tier gradient: Spearman correlation between tier index and
+"""H3 (RQ2), tier gradient: Spearman correlation between tier index and
 mutation score, per model and pooled. Implements analysis/H3_ANALYSIS_PLAN.md
-(pre-registered 2026-08-04, before this script existed) -- every design
+(pre-registered 2026-08-04, before this script existed). Every design
 choice here (estimands, ceiling-effect handling, conditioning, coverage-
 adjusted companion, incomplete-tier-coverage handling, Holm correction
 scope) was decided in that plan, not tuned after seeing results.

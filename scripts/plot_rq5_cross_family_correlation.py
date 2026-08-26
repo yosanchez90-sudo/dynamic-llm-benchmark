@@ -1,7 +1,7 @@
-"""RQ5 cross-family extension scatter figure(s) -- shows raw Mut@K vs the
+"""RQ5 cross-family extension scatter figure(s), shows raw Mut@K vs the
 coverage-adjusted score side by side, canonical models vs the 4 cross-family
 candidates distinguished by marker, for both Dynamic<->ULT and
-Dynamic<->public (BigCodeBench). The panel layout is chosen specifically to
+Dynamic<->public (BigCodeBench). The panel layout is chosen to
 make the finding visible: the raw metric's correlation collapses once
 cross-family points are added, the coverage-adjusted one does not.
 

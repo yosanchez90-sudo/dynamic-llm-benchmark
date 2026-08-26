@@ -3,7 +3,7 @@
 What this script does
 ---------------------
 1. Loads the base Qwen 7B model in bfloat16 with gradient checkpointing.
-2. Wraps it with a LoRA adapter (PEFT library) — only ~0.5% of parameters are
+2. Wraps it with a LoRA adapter (PEFT library). Only ~0.5% of parameters are
    trained; the original weights are frozen.
 3. Formats the training data as Qwen's chat template and trains with TRL's
    SFTTrainer (Supervised Fine-Tuning Trainer).

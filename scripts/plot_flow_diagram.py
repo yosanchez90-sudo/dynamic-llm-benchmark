@@ -4,7 +4,7 @@ the two scoring gates marked and the three consuming experiments shown
 branching off the result record.
 
 This diagram is structural, not derived from analysis/*.csv data, so it
-carries no PROVENANCE.md sidecar the way a data plot would -- there is no
+carries no PROVENANCE.md sidecar the way a data plot would. There is no
 data population to cite. It still lives in the registered asset pipeline
 (scripts/build_thesis_assets.py) so it regenerates from this script, not
 from a hand-edited image.

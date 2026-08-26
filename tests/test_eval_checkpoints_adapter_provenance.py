@@ -1,5 +1,5 @@
 """Regression tests for scripts/eval_checkpoints.py's adapter_path /
-adapter_weights_hash CSV provenance columns (added 2026-07-16 — see
+adapter_weights_hash CSV provenance columns (added 2026-07-16, see
 analysis/reports/inst1_control_verification.md's addendum for why: no
 epoch_perf_*.csv row previously recorded which adapter directory produced
 it, an outright gap relative to CLAUDE.md's "adapter identity (path +

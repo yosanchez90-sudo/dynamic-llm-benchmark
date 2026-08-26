@@ -1,19 +1,19 @@
 """RQ5 cross-family extension analysis (post-hoc, supplementary to the
-canonical RQ5 primary) -- per analysis/RQ5_CROSS_FAMILY_PROPOSAL.md,
+canonical RQ5 primary), per analysis/RQ5_CROSS_FAMILY_PROPOSAL.md,
 approved 2026-07-28. Adds DeepSeek-Coder-6.7B-Instruct,
 CodeLlama-13B-Instruct, StarCoder2-15B-Instruct-v0.1, and
 Mistral-7B-Instruct-v0.3 to the Dynamic<->ULT and Dynamic/ULT<->BigCodeBench
 correlations, breaking the all-Qwen n=3 size-sweep confound
 (analysis/RQ5_INTERPRETATION.md's Parts 2-3 finding).
 
-Deliberately a SEPARATE script from analyze_rq5.py, not a modification of
+A SEPARATE script from analyze_rq5.py, not a modification of
 it: analyze_rq5.py's pooled Mut@K over the 9 canonical models remains the
 pre-registered RQ5 primary result and must stay reproducible exactly as
 pre-registered. This script's output is explicitly the post-hoc
 cross-family extension, same discipline as analyze_rq5_diagnostics.py.
 
-Cross-family models are NEVER added to CANONICAL_MODELS (coverage_matrix.py)
--- they must not leak into Comparison A/B or StableMut@K (see
+Cross-family models are NEVER added to CANONICAL_MODELS (coverage_matrix.py).
+They must not leak into Comparison A/B or StableMut@K (see
 tests/test_canonical_models_boundary.py). This script imports its own
 cross-family label list, unioned with CANONICAL_MODELS only for this
 script's own ranking table.
@@ -22,12 +22,12 @@ Reports, for both raw Mut@K and the coverage-adjusted score
 (RQ5_DIAGNOSTICS.md sec 3): Dynamic(pooled)<->ULT and Dynamic/ULT<->
 BigCodeBench (Complete-split/Instruct-prompt and Hard-split/Instruct-prompt)
 correlations, at both the canonical-only n and the canonical+cross-family n,
-side by side -- the direct answer to "does the coverage-adjusted agreement
+side by side, the direct answer to "does the coverage-adjusted agreement
 survive breaking the within-family confound."
 
 Also flags any model x benchmark cell with n_defined < 20 for conditioned
 Mut@K as too thin to quote (n_defined is a fraction of n_total, not of the
-model count -- a model's mean over fewer than 20 baseline-passing problems
+model count. A model's mean over fewer than 20 baseline-passing problems
 is itself a shaky point estimate, independent of any cross-model
 correlation's own n).
 
@@ -53,7 +53,7 @@ from src.Analysis.loader import load_records
 from src.Analysis.multiple_comparisons import holm_bonferroni
 from src.Analysis.provenance import stamp_block
 
-# Must never be added to coverage_matrix.py::CANONICAL_MODELS -- see this
+# Must never be added to coverage_matrix.py::CANONICAL_MODELS, see this
 # script's module docstring and tests/test_canonical_models_boundary.py.
 CROSS_FAMILY_MODELS = [
     "deepseek-ai__deepseek-coder-6.7b-instruct",
@@ -211,7 +211,7 @@ def main() -> None:
     # 2 metric versions (raw Mut@K, coverage-adjusted) = 12. Hard-split
     # pairs are a secondary consistency check, not part of this headline
     # family, and are excluded from this correction on that basis (not
-    # silently -- stated here explicitly).
+    # silently, stated here explicitly).
     headline_mask = corr_df["pair"].str.startswith("Dynamic(pooled) <-> ULT") | corr_df["pair"].str.contains("Complete-split")
     headline = corr_df[headline_mask].copy()
     corr_df["kendall_p_perm_holm"] = float("nan")

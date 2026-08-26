@@ -50,7 +50,7 @@ class AnthropicModel(Model):
         if system_msg:
             api_kwargs["system"] = system_msg
         # Some Claude models 400 if both temperature and top_p are set
-        # ("cannot both be specified for this model") — found running the
+        # ("cannot both be specified for this model"), found running the
         # Haiku 4.5 pilot. temperature is this project's pinned methodological
         # knob (PROJECT_BRIEF.md 5.4); top_p=1.0 in every config here is a
         # mathematical no-op (no truncation) anyway, so only send top_p when
@@ -66,7 +66,7 @@ class AnthropicModel(Model):
         text_parts = [b.text for b in response.content if b.type == "text"]
         response_text = "".join(text_parts)
 
-        # Build a "prompt" string for hashing — we serialise the messages
+        # Build a "prompt" string for hashing. We serialise the messages
         # deterministically. Closed APIs don't expose the literal tokenised
         # prompt, so we hash the JSON of what we sent.
         canonical_prompt = json.dumps(

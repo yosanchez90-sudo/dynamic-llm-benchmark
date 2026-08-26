@@ -32,7 +32,7 @@ def _git_commit() -> str:
 
 def _run_validator(script_name: str) -> tuple[int, int]:
     """Run one of the _smoke/ validators fresh and parse its own genuine
-    "Total: X, Failed: Y" line -- the README below used to hardcode these
+    "Total: X, Failed: Y" line. The README below used to hardcode these
     two numbers as literal prose (same anti-pattern as the fixed
     validate_cc.py bug, just relocated here); this makes them re-verified
     on every archive run instead of hand-transcribed once and left stale.
@@ -134,7 +134,7 @@ def main() -> None:
             })
 
     # ---- re-run validate.py/validate_cc.py fresh for genuine totals ------
-    # (previously hardcoded as literal "60/60 pass" prose below -- same
+    # (previously hardcoded as literal "60/60 pass" prose below, same
     # anti-pattern as the fixed validate_cc.py bug, just relocated to this
     # script's README generator; see analysis/VALIDATOR_SWEEP.md item #9)
     validate_total, validate_failed = _run_validator("validate.py")

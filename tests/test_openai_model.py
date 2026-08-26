@@ -1,5 +1,5 @@
 """Regression test: logged generation_config must reflect what was actually
-sent to the API, not the nominal config values — same bug class fixed in
+sent to the API, not the nominal config values, same bug class fixed in
 anthropic_model.py. OpenAIModel pops temperature/top_p and retries when a
 model rejects them (e.g. gpt-5-mini); the log must follow."""
 from unittest.mock import MagicMock, patch
@@ -38,7 +38,7 @@ def test_logged_config_matches_normal_request():
 
 def test_logged_config_reflects_temperature_rejection_retry():
     """After a model rejects temperature and the code retries without it,
-    the logged config must show null, not the nominal 0.2 — it was never
+    the logged config must show null, not the nominal 0.2. It was never
     actually sent on the successful call."""
     from openai import BadRequestError
 

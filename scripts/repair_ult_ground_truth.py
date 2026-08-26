@@ -4,55 +4,55 @@ data): only 8.5% of CC>=8 ULT records had all 5 shipped tests pass against
 ULT's own shipped code (scripts/check_ult_ground_truth_baseline.py).
 
 Runs the REAL scoring harness (src/eval/test_gen_scorer.py's _write_case /
-_collect_ok / _run_pytest -- the same subprocess+pytest+importlib path
+_collect_ok / _run_pytest, the same subprocess+pytest+importlib path
 score_problem() uses at eval time), not an ad hoc in-process exec() check,
 so any "failure" this script reports is a genuine harness-verified failure,
 not an artifact of a cruder checker.
 
-STAGE 1 -- TAXONOMY. Every CC>=8 record's (code, built-test-file) pair is
+STAGE 1: TAXONOMY. Every CC>=8 record's (code, built-test-file) pair is
 run once through the real harness. Failing records are re-run once more to
-flag flakiness (status changes between runs -- unseeded randomness / wall-
+flag flakiness (status changes between runs, unseeded randomness / wall-
 clock dependence). Failures are classified by the exception type in the
 first failing test:
-  CLEAN               -- all 5 tests already pass, nothing to do.
-  ASSERTION_MISMATCH   -- code executes fine, an expected VALUE is wrong.
+  CLEAN,               all 5 tests already pass, nothing to do.
+  ASSERTION_MISMATCH,  code executes fine, an expected VALUE is wrong.
                           Repair candidate (Stage 2).
-  STRUCTURAL           -- code itself can't run cleanly for at least one
+  STRUCTURAL,          code itself can't run cleanly for at least one
                           test (NameError/AttributeError/etc, or collection
-                          fails outright). NOT repaired -- see "why
+                          fails outright). NOT repaired, see "why
                           NameError isn't fixed" below.
-  FLAKY                -- status changed between the two runs.
-  OTHER                -- didn't fit the above (rare).
+  FLAKY,               status changed between the two runs.
+  OTHER,               didn't fit the above (rare).
 
-STAGE 2 -- REPAIR (ASSERTION_MISMATCH only). ULT test bodies are
+STAGE 2: REPAIR (ASSERTION_MISMATCH only). ULT test bodies are
 overwhelmingly `def test_x(): assert <call-expr> == <literal>` (single
 statement). For that exact shape, re-evaluate <call-expr> against the
-UNMODIFIED code and rewrite the literal to the actual value -- inputs and
+UNMODIFIED code and rewrite the literal to the actual value. Inputs and
 code stay ULT's own, only the recorded expected output is corrected. Any
 test whose shape isn't exactly one `assert x == y` is left alone (not
 guessed at) and the record falls back to STRUCTURAL/OTHER accounting.
 
 Why NameError records are excluded, not import-repaired: PROJECT_BRIEF.md's
 Comparison C design reuses the ALREADY-LANDED Qwen-1.5B PRE baseline on
-ULT/PLT core_400 (Part 1 item 3) -- "same eval config as post, or the DiD
+ULT/PLT core_400 (Part 1 item 3), "same eval config as post, or the DiD
 is invalid". If a record's underlying `code` itself needs a missing stdlib
 import to run (not just its test), fixing that would require changing
 `code` at POST-eval time too (the function can't execute without it,
-regardless of what test is used) -- which would silently diverge POST's
+regardless of what test is used). This would silently diverge POST's
 eval config from the already-landed PRE config for exactly that record.
 Repairing only the ASSERTION_MISMATCH class (never touches `code`) keeps
 every training-set record's eval-time code byte-identical to what PRE
 already measured.
 
-STAGE 3 -- VERIFY. Every repaired test file is re-scored through the same
+STAGE 3: VERIFY. Every repaired test file is re-scored through the same
 real harness; only records that come back baseline_passed=True enter the
 final training set. This is a hard gate, not a sanity check: if the Stage 2
 rewrite logic has any bug or the "single assert" shape assumption doesn't
-actually guarantee determinism, verification catches it here rather than
+actually guarantee determinism, verification catches it here, not
 downstream in training.
 
-CPU-bound across ~3,676 records with several harness invocations each --
-submit via SLURM (scripts/slurm/run_repair_ult_ground_truth.slurm), not the
+CPU-bound across ~3,676 records with several harness invocations each.
+Submit via SLURM (scripts/slurm/run_repair_ult_ground_truth.slurm), not the
 login node.
 
 Outputs:
@@ -107,7 +107,7 @@ def _target_function_node(code: str, func_name: str):
 
 def run_harness(code: str, test_file: str, timeout: int = TIMEOUT):
     """(status, n_passed, n_failed, first_error, raw_log). status one of
-    COLLECT_ERROR / ALL_PASS / SOME_FAIL / TIMEOUT -- exactly the real
+    COLLECT_ERROR / ALL_PASS / SOME_FAIL / TIMEOUT, exactly the real
     score_problem() gate, minus mutation scoring (not needed here).
     """
     with tempfile.TemporaryDirectory() as d:
@@ -129,7 +129,7 @@ def run_harness(code: str, test_file: str, timeout: int = TIMEOUT):
 
 
 # ---------------------------------------------------------------------------
-# Stage 2: repair -- rewrite `assert <call> == <literal>` to the actual value
+# Stage 2: repair, rewrite `assert <call> == <literal>` to the actual value
 # ---------------------------------------------------------------------------
 
 def _repairable_shape(test_src: str):
@@ -161,18 +161,18 @@ def repair_test(code: str, func_name: str, test_src: str):
     function's actual output on the test's own input expression. Returns
     (repaired_source, actual_value), or None if the shape doesn't qualify,
     evaluating the left-hand side itself raises (then it's not an
-    ASSERTION_MISMATCH at all -- leave it to the STRUCTURAL bucket), or the
+    ASSERTION_MISMATCH at all, leave it to the STRUCTURAL bucket), or the
     actual value's repr() isn't valid Python to re-embed as a literal (e.g.
-    an Enum member reprs as `<Matches.BothSame: 5>`, not valid syntax --
+    an Enum member reprs as `<Matches.BothSame: 5>`, not valid syntax,
     happens for functions that return a non-literal type; such records fall
-    through to SHAPE_NOT_REPAIRABLE rather than being silently miscoded).
+    through to SHAPE_NOT_REPAIRABLE instead of being silently miscoded).
     """
     shape = _repairable_shape(test_src)
     if shape is None:
         return None
     fn_def, assert_node = shape
     ns: dict = {}
-    # ULT `code` blobs are arbitrary scraped real-world functions -- some do
+    # ULT `code` blobs are arbitrary scraped real-world functions. Some do
     # relative-path file I/O as a side effect of normal operation (a sibling
     # check script that exec'd ULT code with cwd left at the repo root
     # littered it with fort.*/moldyn.vel-style debris from whatever those
@@ -259,10 +259,10 @@ def process_record(r: dict):
                     # All 5 repaired tests vary their inputs (that's how ULT wrote
                     # them) but a few functions short-circuit to the same output
                     # for every one of them (e.g. a bare except swallowing a
-                    # missing-fixture-file IOError and returning None) -- verify-
+                    # missing-fixture-file IOError and returning None). Verify-
                     # via-scorer passes such a record (it IS self-consistent) but
                     # the resulting "test" barely exercises the function. Flagged,
-                    # not excluded -- see PROVENANCE.md.
+                    # not excluded, see PROVENANCE.md.
                     degenerate = len(set(actual_values)) == 1
                     category = ("ASSERTION_MISMATCH_REPAIRED_DEGENERATE" if degenerate
                                 else "ASSERTION_MISMATCH_REPAIRED_VERIFIED")

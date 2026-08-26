@@ -1,4 +1,4 @@
-"""Unit tests for src/eval/test_gen_problem.py:compute_model_label — the
+"""Unit tests for src/eval/test_gen_problem.py:compute_model_label, the
 single source of truth for model_label, used both to name output files
 (test_gen_runner.py, scripts/process_batch.py) and to stamp the TestGenRecord
 field of the same name, so the two must always agree.
@@ -22,7 +22,7 @@ def test_adapter_path_appends_ft_tag_from_parent_dir_name():
 
 def test_adapter_path_uses_immediate_parent_even_for_checkpoint_dirs():
     # eval_checkpoints.py hot-swaps per-checkpoint adapters like
-    # .../qwen7b_lora_bp_own_30ep/checkpoint-320 — the experiment name is
+    # .../qwen7b_lora_bp_own_30ep/checkpoint-320. The experiment name is
     # still the parent, not "checkpoint-320" itself.
     label = compute_model_label(
         "Qwen/Qwen2.5-Coder-7B-Instruct",

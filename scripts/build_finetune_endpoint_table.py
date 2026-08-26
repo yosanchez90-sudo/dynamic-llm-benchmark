@@ -102,7 +102,7 @@ def endpoint_rows(path: Path) -> list[dict]:
             "n": n,
             "split": split,
             # Column names spell out the metric explicitly (baseline_pass, not
-            # exec_rate) -- these are percentages of `baseline_pass` == True
+            # exec_rate). These are percentages of `baseline_pass` == True
             # (src/eval/test_gen_scorer.py's ScoreResult.baseline_passed),
             # i.e. the suite passes against the ORIGINAL function, not the
             # Exec@K collection-only gate. Flagged 2026-07-26: the ambiguous

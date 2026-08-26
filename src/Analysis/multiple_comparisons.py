@@ -3,7 +3,7 @@
 PROJECT_BRIEF.md Sec 3.1: "Corrections: Holm-Bonferroni within each RQ
 family." Implemented here as a single shared utility so every RQ family
 that runs more than one significance test within itself applies the same
-procedure, rather than each script re-deriving it -- or, as was actually
+procedure, instead of each script re-deriving it, or, as was actually
 the case until 2026-08-04, not applying it anywhere at all
 (analysis/HYPOTHESIS_COVERAGE_AUDIT.md found zero uses of any
 multiple-testing correction anywhere in this project's history).
@@ -15,10 +15,10 @@ import numpy as np
 
 def holm_bonferroni(p_values: list[float]) -> list[float]:
     """Holm's step-down adjustment. Returns adjusted p-values in the same
-    order as the input (not sorted) -- each is directly comparable to the
+    order as the input (not sorted). Each is directly comparable to the
     original alpha (e.g. 0.05), same convention as
     statsmodels.stats.multitest.multipletests(method="holm") (not used
-    directly since statsmodels is not a project dependency -- see
+    directly since statsmodels is not a project dependency, see
     analysis/H4_DESIGN_MEMO.md for why adding it is a live decision, not
     assumed here).
 

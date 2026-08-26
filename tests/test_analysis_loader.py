@@ -3,7 +3,7 @@
 Regression test for the 2026-07-25 audit finding: a stale partial-tier
 retry file left in data/results/dynamic/ alongside its complete replacement
 (seen for claude-sonnet-4-6/claude-haiku-4-5 inst1-4) was silently
-double-counted by load_records, since it had no dedup logic at all — biasing
+double-counted by load_records, since it had no dedup logic at all, biasing
 any aggregate (StableMut@K, Kendall tau) that doesn't filter by a single
 tier. Fixed by deduping on the natural key, keeping the newest row by
 timestamp.

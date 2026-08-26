@@ -4,11 +4,11 @@ frames for each fine-tuned Qwen checkpoint and run the DiD estimator
 on both sides.
 
 As of today only the Dynamic (control) benchmark has real pre AND post
-data — ULT/PLT have neither (no model has been evaluated against them yet,
+data. ULT/PLT have neither (no model has been evaluated against them yet,
 see src/data/ult_plt.py). This script still reports the Dynamic control's
 own pre->post change directly (useful on its own: "did fine-tuning move the
 needle on a benchmark it wasn't trained on"), and states plainly why the
-full 2x3 DiD table is empty rather than silently producing nothing.
+full 2x3 DiD table is empty, not silently producing nothing.
 
 Usage:
     python scripts/analyze_contamination.py
@@ -56,7 +56,7 @@ def analyze_one(config_path: Path) -> None:
         pre, post = load_pre_post_same_instrument(csv_path)
         source_note = "same-instrument (epoch=0 baseline vs final epoch, both via eval_checkpoints.py)"
     except ValueError:
-        # No --baseline (epoch=0) rows in this CSV yet — fall back to the
+        # No --baseline (epoch=0) rows in this CSV yet. Fall back to the
         # cross-source loader (different exec-check instrument pre vs post).
         pre, post = load_pre_post_for_config(hf_id, csv_path)
         source_note = "cross-source (pre from data/results/dynamic/, different instrument — see src/Contamination/data.py)"

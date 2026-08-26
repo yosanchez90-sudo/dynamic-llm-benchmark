@@ -6,7 +6,7 @@ DESIGN DECISIONS (viva-relevant)
    containing a fresh `under_test.py` + the generated test file, executed in a
    separate `python -m pytest` subprocess with a timeout. No shared interpreter
    state: infinite loops get killed, a crashing mutant can't crash the harness.
-   This is the safe model for mutation testing — Cosmic Ray and mutmut both fork
+   This is the safe model for mutation testing. Cosmic Ray and mutmut both fork
    for the same reason: mutants are deliberately broken code.
 
 2. IMPORT MODE. Every pytest call uses --import-mode=importlib (pytest's own
@@ -16,12 +16,12 @@ DESIGN DECISIONS (viva-relevant)
 
 3. PRECOMPUTED MUTANTS (open question #1). Mutants are generated ONCE per
    problem at load time (see data/test_gen.py) and passed in here. The same
-   mutant set is reused across all models — necessary for a fair comparison.
+   mutant set is reused across all models, necessary for a fair comparison.
 
 4. KILLED DEFINITION. A mutant is KILLED iff the suite PASSES on the original
    and FAILS (or times out) on the mutant. If the suite does not pass on the
    original, mutation score is ill-defined; we record baseline_passed=False and
-   mutation_score=None so downstream analysis can exclude it -- an EXCLUDE
+   mutation_score=None so downstream analysis can exclude it, an EXCLUDE
    (conditional-mean) definition. This IS the pre-registered primary metric
    (PROJECT_BRIEF.md / analysis/RQ5_ANALYSIS_PLAN.md) and stays the primary;
    nothing below swaps it out.
@@ -36,24 +36,24 @@ DESIGN DECISIONS (viva-relevant)
    raw HTML (curl, not WebFetch) and the paper's own published
    implementation (github.com/huangd1999/UnLeakedTestBench): the PROSE
    reading was confirmed verbatim, but it is CONTRADICTED by the paper's
-   own code. `Ray/main.py::mutation_statistic()` -- the function actually
-   invoked from that repo's CLI -- computes
+   own code. `Ray/main.py::mutation_statistic()`, the function actually
+   invoked from that repo's CLI, computes
    `surviving_mutants_rate = sum(per-task rate) / len(correct_tasks)`, where
-   `correct_tasks` is the set of tasks whose baseline (unmutated) run passed
-   -- i.e. it CONDITIONS on baseline-pass and never zero-fills, the SAME
+   `correct_tasks` is the set of tasks whose baseline (unmutated) run passed,
+   i.e. it CONDITIONS on baseline-pass and never zero-fills, the SAME
    estimand as this project's own pre-registered primary Mut@K, not the
    zero-filled reading its own prose describes. This is a genuine,
    unresolved contradiction between the paper's stated methodology and its
-   own implementation, reported as such rather than picked one way -- see
+   own implementation, reported as such, not picked one way, see
    the audit doc's "Which one is 'the' ULT definition?" section for the
    full reasoning on why this project treats the CODE as somewhat stronger
    evidence of what was actually measured while still reporting the PROSE
-   reading as a labelled co-primary rather than discarding it.
+   reading as a labelled co-primary, not discarding it.
    CONSEQUENCE: `coverage_adjusted` (mutation_score.mean() x
-   baseline_pass_rate) is reported as a "definition-matched co-primary" --
+   baseline_pass_rate) is reported as a "definition-matched co-primary",
    proven algebraically AND code-verified (scripts/build_comparison_tables.py)
    to be exactly the zero-filled/unconditional mean implied by the paper's
-   PROSE formula -- alongside the pre-registered conditional Mut@K, NOT as
+   PROSE formula, alongside the pre-registered conditional Mut@K, NOT as
    a claim that it reproduces what the ULT paper's own code actually
    computed. Every Comparison A/B number should be read with this caveat;
    see analysis/COMPARISON_PROVENANCE.md's cross-definition note and
@@ -61,11 +61,11 @@ DESIGN DECISIONS (viva-relevant)
    which results are and aren't affected.
 
 5. PARALLELISM. Mutants for ONE problem are evaluated in a thread pool (Level 1
-   parallelism). Threads rather than processes: each worker just coordinates a
+   parallelism). Threads, not processes: each worker just coordinates a
    subprocess.run() call (I/O-bound), so threads give the same concurrency
-   without forking the CUDA context that LocalModel already loaded — forking
+   without forking the CUDA context that LocalModel already loaded. Forking
    CUDA causes workers to hang indefinitely on GPU nodes.
-   For the full 1,500-problem sweep use SLURM array jobs (Level 2) — see
+   For the full 1,500-problem sweep use SLURM array jobs (Level 2), see
    test_gen_runner.py and scripts/slurm/run_mutation_array.slurm.
 """
 from __future__ import annotations
@@ -125,7 +125,7 @@ def sanitize_test_file(test_source: str, fn_name: str) -> str:
       1. Strip any top-level `def <fn_name>(...)` block from the test source.
       2. If `from under_test import <fn_name>` is absent, prepend it.
 
-    The repairs are deliberate and recorded — the scorer notes them so the
+    The repairs are deliberate and recorded. The scorer notes them so the
     tidy record can flag affected rows for sensitivity analysis.
     """
     import ast
@@ -252,7 +252,7 @@ def _evaluate_mutant(args: tuple[str, str, int]) -> str:
             # import cleanly, so it's dropped, not scored as killed/survived.
             # Unlike _run_pytest/_collect_ok (which already caught this),
             # this call site let the exception propagate through the thread
-            # pool's fut.result() and crash the whole job — seen in practice
+            # pool's fut.result() and crash the whole job, seen in practice
             # on 4 separate SLURM jobs (subprocess.TimeoutExpired: 'import
             # under_test' after 30s), losing all progress on problems after
             # the one that hit it despite results being written incrementally

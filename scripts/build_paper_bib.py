@@ -2,14 +2,14 @@
 
 paper/references.yaml is the single source of truth for every citation's
 metadata (see that file's own header for how each entry was resolved and
-verified). This script is the only place a .bib entry is produced --
-never hand-edit paper/references.bib, regenerate it here after any
+verified). This script is the only place a .bib entry is produced.
+Never hand-edit paper/references.bib, regenerate it here after any
 references.yaml change.
 
 BibTeX entry type is chosen per-entry from the `venue` field (a crude
 heuristic: "arXiv preprint" -> @misc, "Proceedings of"/"Findings of"/
 "International Conference" -> @inproceedings, "Transactions"/"Journal" ->
-@article, else @misc as a safe fallback) -- correct manually in
+@article, else @misc as a safe fallback). Correct manually in
 references.yaml (not here) if a specific entry needs a different type.
 
 Usage:
@@ -30,7 +30,7 @@ YAML_PATH = ROOT / "paper" / "references.yaml"
 BIB_PATH = ROOT / "paper" / "references.bib"
 
 
-# references.yaml keeps every author on every entry -- the full record is
+# references.yaml keeps every author on every entry. The full record is
 # the point of that file. Rendering all of them in the printed bibliography
 # is standard for most entries but genuinely costly for a handful of very-
 # large-team papers (e.g. Codex/HumanEval's 58 authors); IEEE convention
@@ -57,7 +57,7 @@ def _entry_type(venue: str) -> str:
 
 
 def _escape(s: str) -> str:
-    # Minimal BibTeX-safe escaping -- these fields are plain prose/titles,
+    # Minimal BibTeX-safe escaping. These fields are plain prose/titles,
     # not LaTeX source, so only characters BibTeX itself treats specially
     # need protecting.
     return s.replace("&", r"\&").replace("%", r"\%").replace("_", r"\_")

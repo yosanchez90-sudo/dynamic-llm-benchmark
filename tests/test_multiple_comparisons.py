@@ -28,7 +28,7 @@ def test_order_preserved_not_sorted():
 
 
 def test_single_pvalue_unchanged():
-    # A family of one is a no-op -- multiplier is (1-0)=1.
+    # A family of one is a no-op. Multiplier is (1-0)=1.
     assert holm_bonferroni([0.03]) == pytest.approx([0.03])
 
 

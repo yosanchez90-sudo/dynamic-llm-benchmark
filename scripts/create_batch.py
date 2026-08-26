@@ -88,7 +88,7 @@ def main() -> None:
         max_tokens = config["generation"]["max_new_tokens"]
 
         # Dispatches to the Dynamic loader or the ULT/PLT static-benchmark
-        # loader based on config["benchmark"] — same dispatch test_gen_runner.py
+        # loader based on config["benchmark"], same dispatch test_gen_runner.py
         # uses for live eval, so batch-prepared requests and live-eval requests
         # are guaranteed to load identical problems for a given config.
         problems = _load_problems(config)
@@ -157,7 +157,7 @@ def main() -> None:
         return
 
     # OpenAI rejects a batch mixing models at validation time ("Each batch
-    # must contain requests for a single model") -- writing a multi-model
+    # must contain requests for a single model"). Writing a multi-model
     # file is fine for --no-submit hand-off prep (harmless, common in this
     # project's history), but submitting one for real always fails. Confirmed
     # 2026-08-06: all three of that day's prepared multi-model batches were

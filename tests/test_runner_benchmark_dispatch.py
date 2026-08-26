@@ -1,6 +1,6 @@
 """_load_problems() dispatch: Dynamic loader vs ULT/PLT static-benchmark
 loader, selected by config["benchmark"]. Regression guard for the bug this
-was fixing — run_test_gen_experiment used to call test_gen.load()
+was fixing. run_test_gen_experiment used to call test_gen.load()
 unconditionally, so benchmark="ult"/"plt" configs silently ran the Dynamic
 benchmark instead of ULT/PLT.
 """

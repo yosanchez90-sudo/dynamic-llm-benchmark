@@ -1,5 +1,5 @@
 """Phase-1c Step 2 (adapted): the real decisive 2x2 factorial, given the
-Step-0 correction that no_repeat_ngram_size — not repetition_penalty — is
+Step-0 correction that no_repeat_ngram_size, not repetition_penalty, is
 the evidenced driver of Mechanism 1. Tests both axes explicitly under
 SAMPLING (temperature=0.2, matching every real eval), >=50 problems, on
 qwen7B bp_gpt5 epoch 30 (the primary suspect).

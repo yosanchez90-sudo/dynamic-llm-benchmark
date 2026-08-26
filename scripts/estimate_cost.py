@@ -3,7 +3,7 @@
 Reuses coverage_matrix.py's gap enumeration, then prices each gap cell:
   - API models (Claude Sonnet/Haiku, Gemini Pro/Flash, GPT-5, GPT-5-mini):
     USD cost via src/pricing.py, at Batch API rates where a batch pathway
-    exists (OpenAI only in this codebase today — see ASSUMPTIONS below).
+    exists (OpenAI only in this codebase today, see ASSUMPTIONS below).
   - Local Qwen (1.5B/7B/32B): GPU-hours, from measured per-tier generation
     latency, scaled to tiers with no local data yet.
 
@@ -13,30 +13,30 @@ ASSUMPTIONS (read before trusting the numbers):
    logged `runtime_info.input_tokens` (L1=150, L2=165, L3=190, L4=232 as of
    the data on disk when this was last run). This is a fair cross-provider
    proxy because src/data/test_gen.py builds one identical message list per
-   problem, reused for every model/provider — the prompt tokenizes to a
+   problem, reused for every model/provider. The prompt tokenizes to a
    similar count everywhere modulo tokenizer differences (~10-15%).
 
 2. Output tokens/problem for GPT-5 and GPT-5-mini use each model's OWN real
    logged `runtime_info.output_tokens` average per tier. These are reasoning
-   models — logged output_tokens includes hidden reasoning tokens (a sampled
+   models. Logged output_tokens includes hidden reasoning tokens (a sampled
    row showed 3300 output_tokens billed against a ~700-token visible test
    file), so this is the correct number for THEIR cost, but must not be
    reused as a proxy for non-reasoning models.
 
 3. Per-(model, tier) cost is priced from that model's own real logged
    `cost_usd`, averaged, whenever ANY real usage exists for that (model,
-   tier) pair — preferred over every proxy below, learned the hard way: the
+   tier) pair, preferred over every proxy below, learned the hard way: the
    first Anthropic release used the pooled-proxy estimate (assumption 3 as
    it read before this was fixed) and it underestimated real cost by
    2.5-3x, because Claude writes far more verbose test suites than GPT-5's
    reasoning-inflated / Qwen's terse output suggested. Once a model has run
-   anywhere, its own numbers win — this is why re-running this script after
+   anywhere, its own numbers win. This is why re-running this script after
    each tranche matters, not just before the first one.
 
    For (model, tier) pairs with zero real data (typically L4, and any
    model that hasn't been piloted yet), output tokens/problem fall back to
    the VISIBLE response text length (chars / 4) pooled across every
-   existing non-reasoning-visible generation on disk — i.e. "how many
+   existing non-reasoning-visible generation on disk, i.e. "how many
    characters of pytest code did a model actually write for a problem at
    this tier", independent of any one model's reasoning-token overhead.
    This is a real assumption for those still-missing cells, not measured
@@ -44,12 +44,12 @@ ASSUMPTIONS (read before trusting the numbers):
    tiers are (real) vs (proxy) so this is never silently hidden.
 
 4. Batch discount: OpenAI's Batch API bills at 50% of the real-time rates in
-   src/pricing.py's PRICING table (see that file's docstring) — applied here
+   src/pricing.py's PRICING table (see that file's docstring), applied here
    for gpt-5*/gpt-5-mini*. Anthropic and Gemini also offer batch APIs with
    similar discounts, but src/models/anthropic_model.py and
    src/models/gemini_model.py only implement real-time calls in this
    codebase (no batch submission path exists for them, unlike
-   scripts/create_batch.py for OpenAI) — so Claude/Gemini costs below are
+   scripts/create_batch.py for OpenAI). So Claude/Gemini costs below are
    real-time rates. Building batch support for them would roughly halve
    their cost but is out of scope unless separately approved.
 
@@ -84,7 +84,7 @@ from src.pricing import PRICING  # noqa: E402
 
 CHARS_PER_TOKEN = 4.0
 OPENAI_BATCH_DISCOUNT = 0.5
-SCORING_OVERHEAD_MULTIPLIER = 1.6  # wall-clock, not GPU-compute — see ASSUMPTIONS 5
+SCORING_OVERHEAD_MULTIPLIER = 1.6  # wall-clock, not GPU-compute, see ASSUMPTIONS 5
 
 RESULTS_DIR = ROOT / "data" / "results" / "dynamic"
 
@@ -142,7 +142,7 @@ def _pooled_visible_output_tokens(rows) -> dict[str, float]:
 
 
 def _real_cost_per_problem(rows) -> dict[tuple[str, str], float]:
-    """Directly average logged cost_usd per (model_label, tier) — the
+    """Directly average logged cost_usd per (model_label, tier), the
     source of truth once a model has any real usage at all, preferred over
     every token-based proxy below. Learned the hard way: the Anthropic
     release showed the cross-model output-token proxy underestimated real
@@ -182,7 +182,7 @@ def main() -> None:
     real_cost = _real_cost_per_problem(rows)
 
     # Tier-to-tier growth ratio (relative to L1), from the pooled visible-text
-    # proxy — used to project Qwen L3/L4 latency where no local data exists yet.
+    # proxy, used to project Qwen L3/L4 latency where no local data exists yet.
     l1_pooled = pooled_out.get("L1", 1.0)
     tier_ratio = {t: pooled_out.get(t, l1_pooled) / l1_pooled for t in TIERS}
 

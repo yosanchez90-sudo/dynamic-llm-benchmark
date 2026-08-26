@@ -3,8 +3,8 @@ per-condition epoch_perf_<name>.csv files, after verifying every expected
 (epoch, instantiation, draw) triple is present exactly once across that
 condition's shards.
 
-Append-only: never overwrites an existing epoch_perf_<name>.csv row-for-row
--- it reads what's already there (if anything), skips triples already
+Append-only: never overwrites an existing epoch_perf_<name>.csv row-for-row.
+It reads what's already there (if anything), skips triples already
 present, and appends the rest. Refuses to merge a condition whose shards are
 incomplete (missing or duplicate triples) so a partial run can never silently
 produce a partial-looking-complete curve.

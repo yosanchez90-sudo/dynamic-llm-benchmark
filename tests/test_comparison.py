@@ -1,5 +1,5 @@
 """Unit tests for src/Analysis/comparison.py using synthetic frames with
-known ground-truth values — no dependency on real ULT/PLT/Dynamic results.
+known ground-truth values, no dependency on real ULT/PLT/Dynamic results.
 """
 from __future__ import annotations
 

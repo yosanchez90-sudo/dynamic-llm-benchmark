@@ -1,24 +1,24 @@
-"""Comparison C — the canonical 2x3 DiD analysis, per
+"""Comparison C, the canonical 2x3 DiD analysis, per
 analysis/COMPARISON_C_ANALYSIS_PLAN.md (pre-registered before this script's
 first run). Assembles PRE (base Qwen-1.5B) and POST (ULT-trained LoRA
 adapter, 30 epochs) problem-level rows for:
 
-  seen_ult      -- 112 core_400 ULT problems with a verified training pair
-  unseen_ult    -- 288 core_400 ULT problems without one
-  plt           -- 400 core_400 PLT problems (excl. ULT overlap)
-  dynamic_l4    -- Dynamic tier=L4, inst1-3 (CC-matched control; PRE has
-                   baseline_pass_rate=0.000 -- floor-limited, see
+  seen_ult,      112 core_400 ULT problems with a verified training pair
+  unseen_ult,    288 core_400 ULT problems without one
+  plt,           400 core_400 PLT problems (excl. ULT overlap)
+  dynamic_l4,    Dynamic tier=L4, inst1-3 (CC-matched control; PRE has
+                   baseline_pass_rate=0.000, floor-limited, see
                    ANALYSIS_PLAN.md's tier amendment)
-  dynamic_l1l3  -- Dynamic tiers L1-L3 pooled, inst1-3 (headroom control)
+  dynamic_l1l3,  Dynamic tiers L1-L3 pooled, inst1-3 (headroom control)
 
 Primary metric: baseline_pass_rate (the plan's recommended primary, since
 Mut@K is undefined for nearly all seen-ULT PRE rows). Mut@K reported
 alongside with explicit n where defined.
 
 Outputs:
-  analysis/comparison_c_did.csv        -- DiD vs both control arms (L4, L1-L3)
-  analysis/comparison_c_gradient.csv   -- 4-level (+ L1-L3 arm) raw gain table
-  analysis/COMPARISON_C_PROVENANCE.md  -- full writeup with interpretation
+  analysis/comparison_c_did.csv,        DiD vs both control arms (L4, L1-L3)
+  analysis/comparison_c_gradient.csv,   4-level (+ L1-L3 arm) raw gain table
+  analysis/COMPARISON_C_PROVENANCE.md,  full writeup with interpretation
 
 Usage: python scripts/analyze_comparison_c.py
 """

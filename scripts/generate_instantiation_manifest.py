@@ -3,20 +3,20 @@
 For a given instantiation (id + seed), runs the deterministic template engine
 over all 60 templates (15/tier x 4 tiers) x 5 instance seeds = 300 instances,
 recomputing:
-  - V1/V2 (CC-in-band + AST-depth check) — already done inside engine.instantiate().
+  - V1/V2 (CC-in-band + AST-depth check), already done inside engine.instantiate().
   - An oracle smoke test using the template's static smoke_test_inputs (the
     same check template_corpus/templates/_smoke/validate.py performs at
-    template-authoring time). This is deliberately NOT run against each
+    template-authoring time). This is NOT run against each
     instance's sampled `params`: for IdentifierBank-typed parameters (e.g.
     `x`, `y`, `fn_name`) the sampled value is a variable *name* used for
-    codegen substitution into body_skeleton, not a numeric test value — the
+    codegen substitution into body_skeleton, not a numeric test value. The
     oracle lambda's same-named arguments expect actual numbers. The oracle
     is a template-level artefact tested once against its fixed
     smoke_test_inputs; that result is recorded against every instance row
     generated from that template in this instantiation, for traceability.
 
 Writes one row per instance to template_corpus/manifests/inst<N>_manifest.csv
-(not under data/ or analysis/*.csv — both are gitignored; this file is meant
+(not under data/ or analysis/*.csv. Both are gitignored; this file is meant
 to be committed as the record of what got generated).
 
 Usage:
@@ -67,7 +67,7 @@ def generate_manifest(instantiation_id: str, instantiation_seed: int) -> list[di
         for tmpl_path in sorted(tier_dir.glob(f"{tier}-*.py")):
             template = load_template(tmpl_path)
             # Oracle smoke test is a template-level property (fixed numeric
-            # inputs) — computed once per template, not re-derived per seed.
+            # inputs), computed once per template, not re-derived per seed.
             oracle_status, oracle_detail = _oracle_smoke_test(
                 template.oracle, template.smoke_test_inputs)
             for base_seed in INSTANCE_BASE_SEEDS:

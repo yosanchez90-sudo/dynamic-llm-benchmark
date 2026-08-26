@@ -44,18 +44,18 @@ from src.logging_utils import append_jsonl  # noqa: E402
 from src.pricing import compute_cost  # noqa: E402
 
 # Every row this script scores comes from the OpenAI Batch API by
-# construction (that's the whole point of this script) -- OpenAI bills
+# construction (that's the whole point of this script). OpenAI bills
 # Batch API usage at exactly 50% of the standard rate in src/pricing.py's
 # PRICING table (confirmed directly against OpenAI's pricing page/model
 # pages, analysis/OPENAI_COST_AND_BILLING.md). compute_cost() has no
 # batch-awareness of its own (same function is also called for live/
 # real-time API models elsewhere), so this script must apply the discount
-# itself. Found 2026-08-07: it never did -- every cost_usd this script has
+# itself. Found 2026-08-07: it never did. Every cost_usd this script has
 # ever written (including every pre-existing GPT-5/-mini row from the
 # original inst1 batches) is exactly 2x the real billed amount. Not
 # corrected retroactively in already-written rows, same policy as the
 # gpt-5.4 pricing-table bug found earlier this pass (cost_usd is a
-# logged-at-the-time field) -- see CLAUDE.md / OPENAI_COST_AND_BILLING.md
+# logged-at-the-time field), see CLAUDE.md / OPENAI_COST_AND_BILLING.md
 # for the disclosure.
 _BATCH_DISCOUNT = 0.5
 
@@ -96,17 +96,17 @@ def download_results(client: OpenAI, output_file_id: str, dest: Path) -> Path:
 def build_problem_map(state: dict) -> dict[str, object]:
     """Return {custom_id: TestGenProblem} by re-running the template engine
     (Dynamic) or the ULT/PLT static-benchmark loader, dispatched per
-    req["benchmark"] -- mirrors test_gen_runner.py::_load_problems()'s own
+    req["benchmark"], mirrors test_gen_runner.py::_load_problems()'s own
     dispatch.
 
     Fixed 2026-08-06 (Phase B pre-scoring validation, caught before ever
     running against a real batch): this previously called test_gen.load()
     (the Dynamic loader) unconditionally, regardless of benchmark. For a
-    ULT/PLT batch this doesn't crash -- it just returns Dynamic-shaped
+    ULT/PLT batch this doesn't crash. It just returns Dynamic-shaped
     (template_id, instance_seed) keys that never match ULT/PLT's own
     ("ULT-<task_id>"/"PLT-<task_id>", int(task_id)) keys, so every single
     ULT/PLT row would silently print "problem not reconstructed" and get
-    skipped -- 1,600 real, already-paid-for API responses would never be
+    skipped. 1,600 real, already-paid-for API responses would never be
     scored or written anywhere, with no exception raised to flag it.
     """
     # Group requests by config so we call the loader once per config.
@@ -117,17 +117,17 @@ def build_problem_map(state: dict) -> dict[str, object]:
     problem_map: dict[str, object] = {}
     for config_name, reqs in by_config.items():
         # All requests in a group share the same load() parameters, except
-        # tier, which varies per-request — derive it from the group itself
-        # rather than assuming L1/L2 (batches can target L3/L4 too).
+        # tier, which varies per-request. Derive it from the group itself
+        # instead of assuming L1/L2 (batches can target L3/L4 too).
         r0 = reqs[0]
         if r0["benchmark"] in ("ult", "plt"):
             # task_id round-trips through instance_seed=int(task_id) in
-            # ult_plt.py's own load() -- reconstructing the string form
-            # from the batch's own recorded instance_seed rather than
+            # ult_plt.py's own load(), reconstructing the string form
+            # from the batch's own recorded instance_seed, not
             # re-deriving which subsample_tag was used (not stored in
             # request_meta). ult_plt.load() raises loudly if any requested
             # task_id isn't found in the current candidate pool ("data
-            # drift?") rather than silently dropping it, so a formatting
+            # drift?") instead of silently dropping it, so a formatting
             # mismatch here surfaces as an exception, not silent data loss.
             task_ids = {str(r["instance_seed"]) for r in reqs}
             problems = ult_plt.load(
@@ -184,7 +184,7 @@ def process_results(
         # A row can fail in three shapes: top-level "error" set, an empty
         # response body (transient 5xx with no body), or a populated body
         # that itself holds an OpenAI error object instead of "choices"
-        # (e.g. 400 invalid_prompt, 500 server_error) — all three must be
+        # (e.g. 400 invalid_prompt, 500 server_error). All three must be
         # caught here or the "choices"[0] lookup below raises KeyError and
         # aborts the whole batch mid-run.
         resp_body  = result.get("response", {}).get("body", {})

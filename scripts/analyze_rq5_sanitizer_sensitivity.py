@@ -1,13 +1,13 @@
-"""RQ5 sanitizer sensitivity analysis (post-hoc, zero-compute) --
+"""RQ5 sanitizer sensitivity analysis (post-hoc, zero-compute).
 src/eval/test_gen_scorer.py::sanitize_test_file applies two repairs before
 scoring a response (stripping a reimplementation of the function-under-test,
-prepending a missing import) when small models sometimes reimplement rather
-than import. Both repairs are recorded in the row's `notes` field. This
-script checks whether those repairs are evenly distributed across models
-(a between-model comparison should not be more favorable to models that
-happen to need more sanitizer intervention) by recomputing exec_rate,
+prepending a missing import) when small models sometimes reimplement
+instead of importing. Both repairs are recorded in the row's `notes` field.
+This script checks whether those repairs are evenly distributed across
+models (a between-model comparison should not be more favorable to models
+that happen to need more sanitizer intervention) by recomputing exec_rate,
 baseline_pass_rate, and the coverage-adjusted RQ5 correlations with every
-repaired row EXCLUDED (dropped from the denominator, not re-scored -- this
+repaired row EXCLUDED (dropped from the denominator, not re-scored. This
 project doesn't re-run mutation testing on the unrepaired original, since
 that would be new compute, not a zero-compute sensitivity check), and by
 correlating each model's repair fraction against its baseline capability.

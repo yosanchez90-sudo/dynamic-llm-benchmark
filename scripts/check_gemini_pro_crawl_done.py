@@ -1,5 +1,5 @@
 """Exit 0 if Gemini 3.1 Pro Preview's Dynamic-benchmark coverage (inst1-4,
-L1-L4, the scoped target -- inst5 was cut, PROJECT_BRIEF.md Sec 11) is
+L1-L4, the scoped target, inst5 was cut, PROJECT_BRIEF.md Sec 11) is
 complete; exit 1 (and print what's still missing) otherwise.
 
 Used by scripts/slurm/run_gemini_daily_crawl.slurm to decide whether to

@@ -21,11 +21,11 @@ def generate_mutants(source: str, scope_fn_name: str | None = None) -> list[Muta
     """Run all 7 SAC operators and return harness-typed Mutant objects.
 
     scope_fn_name: restrict mutation candidates to one named top-level
-    function — needed for sources with helper classes/functions alongside
+    function, needed for sources with helper classes/functions alongside
     the function under test (e.g. ULT/PLT), harmless no-op for Dynamic.
 
     Raises SyntaxError if source doesn't parse (caller's responsibility to
-    guard against this — engine.instantiate() always produces valid Python).
+    guard against this. engine.instantiate() always produces valid Python).
     """
     return [
         Mutant(operator=m.operator, source=m.source)

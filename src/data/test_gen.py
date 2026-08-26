@@ -4,11 +4,11 @@ Turns the template corpus into TestGenProblem objects by:
   1. Loading each template (handles hyphenated filenames via importlib).
   2. Calling the engine's instantiate(template, seed) for each instance seed.
   3. Precomputing the mutant set ONCE per instance (same mutants reused
-     across all models — faster and fairer comparison).
+     across all models, faster and fairer comparison).
   4. Building the zero-shot or one-shot prompt the model receives.
 
 Import paths for engine and spec use sys.path manipulation because
-template_corpus/ is outside src/ — the engine is not a package. This is
+template_corpus/ is outside src/. The engine is not a package. This is
 intentional: the engine is a standalone research artefact with its own tests.
 """
 from __future__ import annotations
@@ -67,11 +67,11 @@ def _build_messages(
 
     supports_system_role=False (config: `supports_system_role: false`) folds
     SYSTEM_INSTRUCTION into the first turn instead of sending a separate
-    role="system" message -- for models whose chat_template rejects a system
+    role="system" message, for models whose chat_template rejects a system
     role outright (found 2026-07-28: StarCoder2-15B-Instruct-v0.1's template
     unconditionally raise_exception()s on role="system"). This is a
     prompt-DELIVERY change only; the instruction text itself is identical
-    either way. Generic on purpose -- no model identity check anywhere here,
+    either way. Generic on purpose, no model identity check anywhere here,
     the config is what's model-specific, not this function.
     """
     user = f"Function under test:\n\n```python\n{source}\n```\n\nWrite the pytest test file."
@@ -116,7 +116,7 @@ def load(
     instantiations produce genuinely different instances (stability analysis).
 
     `only_instances`, if given, is a set of (template_id, seed) pairs (seed =
-    the full combined seed, e.g. 1101) — restricts output to exactly those
+    the full combined seed, e.g. 1101), restricts output to exactly those
     instances, skipping everything else in `tiers`/`instance_seeds`. Built
     for retrying a handful of specific excluded requests (see
     analysis/EXCLUSIONS.md) through the same create_batch.py path used for

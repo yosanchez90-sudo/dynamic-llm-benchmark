@@ -2,14 +2,14 @@
 
 Gemini's free-tier quota for this model is 250 requests/day; this script
 sends at most `--budget` (default 240, a buffer under that) across a
-priority-ordered list of configs, then stops -- cleanly on hitting the
+priority-ordered list of configs, then stops, cleanly on hitting the
 daily budget, or cleanly on the first 429 (whichever comes first), never
 crashing with a raw traceback for either expected-and-normal condition.
 Meant to be invoked once per day by scripts/slurm/run_gemini_daily_crawl.slurm,
 which resubmits itself 24h later until coverage is complete.
 
 Scope: instantiations 1-4 only (inst5 was cut from this model's target
-scope 2026-07-15, PROJECT_BRIEF.md Sec 11 -- see e.g. the "N=4 scope"
+scope 2026-07-15, PROJECT_BRIEF.md Sec 11, see e.g. the "N=4 scope"
 comment already on every gemini_3_1_pro_preview__dynamic_*.yaml config).
 
 Priority: L3L4 configs (tier_priority=["L4"]) before L1L2 configs, since
@@ -65,7 +65,7 @@ def _run_config_with_retries(config: dict, cfg_path: str, run_fn, sleep_fn=time.
     non-429 APIError before giving up on just this config.
 
     A persistent 5xx (e.g. "high demand") on one specific problem can
-    exhaust GeminiModel's own 5-retry/62s backoff and raise -- found
+    exhaust GeminiModel's own 5-retry/62s backoff and raise, found
     2026-08-09/10 (job 9587710, 9590545) both crashing on
     L4-matrix-001/L4-mega-001 after burning only ~5% of the day's budget,
     wasting the rest since the old code treated ANY non-429 APIError as
@@ -75,9 +75,9 @@ def _run_config_with_retries(config: dict, cfg_path: str, run_fn, sleep_fn=time.
     matcher make this safe) got 3 more rows past the exact point day 2
     died before hitting the same class of error again. So: retry the
     whole config call a few times with a real pause (long enough to
-    matter -- GeminiModel's own backoff already proved insufficient)
+    matter, GeminiModel's own backoff already proved insufficient)
     before giving up on just THIS config and moving to the next one,
-    rather than crashing the whole script and abandoning every remaining
+    instead of crashing the whole script and abandoning every remaining
     config for the day.
 
     Returns (result_path, quota_exhausted_for_today). result_path is None
@@ -109,7 +109,7 @@ def _run_config_with_retries(config: dict, cfg_path: str, run_fn, sleep_fn=time.
 
 def _resume_file_row_count(config: dict) -> int:
     """Row count of whatever file test_gen_runner._find_resume_file would
-    pick up for this exact config, right now -- mirrors that function's own
+    pick up for this exact config, right now, mirrors that function's own
     pattern construction so this stays a targeted glob (one model's one
     config), not a scan of every result file in the directory."""
     from src.eval.test_gen_problem import compute_model_label
@@ -165,7 +165,7 @@ def main() -> None:
 
         # Snapshot row count of whatever resume file would match, so we can
         # tell exactly how many NEW rows this call added even if it fails
-        # partway through -- append_jsonl already guarantees partial
+        # partway through. append_jsonl already guarantees partial
         # progress is on disk, this just measures it precisely. Taken
         # before the (possibly retried) run, matching what a single
         # successful attempt would have seen.
@@ -177,7 +177,7 @@ def main() -> None:
         if quota_exhausted_for_today:
             break
         if result_path is None:
-            continue  # config retries exhausted on a non-429 error -- move to the next config
+            continue  # config retries exhausted on a non-429 error, move to the next config
 
         after_count = _count_rows(result_path)
         added = after_count - before_count
