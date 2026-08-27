@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 import pandas as pd
+import yaml
 from scipy.stats import kendalltau
 
 ANALYSIS = ROOT / "analysis"
@@ -119,6 +120,7 @@ def main() -> None:
     pp("HTwoLFourGain", dyn_l4["gain"])
     pp("HTwoPltGain", plt_row["gain"])
     pp("HTwoUnseenGain", unseen["gain"])
+    pp("HTwoUnseenNetOfControl", unseen["gain"] - dyn_l1l3["gain"])
     raw("HTwoSeenN", f"{int(seen['n_pre'])}")
 
     # Endpoint table (population, n, pre, post, gain, CI), five
@@ -139,6 +141,8 @@ def main() -> None:
     plt_did = did_row("dynamic_l1l3", "plt")
     pp("HTwoPltDid", plt_did["did"])
     raw("HTwoPltDidCI", f"[{plt_did['did_ci_lo']*100:.1f}, {plt_did['did_ci_hi']*100:.1f}]")
+    seen_did = did_row("dynamic_l1l3", "seen_ult")
+    pp("HTwoSeenDid", seen_did["did"])
 
     seen_pre_mutk = mutk[(mutk["benchmark"] == "seen_ult") & (mutk["side"] == "pre")].iloc[0]
     seen_post_mutk = mutk[(mutk["benchmark"] == "seen_ult") & (mutk["side"] == "post")].iloc[0]
@@ -153,6 +157,31 @@ def main() -> None:
     # SigLevel above: it sits mid-paragraph, where a same-line `% cite:`
     # comment would swallow the rest of that physical line.
     num("MutkCeiling", 1.0, ".1f")
+
+    # Coverage-adjusted gain + DiD (RUBRIC_ACTION_PLAN.md PA-6): a metric
+    # defined pre-treatment (unlike raw Mut@K, undefined for all but one
+    # seen-ULT PRE row), reported alongside baseline_pass_rate rather than
+    # replacing it.
+    cov_adj_gradient = pd.read_csv(ANALYSIS / "comparison_c_coverage_adjusted_gradient.csv")
+    cov_adj_did = pd.read_csv(ANALYSIS / "comparison_c_coverage_adjusted_did.csv")
+
+    def cov_adj_gain_row(benchmark: str) -> pd.Series:
+        return cov_adj_gradient[cov_adj_gradient["benchmark"] == benchmark].iloc[0]
+
+    def cov_adj_did_row(benchmark: str) -> pd.Series:
+        return cov_adj_did[cov_adj_did["benchmark"] == benchmark].iloc[0]
+
+    seen_cov = cov_adj_gain_row("seen_ult")
+    pp("HTwoCovAdjSeenGain", seen_cov["gain"])
+    seen_cov_did = cov_adj_did_row("seen_ult")
+    pp("HTwoCovAdjSeenDid", seen_cov_did["did"])
+    raw("HTwoCovAdjSeenDidCI", f"[{seen_cov_did['did_ci_lo']*100:.1f}, {seen_cov_did['did_ci_hi']*100:.1f}]")
+    unseen_cov_did = cov_adj_did_row("unseen_ult")
+    pp("HTwoCovAdjUnseenDid", unseen_cov_did["did"])
+    raw("HTwoCovAdjUnseenDidCI", f"[{unseen_cov_did['did_ci_lo']*100:.1f}, {unseen_cov_did['did_ci_hi']*100:.1f}]")
+    plt_cov_did = cov_adj_did_row("plt")
+    pp("HTwoCovAdjPltDid", plt_cov_did["did"])
+    raw("HTwoCovAdjPltDidCI", f"[{plt_cov_did['did_ci_lo']*100:.1f}, {plt_cov_did['did_ci_hi']*100:.1f}]")
 
     # ---------------------------------------------- Equivalent-mutant validation
     # analysis/equiv_mutants/inspection_sheet.xlsx is currently fully unfilled
@@ -310,6 +339,62 @@ def main() -> None:
     # -------------------------------------------------------------------- Project-wide constants
     test_count = pd.read_csv(ANALYSIS / "test_suite_count.csv").iloc[0]
     raw("TestSuiteCollected", f"{int(test_count['collected'])}")
+
+    # ------------------------------------------------- H2 LoRA hyperparameters
+    # Read live from the actual training config, not hand-typed, so a future
+    # change to the config (e.g. a re-tuned learning rate) can't silently
+    # diverge from what the paper reports (RUBRIC_ACTION_PLAN.md PA-4).
+    ft_cfg = yaml.safe_load((ROOT / "configs" / "finetune_qwen1_5b_ult_30ep.yaml").read_text())
+    raw("FtLoraR", f"{ft_cfg['lora']['r']}")
+    raw("FtLoraAlpha", f"{ft_cfg['lora']['alpha']}")
+    num("FtLoraDropout", ft_cfg['lora']['dropout'], "g")
+    raw("FtLoraTargetModuleCount", f"{len(ft_cfg['lora']['target_modules'])}")
+    lr = ft_cfg['training']['learning_rate']
+    lr_mantissa, lr_exp = f"{lr:.0e}".split("e")
+    raw("FtLearningRate", f"{int(lr_mantissa)}\\times10^{{{int(lr_exp)}}}")
+    num("FtWarmupRatio", ft_cfg['training']['warmup_ratio'], "g")
+    raw("FtEpochs", f"{ft_cfg['training']['num_train_epochs']}")
+    raw("FtPerDeviceBatch", f"{ft_cfg['training']['per_device_train_batch_size']}")
+    raw("FtGradAccum", f"{ft_cfg['training']['gradient_accumulation_steps']}")
+    raw("FtEffectiveBatch", f"{ft_cfg['training']['per_device_train_batch_size'] * ft_cfg['training']['gradient_accumulation_steps']}")
+    raw("FtMaxLength", f"{ft_cfg['training']['max_length']}")
+    raw("FtSeed", f"{ft_cfg['training']['seed']}")
+    train_file = ROOT / ft_cfg['data']['train_file']
+    n_train = sum(1 for line in train_file.read_text().splitlines() if line.strip())
+    raw("FtTrainPairs", f"{n_train}")
+
+    # ------------------------------------------------- Decoding hyperparameters
+    # temperature/top_p are the one requested pair across every eval config
+    # (grepped across all of configs/*.yaml: no other value ever appears);
+    # GPT-5/GPT-5-mini are the one documented exception (scripts/create_batch.py
+    # _FIXED_TEMP_MODELS: these two reject a custom value and run at the
+    # provider's own fixed default instead).
+    decode_cfg = yaml.safe_load(
+        (ROOT / "configs" / "claude_sonnet_4_6__dynamic_L1L2__inst1.yaml").read_text()
+    )["generation"]
+    num("DecodeTemperature", decode_cfg["temperature"], "g")
+    num("DecodeTopP", decode_cfg["top_p"], ".1f")
+    raw("DecodeK", "1")
+
+    # ------------------------------------------------- Environment / tool versions
+    # Read from the actual running interpreter and installed packages (the
+    # same environment that runs this very script), not hand-typed: found
+    # while writing this block that the project actually pins Python 3.10
+    # (pyproject.toml's requires-python, confirmed by the running
+    # interpreter), not 3.11 as CLAUDE.md and the supporting report both
+    # currently (incorrectly) state, and that `statsmodels` is not an
+    # installed dependency at all (Holm-Bonferroni is a hand-written
+    # function over numpy, src/Analysis/multiple_comparisons.py).
+    import platform
+    from importlib import metadata as _metadata
+    raw("PyVersion", platform.python_version().rsplit(".", 1)[0])
+    for pkg, macro in [
+        ("transformers", "TransformersVersion"), ("peft", "PeftVersion"),
+        ("torch", "TorchVersion"), ("pytest", "PytestVersion"),
+        ("coverage", "CoverageVersion"), ("pandas", "PandasVersion"),
+        ("scipy", "ScipyVersion"),
+    ]:
+        raw(macro, _metadata.version(pkg).split("+")[0])
 
     OUT_PATH.write_text(
         "% Auto-generated by scripts/build_paper_values.py -- DO NOT EDIT DIRECTLY.\n"

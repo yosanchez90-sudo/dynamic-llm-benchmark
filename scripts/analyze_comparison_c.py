@@ -79,6 +79,42 @@ def _load_dynamic(model_label: str) -> pd.DataFrame:
     return df
 
 
+def _coverage_adjusted_gain(pre: pd.DataFrame, post: pd.DataFrame, label: str,
+                             n_boot: int = 2000, seed: int = 0) -> dict | None:
+    """Coverage-adjusted gain (RUBRIC_ACTION_PLAN.md PA-6): conditional
+    Mut@K x baseline_pass_rate, the same aggregate-level definition used
+    project-wide (scripts/build_ranking_matrix.py::_cell), bootstrapped at
+    the per-row level (resample rows, recompute both component means on
+    the resample, then take their product) so the CI reflects the actual
+    joint sampling variability of the two components, not just one."""
+    pre_rows = pre[pre["benchmark"] == label]
+    post_rows = post[post["benchmark"] == label]
+    if pre_rows.empty or post_rows.empty:
+        return None
+
+    def cov_adj(df: pd.DataFrame) -> float:
+        bp = df["baseline_pass"].mean()
+        defined = df.dropna(subset=["mutation_score"])
+        cond = defined["mutation_score"].mean() if len(defined) else 0.0
+        return float(cond * bp)
+
+    pre_val = cov_adj(pre_rows)
+    post_val = cov_adj(post_rows)
+    rng = np.random.default_rng(seed)
+    pre_arr, post_arr = pre_rows.reset_index(drop=True), post_rows.reset_index(drop=True)
+    boots = np.empty(n_boot)
+    for i in range(n_boot):
+        s1 = cov_adj(pre_arr.iloc[rng.integers(0, len(pre_arr), len(pre_arr))])
+        s2 = cov_adj(post_arr.iloc[rng.integers(0, len(post_arr), len(post_arr))])
+        boots[i] = s2 - s1
+    lo, hi = np.percentile(boots, [2.5, 97.5])
+    return {
+        "benchmark": label, "n_pre": len(pre_rows), "n_post": len(post_rows),
+        "pre_mean": pre_val, "post_mean": post_val, "gain": post_val - pre_val,
+        "gain_ci_lo": float(lo), "gain_ci_hi": float(hi),
+    }
+
+
 def _mut_summary(df: pd.DataFrame, label: str) -> dict:
     scored = df.dropna(subset=["mutation_score"])
     return {
@@ -148,6 +184,51 @@ def main() -> None:
     gradient.to_csv(ROOT / "analysis" / "comparison_c_gradient.csv", index=False)
     print("\n=== Gradient table (raw gain, no control subtraction) ===")
     print(gradient.to_string(index=False))
+
+    # --- Coverage-adjusted gain + DiD (RUBRIC_ACTION_PLAN.md PA-6) ----------
+    cov_adj_rows = []
+    for label in ["seen_ult", "unseen_ult", "plt", "dynamic_l4", "dynamic_l1l3"]:
+        row = _coverage_adjusted_gain(pre, post, label)
+        if row is not None:
+            cov_adj_rows.append(row)
+    cov_adj_gradient = pd.DataFrame(cov_adj_rows)
+    cov_adj_gradient.to_csv(ROOT / "analysis" / "comparison_c_coverage_adjusted_gradient.csv", index=False)
+
+    control_gain = cov_adj_gradient.loc[cov_adj_gradient["benchmark"] == "dynamic_l1l3", "gain"].iloc[0]
+    control_pre = pre[pre["benchmark"] == "dynamic_l1l3"]
+    control_post = post[post["benchmark"] == "dynamic_l1l3"]
+    did_cov_adj_rows = []
+    for label in ["seen_ult", "unseen_ult", "plt"]:
+        treat_pre = pre[pre["benchmark"] == label]
+        treat_post = post[post["benchmark"] == label]
+
+        def cov_adj(df: pd.DataFrame) -> float:
+            bp = df["baseline_pass"].mean()
+            defined = df.dropna(subset=["mutation_score"])
+            cond = defined["mutation_score"].mean() if len(defined) else 0.0
+            return float(cond * bp)
+
+        rng = np.random.default_rng(1)
+        boots = np.empty(2000)
+        tp, tpo = treat_pre.reset_index(drop=True), treat_post.reset_index(drop=True)
+        cp, cpo = control_pre.reset_index(drop=True), control_post.reset_index(drop=True)
+        for i in range(2000):
+            t_delta = cov_adj(tpo.iloc[rng.integers(0, len(tpo), len(tpo))]) - \
+                      cov_adj(tp.iloc[rng.integers(0, len(tp), len(tp))])
+            c_delta = cov_adj(cpo.iloc[rng.integers(0, len(cpo), len(cpo))]) - \
+                      cov_adj(cp.iloc[rng.integers(0, len(cp), len(cp))])
+            boots[i] = t_delta - c_delta
+        lo, hi = np.percentile(boots, [2.5, 97.5])
+        row = cov_adj_gradient.loc[cov_adj_gradient["benchmark"] == label].iloc[0]
+        did_cov_adj_rows.append({
+            "benchmark": label, "did": row["gain"] - control_gain,
+            "did_ci_lo": float(lo), "did_ci_hi": float(hi), "control": "dynamic_l1l3",
+        })
+    did_cov_adj = pd.DataFrame(did_cov_adj_rows)
+    did_cov_adj.to_csv(ROOT / "analysis" / "comparison_c_coverage_adjusted_did.csv", index=False)
+    print("\n=== Coverage-adjusted gradient + DiD (vs Dynamic-L1-L3) ===")
+    print(cov_adj_gradient.to_string(index=False))
+    print(did_cov_adj.to_string(index=False))
 
     # --- Mut@K, secondary, n made explicit -----------------------------------
     mut_rows = []

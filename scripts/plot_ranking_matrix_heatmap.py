@@ -28,6 +28,7 @@ import numpy as np
 import pandas as pd
 
 from src.Analysis.provenance import stamp_block
+from _figure_style import COL_W, apply_style
 
 CORR_CSV = ROOT / "analysis" / "ranking_matrix_correlations.csv"
 OUT_PATH = ROOT / "analysis" / "figures" / "ranking_matrix_heatmap.pdf"
@@ -45,10 +46,10 @@ PAIRS = ["Dynamic<->ULT", "Dynamic<->BigCodeBench", "ULT<->BigCodeBench"]
 # its axis label; this one didn't, and a reader who only ever sees this
 # figure standalone (e.g. pasted into a chapter with its own caption) had no
 # way to know from the artifact alone.
-PAIR_LABELS = ["DyMuT (pooled)\n↔ ULT", "DyMuT (pooled)\n↔ BigCodeBench", "ULT\n↔ BigCodeBench"]
+PAIR_LABELS = ["DyMuT\n↔ ULT", "DyMuT\n↔ BCB", "ULT\n↔ BCB"]
 
 
-def _heatmap_panel(ax, sub_df, scope_label, cmap, norm):
+def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id):
     grid = np.full((len(METRICS), len(PAIRS)), np.nan)
     annotations = np.empty((len(METRICS), len(PAIRS)), dtype=object)
     for i, metric in enumerate(METRICS):
@@ -77,10 +78,16 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm):
 
     im = ax.imshow(grid, cmap=cmap, norm=norm, aspect="auto")
     ax.set_xticks(range(len(PAIRS)))
-    ax.set_xticklabels(PAIR_LABELS, fontsize=12)
+    ax.set_xticklabels(PAIR_LABELS)
     ax.set_yticks(range(len(METRICS)))
-    ax.set_yticklabels([METRIC_LABELS[m] for m in METRICS], fontsize=12)
-    ax.set_title(scope_label, fontsize=14, pad=10)
+    ax.set_yticklabels([METRIC_LABELS[m] for m in METRICS])
+    # Panel identity is (a)/(b); the model count moves to the caption
+    # (FIGURE_TABLE_SPEC.md G-1: a plot title duplicates what the caption
+    # already needs to say). Placed just above the grid, inside the axes
+    # (not above it): a colorbar shared across both stacked panels leaves
+    # too little vertical gap between panels for an above-axes title.
+    ax.set_ylim(len(METRICS) - 0.5, -1.05)
+    ax.text(-0.5, -0.85, f"{panel_id} {scope_label}", fontsize=8, fontweight="bold", ha="left", va="top")
     for i in range(len(METRICS)):
         for j in range(len(PAIRS)):
             val = grid[i, j]
@@ -88,7 +95,7 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm):
             # text on dark/saturated cells (dataviz skill's label-contrast rule)
             text_color = "white" if (not np.isnan(val) and abs(val) > 0.55) else "#222222"
             ax.text(j, i, annotations[i, j], ha="center", va="center",
-                     fontsize=10.5, color=text_color, linespacing=1.5)
+                     fontsize=7, color=text_color, linespacing=1.5)
     ax.set_xticks(np.arange(-0.5, len(PAIRS), 1), minor=True)
     ax.set_yticks(np.arange(-0.5, len(METRICS), 1), minor=True)
     ax.grid(which="minor", color="white", linewidth=1.5)
@@ -97,6 +104,7 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm):
 
 
 def main() -> None:
+    apply_style()
     corr = pd.read_csv(CORR_CSV)
 
     import matplotlib
@@ -104,32 +112,31 @@ def main() -> None:
     import matplotlib.pyplot as plt
     from matplotlib.colors import TwoSlopeNorm
 
-    cmap = plt.get_cmap("RdBu_r")  # diverging: red=negative/no agreement, blue=strong agreement, white=0
+    # RdBu_r: diverging, legible in greyscale as light-to-dark on both arms
+    # away from the white midpoint (FIGURE_TABLE_SPEC.md G-5); significance
+    # is carried by the **/* text annotations, not colour alone.
+    cmap = plt.get_cmap("RdBu_r")
     norm = TwoSlopeNorm(vmin=-1.0, vcenter=0.0, vmax=1.0)
 
-    # Single column, stacked (see module docstring): figsize width close to
-    # the paper's actual printed column width so print shrink is minimal.
-    fig, axes = plt.subplots(2, 1, figsize=(6.4, 7.9))
+    # Single column, stacked (see module docstring), at the actual column
+    # width (FIGURE_TABLE_SPEC.md G-3). Manual layout, not constrained_layout:
+    # a colorbar shared across both axes collapses constrained_layout's
+    # sizing when combined with an axes-relative text label placed above the
+    # plot box (confirmed: axes shrank to zero, cell text overlapped).
+    fig, axes = plt.subplots(2, 1, figsize=(COL_W, 2 * COL_W * 1.15))
     scopes = [("canonical", "Canonical (9 models)"), ("canonical_plus_cross_family", "Canonical + cross-family (13 models)")]
     im = None
-    for ax, (scope_key, scope_label) in zip(axes, scopes):
+    for ax, (panel_id, (scope_key, scope_label)) in zip(axes, zip(["(a)", "(b)"], scopes)):
         sub = corr[corr["scope"] == scope_key]
-        im = _heatmap_panel(ax, sub, scope_label, cmap, norm)
+        im = _heatmap_panel(ax, sub, scope_label, cmap, norm, panel_id)
 
-    cbar = fig.colorbar(im, ax=axes, orientation="vertical", fraction=0.05, pad=0.10)
-    cbar.set_label("Kendall τ (rank agreement)", fontsize=12)
-    cbar.ax.tick_params(labelsize=11)
+    fig.subplots_adjust(top=0.92, bottom=0.06, hspace=0.7, right=0.86, left=0.30)
+    cbar = fig.colorbar(im, ax=axes, orientation="vertical", fraction=0.06, pad=0.12, shrink=0.82)
+    cbar.set_label("Kendall $\\tau$ (rank agreement)")
 
-    fig.suptitle(
-        "Ranking matrix: cross-benchmark rank agreement\n"
-        "** significant after Holm-Bonferroni (12-test family)\n"
-        "* significant raw p<0.05 only, not after correction",
-        fontsize=12, y=0.985,
-    )
-    fig.subplots_adjust(top=0.87, bottom=0.06, hspace=0.62, right=0.82, left=0.17)
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT_PATH, dpi=200, bbox_inches="tight")
-    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=200, bbox_inches="tight")
+    fig.savefig(OUT_PATH, dpi=400, bbox_inches="tight", pad_inches=0.02)
+    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=400, bbox_inches="tight", pad_inches=0.02)
 
     provenance = f"""# Ranking matrix heatmap — provenance
 

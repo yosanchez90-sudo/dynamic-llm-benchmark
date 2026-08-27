@@ -30,6 +30,7 @@ sys.path.insert(0, str(ROOT))
 import pandas as pd
 
 from src.Analysis.provenance import stamp_block
+from _figure_style import COL_W, apply_style
 
 RANKING_CSV = ROOT / "analysis" / "rq5_cross_family_model_ranking.csv"
 CORR_CSV = ROOT / "analysis" / "rq5_cross_family_correlations.csv"
@@ -49,30 +50,33 @@ def _style(model_short: str) -> tuple[str, str]:
     return "#7f7f7f", "o"
 
 
-def _panel(ax, df, col_a, col_b, corr_row, thin_col: str | None, metric_label: str):
+def _panel(ax, df, col_a, col_b, corr_row, thin_col: str | None, metric_label: str, panel_id: str):
     sub = df.dropna(subset=[col_a, col_b])
     for _, row in sub.iterrows():
         color, marker = _style(row["model_short"])
         is_thin = bool(row.get(thin_col, False)) if thin_col else False
         ax.scatter(row[col_a], row[col_b], color=color, marker=marker,
-                   s=110, zorder=3,
+                   s=45, zorder=3,
                    edgecolor=("#d62728" if is_thin else "white"),
-                   linewidth=(1.8 if is_thin else 0.6))
+                   linewidth=(1.6 if is_thin else 0.5))
         ax.annotate(row["model_short"], (row[col_a], row[col_b]),
-                    fontsize=10, xytext=(6, 5), textcoords="offset points")
-    ax.set_xlabel("DyMuT (pooled)", fontsize=12)
-    ax.set_ylabel("BigCodeBench Pass@1\n(Complete-split)", fontsize=12)
-    ax.tick_params(axis="both", labelsize=10.5)
-    ax.grid(True, linestyle="--", alpha=0.4)
+                    fontsize=7, xytext=(5, 4), textcoords="offset points")
+    ax.set_xlabel(f"DyMuT (pooled), {metric_label}")
+    ax.set_ylabel("BigCodeBench Pass@1\n(Complete-split)")
+    ax.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)
+    ax.margins(x=0.22, y=0.14)
+    ax.text(0.02, 0.96, panel_id, transform=ax.transAxes, fontsize=8, fontweight="bold", va="top")
     if corr_row is not None:
         n = int(corr_row["n"])
         tau = corr_row["kendall_tau"]
         p = corr_row["kendall_p_perm"]
-        title = f"{metric_label}\nn_models={n}  Kendall τ={tau:.3f}  p={p:.4f}"
-        ax.set_title(title, fontsize=12, pad=8)
+        ax.text(0.98, 0.04, f"$n$={n}  $\\tau$={tau:.3f}  $p$={p:.4f}",
+                transform=ax.transAxes, fontsize=7, ha="right", va="bottom",
+                color="#333333")
 
 
 def main() -> None:
+    apply_style()
     ranking = pd.read_csv(RANKING_CSV)
     corr = pd.read_csv(CORR_CSV) if CORR_CSV.exists() else pd.DataFrame()
 
@@ -82,43 +86,40 @@ def main() -> None:
 
     rows_spec = [
         ("raw Mut@K", "dynamic_mutk_pooled", "public_score",
-         "Dynamic(pooled) <-> public (Complete-split/Instruct) [raw Mut@K]", "dynamic_thin"),
+         "Dynamic(pooled) <-> public (Complete-split/Instruct) [raw Mut@K]", "dynamic_thin", "(a)"),
         ("coverage-adjusted", "dynamic_coverage_adj", "public_score",
-         "Dynamic(pooled) <-> public (Complete-split/Instruct) [coverage-adjusted]", "dynamic_thin"),
+         "Dynamic(pooled) <-> public (Complete-split/Instruct) [coverage-adjusted]", "dynamic_thin", "(b)"),
     ]
-    # Single column, stacked: figsize width is close to the paper's actual
-    # printed column width, so \includegraphics[width=\columnwidth] applies
-    # almost no further shrink and in-panel text (10-12pt here) stays well
-    # above the ~7pt print-legibility floor instead of the ~3x shrink a
-    # side-by-side multi-panel layout at this same content size would need.
-    fig, axes = plt.subplots(2, 1, figsize=(3.6, 6.3))
+    # Single column, stacked, at the actual column width (FIGURE_TABLE_SPEC.md
+    # G-3): \includegraphics[width=\columnwidth] applies almost no further
+    # shrink, so in-panel text stays close to its authored size.
+    fig, axes = plt.subplots(2, 1, figsize=(COL_W, 2 * COL_W * 0.62), constrained_layout=True)
 
-    for r, (metric_label, col_a, col_b, pair_name, thin_col) in enumerate(rows_spec):
-        ax = axes[r]
+    for ax, (metric_label, col_a, col_b, pair_name, thin_col, panel_id) in zip(axes, rows_spec):
         corr_row = None
         if len(corr):
             match = corr[(corr["pair"] == pair_name) & (corr["scope"] == "canonical+cross-family")]
             if len(match):
                 corr_row = match.iloc[0]
-        _panel(ax, ranking, col_a, col_b, corr_row, thin_col, metric_label)
+        _panel(ax, ranking, col_a, col_b, corr_row, thin_col, metric_label, panel_id)
 
     # red-ringed markers = thin cell (n_defined<20 on the Dynamic side) --
     # same visual convention as the ranking-matrix heatmap / noise-floor
-    # figures (analysis/FIGURE_AUDIT.md's visual-grammar section).
+    # figures (analysis/FIGURE_AUDIT.md's visual-grammar section). The
+    # argument this figure makes ("raw Mut@K's correlation collapses under
+    # added model diversity; coverage-adjusted survives") lives in the
+    # paper caption now, not as an in-figure suptitle (FIGURE_TABLE_SPEC.md
+    # G-1: a plot title duplicates the caption and wastes vertical space).
     from matplotlib.lines import Line2D
     thin_handle = Line2D([0], [0], marker='o', color='w', markerfacecolor='#7f7f7f',
-                         markeredgecolor='#d62728', markeredgewidth=1.8, markersize=10,
-                         label='thin cell (n_defined<20)')
-    fig.legend(handles=[thin_handle], loc="lower center", fontsize=10, ncol=1, bbox_to_anchor=(0.5, -0.06))
+                         markeredgecolor='#d62728', markeredgewidth=1.6, markersize=6,
+                         label='thin cell ($n_{\\mathrm{defined}}$<20)')
+    fig.legend(handles=[thin_handle], loc="lower center", ncol=1,
+               bbox_to_anchor=(0.5, -0.05), frameon=False)
 
-    fig.suptitle(
-        "Cross-family: raw Mut@K's BigCodeBench\ncorrelation collapses; coverage-adjusted survives",
-        fontsize=12.5, y=0.995,
-    )
-    fig.subplots_adjust(top=0.87, bottom=0.13, hspace=0.55)
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT_PATH, dpi=200, bbox_inches="tight")
-    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=200, bbox_inches="tight")
+    fig.savefig(OUT_PATH, dpi=400, bbox_inches="tight", pad_inches=0.02)
+    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=400, bbox_inches="tight", pad_inches=0.02)
 
     provenance = f"""# Collapse vs survival figure — provenance
 

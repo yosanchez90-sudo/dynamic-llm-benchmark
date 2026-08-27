@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src.Analysis.provenance import stamp_block  # noqa: E402
+from _figure_style import COL_W, apply_style  # noqa: E402
 
 ONSET_CSV = ROOT / "analysis" / "comparison_c_onset_curve.csv"
 MANIFEST = ROOT / "data" / "raw" / "ult_plt" / "comparison_c_onset_curve_manifest.json"
@@ -43,7 +44,11 @@ OUT_PATH = ROOT / "analysis" / "figures" / "comparison_c_onset_curve.pdf"
 SPLIT_STYLE = {
     "seen":         {"color": "#d62728", "linestyle": "-",  "marker": "o", "label": "seen-ULT (train)"},
     "unseen":       {"color": "#1f77b4", "linestyle": "--", "marker": "s", "label": "unseen-ULT (held-out)"},
-    "dynamic_l1l2": {"color": "#9467bd", "linestyle": ":",  "marker": "^", "label": "DyMuT L1/L2 (control)"},
+    # "epoch series" (not "control"), per RUBRIC_ACTION_PLAN.md C-9: this
+    # plotted L1/L2 series and the L1--L3 population Section 4.1's prose
+    # quotes at the pre/post endpoints are two different populations: the
+    # unambiguous name difference is the fix, not a caption footnote.
+    "dynamic_l1l2": {"color": "#9467bd", "linestyle": ":",  "marker": "^", "label": "DyMuT L1--L2 (epoch series)"},
 }
 
 
@@ -93,67 +98,64 @@ def main() -> None:
 
     epoch30 = _epoch30_anchor()
 
+    apply_style()
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(3.6, 6.3))
+    # Stacked, not side-by-side (kept from the prior print-legibility pass,
+    # see module docstring): each panel at the actual column width so
+    # \includegraphics[width=\columnwidth] applies almost no further shrink.
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(COL_W, 2 * COL_W * 0.62),
+                                    constrained_layout=True)
 
     for split, style in SPLIT_STYLE.items():
         epochs = sorted(bp_by_split_epoch[split].keys())
         vals = [sum(bp_by_split_epoch[split][e]) / len(bp_by_split_epoch[split][e]) * 100 for e in epochs]
         epochs_full = [0] + epochs + [30]
         vals_full = [0.0] + vals + [epoch30[split] * 100]
-        ax1.plot(epochs_full, vals_full, label=style["label"],
+        ax1.plot(epochs_full, vals_full, label=style["label"], markersize=4, linewidth=1.2,
                  color=style["color"], linestyle=style["linestyle"], marker=style["marker"])
 
     # Two-timescale annotation (see analysis/COMPARISON_C_INTERPRETATION.md's
     # "Onset curve -- two timescales, not one"): a fast, one-time
     # generic-improvement jump shared by all three arms at epoch 0->1, then a
-    # slower, seen-ULT-only memorization climb from epoch 5 onward. Marking
-    # both directly on the figure so a reader doesn't mistake this for one
-    # smooth trend.
+    # slower, seen-ULT-only memorization climb from epoch 5 onward. The full
+    # argument (including the epoch ranges) is in the caption; these two
+    # in-axes labels only need to mark *which region* they refer to.
     ax1.axvline(1, color="gray", linestyle="-", linewidth=0.8, alpha=0.6, zorder=0)
-    ax1.annotate("generic gain\n(all arms, epoch 0→1)", xy=(1, 27), xytext=(3.2, 60),
-                 fontsize=10.5, color="dimgray", ha="left",
+    ax1.annotate("generic gain", xy=(1, 27), xytext=(3.2, 58),
+                 fontsize=7, color="dimgray", ha="left",
                  arrowprops=dict(arrowstyle="->", color="dimgray", alpha=0.7))
     ax1.axvspan(5, 20, color="#d62728", alpha=0.06, zorder=0)
-    ax1.annotate("memorization\n(seen-ULT only, epochs 5‒20)", xy=(12, 72), xytext=(12, 92),
-                 fontsize=10.5, color="#d62728", ha="center",
+    ax1.annotate("memorization", xy=(12, 72), xytext=(12, 92),
+                 fontsize=7, color="#d62728", ha="center",
                  arrowprops=dict(arrowstyle="->", color="#d62728", alpha=0.7))
 
-    ax1.set_xlabel("Training epoch", fontsize=13)
-    ax1.set_ylabel("Baseline pass rate (%)", fontsize=13)
-    ax1.tick_params(axis="both", labelsize=11)
-    ax1.set_title("Baseline pass rate", fontsize=14)
-    ax1.legend(fontsize=10, loc="lower center", bbox_to_anchor=(0.62, 0.0))
+    ax1.set_xlabel("Training epoch")
+    ax1.set_ylabel("Baseline pass rate (%)")
+    ax1.text(0.02, 0.95, "(a)", transform=ax1.transAxes, fontsize=8, fontweight="bold", va="top")
+    ax1.legend(loc="lower center", bbox_to_anchor=(0.62, 0.0), frameon=False,
+               handlelength=1.6, labelspacing=0.3)
     ax1.set_ylim(0, 105)
-    ax1.grid(True, linestyle="--", alpha=0.4)
+    ax1.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)
 
     epochs = sorted(verb_by_epoch.keys())
     vals = [sum(verb_by_epoch[e]) / len(verb_by_epoch[e]) * 100 for e in epochs]
     epochs_full = [0] + epochs + [30]
     vals_full = [0.0] + vals + [100.0]  # epoch 30: 112/112 exact match, PROVENANCE.md
-    ax2.plot(epochs_full, vals_full, label="seen-ULT verbatim match",
+    ax2.plot(epochs_full, vals_full, label="seen-ULT verbatim match", markersize=4, linewidth=1.2,
              color=SPLIT_STYLE["seen"]["color"], linestyle="-", marker="o")
-    ax2.set_xlabel("Training epoch", fontsize=13)
-    ax2.set_ylabel("Verbatim-match rate (%)", fontsize=13)
-    ax2.tick_params(axis="both", labelsize=11)
-    ax2.set_title("Verbatim reproduction (seen-ULT)", fontsize=14)
-    ax2.legend(fontsize=11)
+    ax2.set_xlabel("Training epoch")
+    ax2.set_ylabel("Verbatim-match rate (%)")
+    ax2.text(0.02, 0.95, "(b)", transform=ax2.transAxes, fontsize=8, fontweight="bold", va="top")
+    ax2.legend(frameon=False, handlelength=1.6)
     ax2.set_ylim(0, 105)
-    ax2.grid(True, linestyle="--", alpha=0.4)
+    ax2.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)
 
-    fig.suptitle(
-        "Two timescales: a shared, one-time generic-\n"
-        "improvement jump (epoch 0→1, all arms) vs. a\n"
-        "slower, seen-ULT-only memorization climb (5→20)",
-        fontsize=11.5, color="#333333", y=0.995,
-    )
-    fig.subplots_adjust(top=0.82, bottom=0.07, hspace=0.42)
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT_PATH, dpi=200, bbox_inches="tight")
-    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=200, bbox_inches="tight")
+    fig.savefig(OUT_PATH, dpi=400, bbox_inches="tight", pad_inches=0.02)
+    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=400, bbox_inches="tight", pad_inches=0.02)
 
     provenance = f"""# Comparison C onset-curve figure — provenance
 

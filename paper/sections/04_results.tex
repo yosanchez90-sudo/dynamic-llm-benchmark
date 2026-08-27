@@ -5,6 +5,8 @@ Six pre-registered hypotheses were evaluated against the criteria fixed before a
 
 \input{table1}
 
+\input{table_results}
+
 \subsection{H2: Fine-Tuning Inflates the Static Benchmark, Not DyMuT}
 \label{sec:results-h2}
 Qwen2.5-Coder-1.5B-Instruct, LoRA-fine-tuned directly on ULT's own repair-verified ground truth (\HTwoSeenN{} problems), gains \HTwoSeenGain{} percentage points (95\% CI \HTwoSeenGainCI{}) on that same seen-ULT split, with \HTwoPreMutkTotal{} of \HTwoPreMutkTotal{} post-fine-tune completions byte-identical to their training target - direct evidence of memorisation. A control condition measures how much the model improved at test writing in general: the DyMuT tiers L1--L3, which the fine-tuning run never trained on, move by only \HTwoLOneLThreeGain{} points (CI \HTwoLOneLThreeGainCI{}). The complexity-matched DyMuT control (L4) moves by exactly \HTwoLFourGain{} points. PLT, the ULT's leaked twin, was evaluated on the same checkpoint. After subtracting the L1--L3 control, it gains \HTwoPltDid{} points (CI \HTwoPltDidCI{}), smaller than the seen-ULT gain but clearly non-zero. The fine-tuning run never saw PLT directly, so this indicates that leaked content confers an indirect memorisation benefit. % cite:external -- "1.5" is the model's own parameter-count identifier (Qwen2.5-Coder-1.5B-Instruct), not a result value
@@ -12,34 +14,35 @@ Qwen2.5-Coder-1.5B-Instruct, LoRA-fine-tuned directly on ULT's own repair-verifi
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{comparison_c_onset_curve}
-\caption{Contamination across training epochs on a fixed subsample. Left: baseline-pass rate for the trained (seen-ULT) split, a held-out ULT split, and the DyMuT L1/L2 control. Right: verbatim reproduction of training targets on the seen-ULT split. The shared jump at epoch 1 reflects generic capability gain common to all three plotted arms; the seen-only climb from epoch 5 onward is memorisation, two effects on two distinct timescales within the same fine-tuning run. (The L1--L3 control quoted in the text is a separate, three-tier population evaluated only at the pre/post endpoints, not plotted here)}
+\caption{Contamination across training epochs on a fixed subsample. Two timescales, not one: a shared, one-time generic-improvement jump at epoch 0$\rightarrow$1 common to all three plotted arms, and a slower, seen-ULT-only memorisation climb from epoch 5 onward. (a) Baseline-pass rate for the trained (seen-ULT) split, a held-out ULT split, and a DyMuT L1--L2 epoch series tracked at the same epochs (a different population from the L1--L3 endpoint control Section 4.1's prose quotes, which is evaluated only pre/post, not across epochs). (b) Verbatim reproduction of training targets on the seen-ULT split.}
 \label{fig:onset}
 \end{figure}
 
-Table~\ref{tab:h2endpoint} reports pre/post endpoint values for the remaining four populations the difference-in-differences design defines. The approved hypothesis specifies mutation score as the outcome metric; \texttt{baseline\_pass\_rate} is reported here instead, the same estimand under a substituted metric, because pre-fine-tuning mutation score is undefined for \HTwoPreMutkUndefined{} of \HTwoPreMutkTotal{} seen-ULT problems, the base model almost never produces a suite that clears ULT's baseline-pass gate, and mutation score requires a baseline-passing suite. \textbf{H2 is supported.} Contamination inflates the static benchmark's score, while DyMuT registers a difference indistinguishable from zero.
+Table~\ref{tab:h2endpoint} reports pre/post endpoint values for the remaining four populations the difference-in-differences design defines. The approved hypothesis specifies mutation score as the outcome metric; \texttt{baseline\_pass\_rate} is reported here instead, the same estimand under a substituted metric, because pre-fine-tuning mutation score is undefined for \HTwoPreMutkUndefined{} of \HTwoPreMutkTotal{} seen-ULT problems, the base model almost never produces a suite that clears ULT's baseline-pass gate, and mutation score requires a baseline-passing suite. \texttt{coverage\_adjusted} does not have this problem, since a non-passing suite scores zero rather than being excluded, so it is reported here as a third, pre-treatment-defined confirmation rather than left to Section~\ref{sec:discussion} alone: seen-ULT's coverage-adjusted DiD is \HTwoCovAdjSeenDid{} points (CI \HTwoCovAdjSeenDidCI{}), excluding zero as clearly as the \texttt{baseline\_pass\_rate} reading does. The same metric is less favourable to the contamination story for the two leaked-content arms: PLT's coverage-adjusted DiD is \HTwoCovAdjPltDid{} points (CI \HTwoCovAdjPltDidCI{}) and unseen-ULT's is \HTwoCovAdjUnseenDid{} points (CI \HTwoCovAdjUnseenDidCI{}), both indistinguishable from zero or slightly negative, because the DyMuT L1--L3 control's own coverage-adjusted gain is large enough under this metric to absorb PLT and unseen-ULT's raw improvement. This does not contradict Table~\ref{tab:h2supp}'s \texttt{baseline\_pass\_rate}-based finding for the same two arms; it shows the two metrics disagree once a suite's baseline-pass rate and its mutation-killing rate are combined multiplicatively, which \texttt{coverage\_adjusted} does and \texttt{baseline\_pass\_rate} does not. \textbf{H2 is supported} on its strongest, seen-ULT reading, under every metric tested; the indirect-leakage finding for PLT and unseen-ULT is metric-dependent and reported as such, not resolved in one direction. Unseen-ULT itself gains \HTwoUnseenGain{} points with no control subtracted; net of the L1--L3 control's own \HTwoLOneLThreeGain{}-point generic-improvement gain, roughly \HTwoUnseenNetOfControl{} points of that gain sit within the static benchmark on problems this fine-tuning run never directly trained on -- transfer to problems sharing ULT's distribution, not memorisation of a specific answer, and worth noting rather than left silent.
 
 \begin{table}[t]
-\caption{Comparison C endpoint values, four of five populations}
+\caption{Comparison C endpoint values, all five populations. Metric is \texttt{baseline\_pass\_rate}. DiD subtracts the DyMuT L1--L3 control's own gain from every other row's raw gain.}
 \label{tab:h2endpoint}
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3.5pt}
 \renewcommand{\arraystretch}{0.88}
-\begin{tabular}{@{}lrrrr@{}}
+\begin{tabular}{@{}lrrrrr@{}}
 \toprule
-Population & $n$ & Pre (\%) & Post (\%) & Gain (pp) \\
+Population & $n$ & Pre (\%) & Post (\%) & Gain (pp) & DiD (pp) \\
 \midrule
-Seen-ULT & \HTwoEndpointSeenN{} & \HTwoEndpointSeenPre{} & \HTwoEndpointSeenPost{} & \HTwoSeenGain{} \\
-Unseen-ULT & \HTwoEndpointUnseenN{} & \HTwoEndpointUnseenPre{} & \HTwoEndpointUnseenPost{} & \HTwoUnseenGain{} \\
-PLT & \HTwoEndpointPltN{} & \HTwoEndpointPltPre{} & \HTwoEndpointPltPost{} & \HTwoPltGain{} \\
-DyMuT L1--L3 (control) & \HTwoEndpointLOneLThreeN{} & \HTwoEndpointLOneLThreePre{} & \HTwoEndpointLOneLThreePost{} & \HTwoLOneLThreeGain{} \\
+Seen-ULT & \HTwoEndpointSeenN{} & \HTwoEndpointSeenPre{} & \HTwoEndpointSeenPost{} & \HTwoSeenGain{} & \HTwoSeenDid{} \\
+Unseen-ULT & \HTwoEndpointUnseenN{} & \HTwoEndpointUnseenPre{} & \HTwoEndpointUnseenPost{} & \HTwoUnseenGain{} & \HTwoUnseenNetOfControl{} \\
+PLT & \HTwoEndpointPltN{} & \HTwoEndpointPltPre{} & \HTwoEndpointPltPost{} & \HTwoPltGain{} & \HTwoPltDid{} \\
+DyMuT L1--L3 (control) & \HTwoEndpointLOneLThreeN{} & \HTwoEndpointLOneLThreePre{} & \HTwoEndpointLOneLThreePost{} & \HTwoLOneLThreeGain{} & -- \\
+DyMuT L4 (CC-matched) & \HTwoEndpointLFourN{} & \HTwoEndpointLFourPre{} & \HTwoEndpointLFourPost{} & \HTwoLFourGain{} & -- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{H2-Supplementary: Contamination Within DyMuT}
 \label{sec:results-h2supp}
-This probe sits outside the six pre-registered hypotheses. It asks what happens when a single instantiation is leaked into training. Does the inflation attach to the leaked artefact, or to the benchmark as a whole? Two Qwen models (1.5B, 7B) were each fine-tuned three ways on instantiation 1: on their own prior generations restricted to that instantiation (self-contamination), on a stronger model's GPT-5's, generations on the same instantiation (cross-model contamination), and, as a non-leaked comparison point, on instantiation 1's reference outputs filtered only by whether they execute rather than whether they are correct. Table~\ref{tab:h2supp} reports \texttt{baseline\_pass\_rate} on the trained instantiation (seen) against the mean of two held-out instantiations (fresh), at the final training epoch. % cite:external -- "1.5" (Qwen 1.5B) is a model parameter-count identifier, not a result value
+This probe sits outside the six pre-registered hypotheses. It asks what happens when a single instantiation is leaked into training. Does the inflation attach to the leaked artefact, or to the benchmark as a whole? Two Qwen models (1.5B, 7B) were each fine-tuned three ways on instantiation 1: on their own prior generations restricted to that instantiation (self-contamination), on a stronger model's generations on the same instantiation (cross-model contamination, GPT-5), and, as a no-leak control, on instantiation 1's reference outputs filtered only by whether they execute rather than whether they are correct. Table~\ref{tab:h2supp} reports \texttt{baseline\_pass\_rate} on the trained instantiation (seen) against the mean of two held-out instantiations (fresh), at the final training epoch. % cite:external -- "1.5" (Qwen 1.5B) is a model parameter-count identifier, not a result value
 
 \begin{table}[t]
 \caption{H2-supplementary: seen vs.\ fresh instantiation \texttt{baseline\_pass\_rate}}
@@ -52,17 +55,17 @@ This probe sits outside the six pre-registered hypotheses. It asks what happens 
 \toprule
 Model & Training source & Seen (\%) & Fresh (\%) & Gap (pp) \\
 \midrule
-Qwen 1.5B & none (control) & \HSuppOneFiveBControlSeen{} & \HSuppOneFiveBControlFresh{} & \HSuppOneFiveBControlGap{} \\ % cite:external -- "1.5" is a model parameter-count identifier
+Qwen 1.5B & no-leak control & \HSuppOneFiveBControlSeen{} & \HSuppOneFiveBControlFresh{} & \HSuppOneFiveBControlGap{} \\ % cite:external -- "1.5" is a model parameter-count identifier
 Qwen 1.5B & self & \HSuppOneFiveBSelfSeen{} & \HSuppOneFiveBSelfFresh{} & \HSuppOneFiveBSelfGap{} \\ % cite:external -- "1.5" is a model parameter-count identifier
 Qwen 1.5B & cross-model & \HSuppOneFiveBCrossSeen{} & \HSuppOneFiveBCrossFresh{} & \HSuppOneFiveBCrossGap{} \\ % cite:external -- "1.5" is a model parameter-count identifier
-Qwen 7B & none (control) & \HSuppSevenBControlSeen{} & \HSuppSevenBControlFresh{} & \HSuppSevenBControlGap{} \\
+Qwen 7B & no-leak control & \HSuppSevenBControlSeen{} & \HSuppSevenBControlFresh{} & \HSuppSevenBControlGap{} \\
 Qwen 7B & self & \HSuppSevenBSelfSeen{} & \HSuppSevenBSelfFresh{} & \HSuppSevenBSelfGap{} \\
 Qwen 7B & cross-model & \HSuppSevenBCrossSeen{} & \HSuppSevenBCrossFresh{} & \HSuppSevenBCrossGap{} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Both leaked conditions show a seen-versus-fresh gap in the expected direction; the non-leaked condition shows none, within noise. The decline appears in both cross-model conditions and in neither self-contamination condition: cross-model contamination degrades general capability as well as inducing memorisation, while self-contamination induces memorisation without the same capability cost. Held-out execution rate, whether the generated suite runs at all, declines by epoch 30 for both cross-model-trained checkpoints (1.5B: \HSuppOneFiveBDeclineEpochZero{}\% to \HSuppOneFiveBDeclineEpochThirty{}\%; 7B: \HSuppSevenBDeclineEpochZero{}\% to \HSuppSevenBDeclineEpochThirty{}\%), while self-contamination and the non-leaked condition preserve held-out execution rate throughout training. Part of the cross-model gap therefore reflects a general capability cost specific to training on another model's outputs, not memorisation alone; the self-contamination gap carries no such confound. Read together, both results locate memorisation at the artefact rather than the benchmark. % cite:external -- "1.5" (Qwen 1.5B) is a model parameter-count identifier, not a result value
+Both leaked conditions show a seen-versus-fresh gap in the expected direction; the no-leak control shows none, within noise. Held-out execution rate, whether the generated suite runs at all, declines by epoch 30 for both cross-model-trained checkpoints (1.5B: \HSuppOneFiveBDeclineEpochZero{}\% to \HSuppOneFiveBDeclineEpochThirty{}\%; 7B: \HSuppSevenBDeclineEpochZero{}\% to \HSuppSevenBDeclineEpochThirty{}\%), while self-contamination and the no-leak control preserve held-out execution rate throughout training. This decline appears in both cross-model conditions and in neither self-contamination condition: cross-model contamination degrades general capability as well as inducing memorisation, while self-contamination induces memorisation without the same capability cost. Part of the cross-model gap therefore reflects a general capability cost specific to training on another model's outputs, not memorisation alone; the self-contamination gap carries no such confound. Read together, both results locate memorisation at the artefact rather than the benchmark. % cite:external -- "1.5" (Qwen 1.5B) is a model parameter-count identifier, not a result value
 
 \subsection{H1 Test 1: DyMuT-L4 vs.\ ULT Shows No Directional Effect}
 Restricting DyMuT to its highest complexity tier (L4, cyclomatic complexity ${\geq}8$) matches ULT's own complexity floor, giving a complexity-controlled comparison across \HOneTOneN{} of the nine canonical models (Qwen2.5-Coder-1.5B-Instruct excluded as zero baseline-passing L4 completions). A paired Wilcoxon signed-rank test gave a rank-biserial effect size of \HOneTOneEffectR{} ($p=\HOneTOneP{}$): the rank-weighted pattern leaned toward DyMuT scoring \emph{higher} than ULT, opposite to H1's own prediction. Pairing was conducted at model level rather than the approved wording's literal model-problem level: DyMuT and ULT are generated from disjoint sources and share no common problem identity to pair on. \textbf{H1 Test 1 is not supported.} This null result is informative. One alternative explanation for H2's finding is that DyMuT is a harder task at matched complexity. H1 Test 1 rules that out: models with no deliberate contamination score comparably on both benchmarks. H2's near-zero DyMuT gain therefore reflects an absence of contamination. % cite:external -- "1.5" is the model's own parameter-count identifier, not a result value
@@ -78,21 +81,35 @@ Two conditionings were fixed in advance and are reported together: mutation scor
 \label{sec:results-h3}
 Spearman correlation between tier index and mutation score was negative and significant for all nine canonical models, surviving Holm-Bonferroni correction within both the all-tier family (\HThreeAllTierSig{}) and a ceiling-robustness family excluding the near-ceiling L1 tier (\HThreeLTwoLFourSig{} computable models). The approved hypothesis's literal clause, that mean mutation score never increases between adjacent tiers, held exactly for seven of the nine models; two (GPT-5 and GPT-5-mini) each showed a single upward step at the L1$\rightarrow$L2 transition, both under one percentage point and both at or above 98\% mutation score at L1, consistent with near-ceiling measurement noise. \textbf{H3 is supported as a monotone trend.} The strict condition of no score increases held for seven of nine models.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{h3_tier_effect}
+\caption{Conditional Mut@K by complexity tier, one line per canonical model. The decline is steep and monotone for the three open-source Qwen sizes; the six commercial models decline much more gradually and stay closer to ceiling through L3.}
+\label{fig:h3tier}
+\end{figure}
+
 \subsection{H5: Score-Level Stability Is Strong, Rank-Level Stability Falls Short}
 \label{sec:results-h5}
 Two properties are evaluated separately. Each model's own aggregate mutation score was highly stable across re-instantiations: standard deviation \HFiveSdRange{} for most canonical models. Pairwise Kendall's $\tau$ between per-instantiation model rankings was markedly weaker: mean $\tau=\HFiveNFourTau{}$ at the four-instantiation headline scope, and $\tau=\HFiveAllPairsTau{}$ across all pairs including a partial fifth instantiation, both below the approved \HFiveTauThreshold{} threshold. \HFiveNFourSigCount{} of the six headline-scope pairs were individually significant at raw $p<\SigLevel{}$, and \HFiveNFourHolmCount{} survived Holm correction. The shortfall reflects the model population, not an unreliable instrument. Several canonical models' pooled scores sat closer than their own between-instantiation standard deviation. No ranking instrument could separate models that close from this data alone. Reaching the pre-registered fifth instantiation for the two remaining models was costed against this diagnosis and declined, since the same clustering predicts further data would not close the gap. \textbf{H5's threshold is not met}: score-level reliability is strong and not in question; rank-level stability, as specified, falls short.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{h5_stability}
+\caption{StableMut@K, mean $\pm$ SD across benchmark re-instantiations, per canonical model. Every error bar is a sliver of the score axis; Qwen 1.5B's is the widest and still under five points. Score-level stability is not the property RQ4's threshold falls short on.}
+\label{fig:h5stability}
+\end{figure}
 
 \subsection{H6: Construct Validity Against an External Proxy}
 Three benchmark pairs are relevant here, and are reported separately: DyMuT$\leftrightarrow$BigCodeBench, the pair H6 clause 1 is specified against; ULT$\leftrightarrow$BigCodeBench, the clause-2 comparator; and DyMuT$\leftrightarrow$ULT.
 
 \textbf{DyMuT$\leftrightarrow$BigCodeBench (clause 1).} The three-model canonical reading (Qwen only) was a perfect correlation ($\tau=\HSixCanonRawTau{}$) at both metrics, but this is a within-family scaling artefact, not a validity result: three same-family models of increasing size rank identically on almost any capability measure. A four-model cross-family extension, added to break this confound, gave the honest reading at seven models: raw conditional agreement $\tau=\HSixDynBcbRawTau{}$, coverage-adjusted agreement $\tau=\HSixDynBcbAdjTau{}$ ($p=\HSixDynBcbAdjHolmP{}$ Holm-adjusted, survived correction), shown in Figure~\ref{fig:collapse}. Against the pre-specified \HSixBandLow{}-\HSixBandHigh{} validity-supporting band, the primary reading's point estimate fell \emph{inside} the band, though the test did not reach significance at this sample size; the co-primary reading exceeded the band. \textbf{H6 clause 1 is mixed}: positive under both metrics, and on its primary reading landing inside the band the pre-registration anticipated, but the co-primary reading exceeds it, a consequence of that metric's baseline-pass dominance rather than true redundancy.
 
-Two of the seven cross-family points are individually thin-cell by this study's own $n_{\text{defined}}{<}20$ threshold (one model's ULT \HSixCodeLlamaUltNDefined{} defined rows; another's DyMuT- and ULT \HSixMistralDynNDefined{} and \HSixMistralUltNDefined{}), a caveat that travels with the cross-family figures.
+Two of the seven cross-family points are individually thin-cell by this study's own $n_{\text{defined}}{<}20$ threshold (one model's ULT reading, \HSixCodeLlamaUltNDefined{} defined rows; another's DyMuT and ULT readings, \HSixMistralDynNDefined{} and \HSixMistralUltNDefined{} defined rows respectively), a caveat that travels with the cross-family figures.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{collapse_vs_survival}
-\caption{Cross-family extension: raw conditional agreement collapses under added model diversity; coverage-adjusted agreement survives. The red-ringed marker denotes a thin cell on the DyMuT axis specifically ($n_{\text{defined}}{<}20$).}
+\caption{Cross-family extension, DyMuT (pooled) against BigCodeBench Pass@1: (a) raw conditional Mut@K's agreement collapses under added model diversity; (b) coverage-adjusted agreement survives. The red-ringed marker denotes a thin cell on the DyMuT axis specifically ($n_{\text{defined}}{<}20$).}
 \label{fig:collapse}
 \end{figure}
 
@@ -103,7 +120,7 @@ Two of the seven cross-family points are individually thin-cell by this study's 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{ranking_matrix_heatmap}
-\caption{Kendall $\tau$ rank agreement by metric and benchmark pair, Holm-Bonferroni significance marked.}
+\caption{Ranking matrix: Kendall $\tau$ rank agreement by metric and benchmark pair. DyMuT is pooled across all four complexity tiers throughout every cell; BCB abbreviates BigCodeBench. (a) canonical scope (nine models); (b) canonical plus the four-model cross-family extension. \textsuperscript{**} significant after Holm-Bonferroni correction (12-test family); \textsuperscript{*} significant at raw $p<\SigLevel{}$ only, not after correction.}
 \label{fig:heatmap}
 \end{figure}
 

@@ -1,7 +1,7 @@
 # Ranking matrix heatmap — provenance
 
-Generated: 2026-08-26T08:05:29.338097+00:00
-Git commit: 09eb1bf
+Generated: 2026-08-27T17:42:58.093031+00:00
+Git commit: beb5ee0
 Script: scripts/plot_ranking_matrix_heatmap.py
 
 Source: analysis/ranking_matrix_correlations.csv (both scopes; Holm-Bonferroni applied

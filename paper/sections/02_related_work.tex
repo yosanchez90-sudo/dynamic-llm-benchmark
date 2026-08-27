@@ -7,4 +7,27 @@
 
 \textbf{Dynamic and contamination-aware benchmarking for code.} Closer to the present setting, DyCodeEval~\cite{chen2025dycodeeval} and the benchmark-usefulness study of Guan~\emph{et al.}~\cite{guan2025benchmarkuseful} both apply dynamic regeneration to code-reasoning benchmarks, and Code2Bench~\cite{zhang2025code2bench} scales dynamic benchmark construction directly from source repositories. LiveCodeBench~\cite{jain2025livecodebench} applies the same strategy, drawing its problems from programming contests held after model training cutoffs. Automated unit-test generation predates LLMs: search-based tools such as EvoSuite~\cite{fraser2011evosuite} and Pynguin~\cite{lukasczyk2022pynguin} synthesise test suites by evolutionary search, and recent empirical studies evaluate LLMs on the same task directly~\cite{schafer2024empirical, siddiq2024junit}. TestEval~\cite{wang2024testeval} and the software-evolution study of Haroon~\emph{et al.}~\cite{haroon2026evolution} evaluate LLM test generation, the latter tracking test quality as the codebase under test changes over time; MuCoCo~\cite{chou2026mucoco} evaluates code-LLM consistency via automated mutation-style perturbation, a close methodological parallel to the mutation-testing scoring used here. The static comparator adopted in this work, UnLeakedTestBench (ULT)~\cite{huang2026ult}, is a response to contamination: its authors decontaminate a corpus of real-world functions and construct PLT, a deliberately leaked twin, so that any contamination-consistent score gap between the two becomes directly observable, an experimental design this work reuses as one of its own contamination-evidence comparisons. Codex/HumanEval~\cite{chen2021codex} established code-generation benchmarking as a discipline but is reported as contaminated in later models. BigCodeBench~\cite{zhuo2025bigcodebench} serves in this work as an external, independently maintained code-generation proxy against which DyMuT's construct validity is checked.
 
-\textbf{The gap.} No prior dynamic-benchmarking study combines template-based, seeded regeneration with a mutation-testing oracle for unit-test generation specifically, and none pairs an observational contamination comparison (dynamic versus a decontaminated static benchmark and its leaked twin) with a causal one (direct fine-tuning on the static benchmark's own ground truth, isolating contamination-driven inflation from generic capability gain). This work supplies both, together with a construct-validity check against an external, non-test-generation proxy, to establish not only that DyMuT resists contamination but that it continues to measure a capability that an independent evaluation recognises.
+\textbf{The gap.} No prior dynamic-benchmarking study combines template-based, seeded regeneration with a mutation-testing oracle for unit-test generation specifically, and none pairs an observational contamination comparison (dynamic versus a decontaminated static benchmark and its leaked twin) with a causal one (direct fine-tuning on the static benchmark's own ground truth, isolating contamination-driven inflation from generic capability gain). This work supplies both, together with a construct-validity check against an external, non-test-generation proxy, to establish not only that DyMuT resists contamination but that it continues to measure a capability that an independent evaluation recognises. Table~\ref{tab:relatedwork} makes this comparison concrete against the six closest dynamic-benchmarking systems.
+
+\begin{table}[t]
+\caption{Dynamic and contamination-resistant benchmarks compared against this work}
+\label{tab:relatedwork}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.0}
+\begin{tabularx}{\columnwidth}{@{}l l X@{}}
+\toprule
+System & Domain & Why it does not answer this question \\
+\midrule
+DyVal~\cite{zhu2024dyval} & Reasoning & Dynamic graphs, not code; no execution-based oracle \\
+LiveBench~\cite{white2025livebench} & Mixed & Refresh-based, not generative; static between refreshes \\
+LiveCodeBench~\cite{jain2025livecodebench} & Code generation & Contest problems post-cutoff, not regenerated instances \\
+BeyondBench~\cite{srivastava2026beyondbench} & Algorithmic reasoning & Correctness-guaranteed generation, not test generation \\
+MATHEMAGIC~\cite{obrien2025mathemagic} & Mathematics & Same generative principle, different domain, no code oracle \\
+DyCodeEval~\cite{chen2025dycodeeval} & Code reasoning & Dynamic regeneration, but scores reasoning, not test suites \\
+Code2Bench~\cite{zhang2025code2bench} & Code generation & Scales from real repositories: a static corpus once assembled \\
+\textbf{DyMuT (this work)} & Unit-test generation & Template-seeded, mutation-oracle-scored, causal contamination test \\
+\bottomrule
+\end{tabularx}
+\end{table}
