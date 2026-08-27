@@ -5,8 +5,14 @@ conditional Mut@K, coverage-adjusted Mut@K), columns = the 3 benchmark
 pairs (Dynamic<->ULT, Dynamic<->BigCodeBench, ULT<->BigCodeBench), cells =
 Kendall tau, colour-scaled on a diverging map centred at tau=0 (tau is a
 genuinely bipolar statistic, see dataviz skill's diverging-data rule).
-Two panels: canonical-9 and canonical+cross-family-13, side by side, same
-colour scale, so the two scopes are directly comparable by eye.
+Two panels: canonical-9 and canonical+cross-family-13, stacked one above
+the other (not side by side, changed 2026-08-27 in a print-legibility
+pass), same colour scale, so the two scopes are directly comparable by
+eye. Stacking keeps each panel close to the paper's actual single-column
+print width, so \includegraphics[width=\columnwidth] applies almost no
+further shrink and the cell annotations stay readable in print instead of
+shrinking by the ~2x a side-by-side layout at this same content size would
+need.
 
 Usage: python scripts/plot_ranking_matrix_heatmap.py
 """
@@ -32,14 +38,14 @@ METRIC_LABELS = {
     "conditional_mutk": "conditional Mut@K", "coverage_adjusted": "coverage-adjusted Mut@K",
 }
 PAIRS = ["Dynamic<->ULT", "Dynamic<->BigCodeBench", "ULT<->BigCodeBench"]
-# "(pooled)" is load-bearing, not decorative: the Dynamic side of every pair
-# here is pooled across all four CC tiers, not the CC-matched Dynamic-L4
+# "(pooled)" is load-bearing, not decorative: the DyMuT side of every pair
+# here is pooled across all four CC tiers, not the CC-matched DyMuT-L4
 # slice Comparison A uses, see analysis/TIER_SYMMETRY_AUDIT.md's reverse
 # check (defect #1). Every other RQ5 figure in this project states this in
 # its axis label; this one didn't, and a reader who only ever sees this
 # figure standalone (e.g. pasted into a chapter with its own caption) had no
 # way to know from the artifact alone.
-PAIR_LABELS = ["Dynamic (pooled)\n↔ ULT", "Dynamic (pooled)\n↔ BigCodeBench", "ULT\n↔ BigCodeBench"]
+PAIR_LABELS = ["DyMuT (pooled)\n↔ ULT", "DyMuT (pooled)\n↔ BigCodeBench", "ULT\n↔ BigCodeBench"]
 
 
 def _heatmap_panel(ax, sub_df, scope_label, cmap, norm):
@@ -71,10 +77,10 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm):
 
     im = ax.imshow(grid, cmap=cmap, norm=norm, aspect="auto")
     ax.set_xticks(range(len(PAIRS)))
-    ax.set_xticklabels(PAIR_LABELS, fontsize=8.5)
+    ax.set_xticklabels(PAIR_LABELS, fontsize=12)
     ax.set_yticks(range(len(METRICS)))
-    ax.set_yticklabels([METRIC_LABELS[m] for m in METRICS], fontsize=9)
-    ax.set_title(scope_label, fontsize=10.5)
+    ax.set_yticklabels([METRIC_LABELS[m] for m in METRICS], fontsize=12)
+    ax.set_title(scope_label, fontsize=14, pad=10)
     for i in range(len(METRICS)):
         for j in range(len(PAIRS)):
             val = grid[i, j]
@@ -82,7 +88,7 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm):
             # text on dark/saturated cells (dataviz skill's label-contrast rule)
             text_color = "white" if (not np.isnan(val) and abs(val) > 0.55) else "#222222"
             ax.text(j, i, annotations[i, j], ha="center", va="center",
-                     fontsize=8, color=text_color, linespacing=1.4)
+                     fontsize=10.5, color=text_color, linespacing=1.5)
     ax.set_xticks(np.arange(-0.5, len(PAIRS), 1), minor=True)
     ax.set_yticks(np.arange(-0.5, len(METRICS), 1), minor=True)
     ax.grid(which="minor", color="white", linewidth=1.5)
@@ -101,26 +107,29 @@ def main() -> None:
     cmap = plt.get_cmap("RdBu_r")  # diverging: red=negative/no agreement, blue=strong agreement, white=0
     norm = TwoSlopeNorm(vmin=-1.0, vcenter=0.0, vmax=1.0)
 
-    fig, axes = plt.subplots(1, 2, figsize=(15.5, 5.5))
+    # Single column, stacked (see module docstring): figsize width close to
+    # the paper's actual printed column width so print shrink is minimal.
+    fig, axes = plt.subplots(2, 1, figsize=(6.4, 7.9))
     scopes = [("canonical", "Canonical (9 models)"), ("canonical_plus_cross_family", "Canonical + cross-family (13 models)")]
     im = None
     for ax, (scope_key, scope_label) in zip(axes, scopes):
         sub = corr[corr["scope"] == scope_key]
         im = _heatmap_panel(ax, sub, scope_label, cmap, norm)
 
-    cbar = fig.colorbar(im, ax=axes, orientation="vertical", fraction=0.025, pad=0.03)
-    cbar.set_label("Kendall τ (rank agreement)", fontsize=9.5)
+    cbar = fig.colorbar(im, ax=axes, orientation="vertical", fraction=0.05, pad=0.10)
+    cbar.set_label("Kendall τ (rank agreement)", fontsize=12)
+    cbar.ax.tick_params(labelsize=11)
 
     fig.suptitle(
-        "Ranking matrix: cross-benchmark rank agreement by metric\n"
-        "** = significant after Holm-Bonferroni (within-scope, 12-test family)   "
-        "* = significant raw p<0.05 only, not after correction",
-        fontsize=10.5,
+        "Ranking matrix: cross-benchmark rank agreement\n"
+        "** significant after Holm-Bonferroni (12-test family)\n"
+        "* significant raw p<0.05 only, not after correction",
+        fontsize=12, y=0.985,
     )
-    fig.subplots_adjust(top=0.80, wspace=0.55)
+    fig.subplots_adjust(top=0.87, bottom=0.06, hspace=0.62, right=0.82, left=0.17)
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT_PATH, dpi=150, bbox_inches="tight")
-    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=150, bbox_inches="tight")
+    fig.savefig(OUT_PATH, dpi=200, bbox_inches="tight")
+    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=200, bbox_inches="tight")
 
     provenance = f"""# Ranking matrix heatmap — provenance
 

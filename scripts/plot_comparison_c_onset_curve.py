@@ -3,11 +3,17 @@ scripts/plot_epoch_perf.py (the supplementary study's own epoch curves),
 same colour/linestyle language (seen=red solid, unseen=blue dashed,
 dynamic=purple dotted) so the two experiments read as mirror images.
 
-Left panel: baseline_pass_rate, all three splits (seen/unseen/dynamic_l1l2).
-Right panel: verbatim-match rate (exact), seen split only, the sharper
+Top panel: baseline_pass_rate, all three splits (seen/unseen/dynamic_l1l2).
+Bottom panel: verbatim-match rate (exact), seen split only, the sharper
 memorization-onset diagnostic this canonical experiment adds. Both panels
 include epoch 0 (PRE, hardcoded 0%) and epoch 30 (Stage 3a/3b, full n=112/
-288/150) as anchors alongside the epochs {1,3,5,10,20} subsample.
+288/150) as anchors alongside the epochs {1,3,5,10,20} subsample. Panels
+are stacked one above the other, not side by side (changed 2026-08-27,
+print-legibility pass): stacking keeps each panel close to the paper's
+actual single-column print width, so \includegraphics[width=\columnwidth]
+applies almost no further shrink and axis/legend text stays readable in
+print instead of shrinking by the ~3.7x a side-by-side layout at this same
+content size would need.
 
 Usage: python scripts/plot_comparison_c_onset_curve.py
 """
@@ -37,7 +43,7 @@ OUT_PATH = ROOT / "analysis" / "figures" / "comparison_c_onset_curve.pdf"
 SPLIT_STYLE = {
     "seen":         {"color": "#d62728", "linestyle": "-",  "marker": "o", "label": "seen-ULT (train)"},
     "unseen":       {"color": "#1f77b4", "linestyle": "--", "marker": "s", "label": "unseen-ULT (held-out)"},
-    "dynamic_l1l2": {"color": "#9467bd", "linestyle": ":",  "marker": "^", "label": "Dynamic L1/L2 (control)"},
+    "dynamic_l1l2": {"color": "#9467bd", "linestyle": ":",  "marker": "^", "label": "DyMuT L1/L2 (control)"},
 }
 
 
@@ -91,7 +97,7 @@ def main() -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4.5))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(3.6, 6.3))
 
     for split, style in SPLIT_STYLE.items():
         epochs = sorted(bp_by_split_epoch[split].keys())
@@ -108,18 +114,19 @@ def main() -> None:
     # both directly on the figure so a reader doesn't mistake this for one
     # smooth trend.
     ax1.axvline(1, color="gray", linestyle="-", linewidth=0.8, alpha=0.6, zorder=0)
-    ax1.annotate("generic gain\n(all arms, epoch 0→1)", xy=(1, 27), xytext=(3.2, 55),
-                 fontsize=8.5, color="dimgray", ha="left",
+    ax1.annotate("generic gain\n(all arms, epoch 0→1)", xy=(1, 27), xytext=(3.2, 60),
+                 fontsize=10.5, color="dimgray", ha="left",
                  arrowprops=dict(arrowstyle="->", color="dimgray", alpha=0.7))
     ax1.axvspan(5, 20, color="#d62728", alpha=0.06, zorder=0)
-    ax1.annotate("memorization\n(seen-ULT only, epochs 5‒20)", xy=(12, 72), xytext=(12, 88),
-                 fontsize=8.5, color="#d62728", ha="center",
+    ax1.annotate("memorization\n(seen-ULT only, epochs 5‒20)", xy=(12, 72), xytext=(12, 92),
+                 fontsize=10.5, color="#d62728", ha="center",
                  arrowprops=dict(arrowstyle="->", color="#d62728", alpha=0.7))
 
-    ax1.set_xlabel("Training epoch", fontsize=11)
-    ax1.set_ylabel("Baseline pass rate (%)", fontsize=11)
-    ax1.set_title("Comparison C onset curve — baseline pass rate", fontsize=12)
-    ax1.legend(fontsize=9, loc="center right")
+    ax1.set_xlabel("Training epoch", fontsize=13)
+    ax1.set_ylabel("Baseline pass rate (%)", fontsize=13)
+    ax1.tick_params(axis="both", labelsize=11)
+    ax1.set_title("Baseline pass rate", fontsize=14)
+    ax1.legend(fontsize=10, loc="lower center", bbox_to_anchor=(0.62, 0.0))
     ax1.set_ylim(0, 105)
     ax1.grid(True, linestyle="--", alpha=0.4)
 
@@ -129,22 +136,24 @@ def main() -> None:
     vals_full = [0.0] + vals + [100.0]  # epoch 30: 112/112 exact match, PROVENANCE.md
     ax2.plot(epochs_full, vals_full, label="seen-ULT verbatim match",
              color=SPLIT_STYLE["seen"]["color"], linestyle="-", marker="o")
-    ax2.set_xlabel("Training epoch", fontsize=11)
-    ax2.set_ylabel("Verbatim-match rate (%)", fontsize=11)
-    ax2.set_title("Comparison C onset curve — verbatim reproduction (seen-ULT)", fontsize=12)
-    ax2.legend(fontsize=9)
+    ax2.set_xlabel("Training epoch", fontsize=13)
+    ax2.set_ylabel("Verbatim-match rate (%)", fontsize=13)
+    ax2.tick_params(axis="both", labelsize=11)
+    ax2.set_title("Verbatim reproduction (seen-ULT)", fontsize=14)
+    ax2.legend(fontsize=11)
     ax2.set_ylim(0, 105)
     ax2.grid(True, linestyle="--", alpha=0.4)
 
     fig.suptitle(
-        "Two timescales: a shared, one-time generic-improvement jump (epoch 0→1, all arms) "
-        "vs. a slower, seen-ULT-only memorization climb (epochs 5→20)",
-        fontsize=9.5, color="#333333", y=1.02,
+        "Two timescales: a shared, one-time generic-\n"
+        "improvement jump (epoch 0→1, all arms) vs. a\n"
+        "slower, seen-ULT-only memorization climb (5→20)",
+        fontsize=11.5, color="#333333", y=0.995,
     )
-    fig.tight_layout()
+    fig.subplots_adjust(top=0.82, bottom=0.07, hspace=0.42)
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT_PATH, dpi=150, bbox_inches="tight")
-    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=150, bbox_inches="tight")
+    fig.savefig(OUT_PATH, dpi=200, bbox_inches="tight")
+    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=200, bbox_inches="tight")
 
     provenance = f"""# Comparison C onset-curve figure — provenance
 
