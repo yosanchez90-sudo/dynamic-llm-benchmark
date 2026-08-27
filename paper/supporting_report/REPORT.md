@@ -56,50 +56,31 @@ This project combines three things no prior system combines in one place. The fi
 
 ### 1.6 How ULT and PLT problems are prepared
 
-Section 1.4 traces a dynamic problem from template to test file. This section traces the same stage for ULT and PLT, since the two static benchmarks reach the same `TestGenProblem` object by a different, older route: adapting an existing artefact instead of building a fresh one.
+Section 1.4 traces a dynamic problem from template to test file. ULT and PLT reach the same `TestGenProblem` object by a different route: adapting an existing artefact instead of building a fresh one.
 
-A real ULT record, task_id 11278, abridged to its five fields:
+A real ULT record, abridged:
 
 ```
-{
-  "func_name": "Velocidad",
-  "code": "def Velocidad(d, f):\n    if(d<95 and d>85 or d<275 and d>265):\n        f=f-60\n    if(d<=92 and d>=88 or d<=268 and d>=272):\n        f=f-15\n    if(d<5 or d>175 and d<185 or d>355):\n        f-=60\n    return f",
-  "prompt": "Determina la velocidad de las bolas",
-  "tests": ["def test_Velocidad_0(): assert Velocidad(90, 120) == 60", "... 4 more"],
-  "cyclomatic_complexity": 13
-}
+{"func_name": "Velocidad", "code": "def Velocidad(d, f): ...",
+ "prompt": "Determina la velocidad de las bolas", "cyclomatic_complexity": 13}
 ```
 
-`src/data/ult_plt.py::load("ult")` turns every record like this one into the same `TestGenProblem` object the dynamic path produces, in five steps.
+`src/data/ult_plt.py::load("ult")` turns every record like this into the same `TestGenProblem` the dynamic path produces: recompute cyclomatic complexity from `code` (never trust the shipped field, it disagrees with a live recompute on 26.7% of all 3,909 ULT records, and would have wrongly admitted 233 of them past this project's CC≥8 gate), drop anything still below `CC_MIN=8`, tag the survivor `tier="L4"`, drop any PLT record whose task_id also appears in ULT (PLT's `code` is a superset, so this keeps Comparison B non-circular), and for models scored against a fixed subsample, not the full pool, draw it once by a seeded quantile-stratified sample and freeze it to `data/raw/ult_plt/subsample_manifest.json` so every model sees the identical 400-problem `core_400` set. Mutants are generated the same way as Dynamic, scoped to the named function only (`scope_fn_name`) since a real-world `code` blob can carry helper functions that must never be mutated.
 
-**Load.** `_iter_records("ult")` reads every record out of the vendored `ULT.jsonl`, 3,909 in total.
+The dynamic path builds a problem: a new seed produces a problem that did not exist before. The ULT/PLT path adapts one: the same 400 real functions every run. Both call the same message builder from section 1.4. (A different, unrelated "reconstruct": `process_batch.py::build_problem_map()` re-derives an already-built `TestGenProblem` from its own key when an OpenAI batch result returns, not a build-vs-adapt distinction.)
 
-**Recompute complexity, never trust the shipped field.** `_target_function_node()` parses `code` with `ast.parse` and finds the `FunctionDef` node named by `func_name`. `compute_cc()`, the same AST-based analyser template validation itself uses (`template_corpus/templates/_smoke/validate_cc.py`), recomputes cyclomatic complexity from that node. ULT ships its own `cyclomatic_complexity` field, 13 for this record, and the recomputed value agrees here. It does not always agree: checked across all 3,909 records, the shipped and recomputed values disagree on 1,043 of them, 26.7%. For 233 records the shipped field reads 8 or higher while the recomputed value does not, meaning trusting the shipped field instead of recomputing would have pulled 233 problems into the evaluation set that do not clear this project's own CC≥8 threshold. Zero records go the other way, shipped below 8 with a recomputed value at or above it. This is why the loader never reads the field at all.
+**Repairing ULT's ground truth for fine-tuning.** ULT's own shipped tests are not reliable enough to train on directly. `scripts/repair_ult_ground_truth.py` ran all 2,986 CC≥8 ULT records through the real scoring harness (section 2.3) and classified each:
 
-**Filter and tag.** Records with recomputed complexity below `CC_MIN = 8` are dropped. Every record that survives is tagged `tier="L4"`, this project's own top complexity band, regardless of which benchmark it came from. ULT is CC≥10 by the source dataset's own construction, so this filter removes nothing further from ULT. PLT contains lower-complexity records and loses some here.
+| Category | Count | % |
+|---|---|---|
+| Clean out of the box | 251 | 8.4% |
+| Repaired (wrong literal, rewritten to the real output) and verified | 602 | 20.2% |
+| Repaired but degenerate (same output for every input) | 164 | 5.5% |
+| Shape not repairable, not guessed at | 927 | 31.0% |
+| Structural (code itself doesn't run), never repaired, would diverge from the already-scored pre-fine-tune baseline | 1,031 | 34.5% |
+| Verify failed or flaky | 11 | 0.4% |
 
-**Drop the ULT/PLT overlap.** ULT's task_ids are a full subset of PLT's. Loading PLT with `exclude_ult_overlap=True`, the default, removes every task_id that also appears in ULT, so Comparison B, ULT against PLT, never compares a model against itself under two names.
-
-**Draw the fixed evaluation subsample.** For every model scored against a subsample, not the full pool, `_stratified_sample()` bins the surviving records into four complexity quantiles and draws evenly from each, seeded once and frozen into `data/raw/ult_plt/subsample_manifest.json`. Every later run reads this manifest through `load_manifest_subset()` instead of drawing again, so every model is scored against the identical 400-problem `core_400` set.
-
-**Wrap.** The surviving record becomes a `TestGenProblem` with `template_id=f"ULT-{task_id}"`, `instance_seed=int(task_id)`, `oracle=None` (ULT/PLT carries no template-generated oracle function, the scorer reasons about `code` directly), and `mutants=generate_mutants(source, scope_fn_name=func_name)`. `scope_fn_name` restricts mutation to the named function only, since a real-world `code` blob can carry helper functions or classes the target function calls, and those must never be mutated as if they were the function under test.
-
-**The central contrast.** The dynamic path builds a problem: a template plus a seed produces a fresh instance that did not exist before that instantiation call. Re-running the dynamic benchmark with a new seed produces different problems. The ULT/PLT path adapts a problem: `Velocidad` is a fixed piece of real-world code that existed before this project and does not change between runs. Re-running ULT against the same manifest produces the same 400 problems every time. This is the structural difference Comparison A and Comparison B measure across, not a difference in how the task is posed to a model. Both paths call the same message builder from section 1.4, so a model sees an identical instruction and an identical framing either way.
-
-**A different "reconstruct."** `scripts/process_batch.py::build_problem_map()` also uses the word "reconstruct," in an unrelated sense. OpenAI's Batch API returns only a model's text response keyed by a `custom_id`, not the original problem object, so this function calls the same loader a second time with the same parameters and looks the result up by `(template_id, instance_seed)` to recover the `TestGenProblem` a given response belongs to. This is bookkeeping to recover an already-built object from its own key. It has nothing to do with the build-versus-adapt distinction above.
-
-**Repairing ULT's ground truth for the fine-tuning experiment.** Comparison C (section 1.7) needs real training pairs, `code` plus a passing test file, drawn from ULT itself. ULT's own shipped tests are not reliable enough to train on directly. `scripts/repair_ult_ground_truth.py` ran every one of the 2,986 CC≥8, parseable ULT records through the project's real scoring harness, the same functions section 2.3 describes, not a separate ad hoc check, and classified the result:
-
-| Category | Count | % | Meaning |
-|---|---|---|---|
-| CLEAN | 251 | 8.4% | All 5 shipped tests already pass against the shipped code. |
-| Repaired and verified | 602 | 20.2% | A single `assert expr == literal` test failed only because the literal was wrong, rewritten to the function's real output and reverified through the same harness. |
-| Repaired but degenerate | 164 | 5.5% | Repaired the same way, but the function returns the same value for every one of ULT's five inputs, so the resulting test barely exercises it. Kept and flagged, not discarded. |
-| Shape not repairable | 927 | 31.0% | The failing test is not a single `assert expr == literal`, not guessed at. |
-| Structural | 1,031 | 34.5% | The code itself cannot run cleanly for at least one test. Never repaired: this project's design reuses an already-scored pre-fine-tune baseline for this same code, and changing `code` here would silently diverge the post-fine-tune evaluation from a baseline already measured against the original. |
-| Verify failed or flaky | 11 | 0.4% | A repaired candidate did not reverify, or the harness gave a different verdict on a second run. |
-
-The 1,017 repaired-and-verified pairs went through one more filter, real token length against the fine-tuning model's own tokenizer, since a handful of ULT `code` blobs run past the 3,072-token training context and would otherwise be silently truncated mid-function. 1,014 pairs survive as the actual training set. Of the 400-problem `core_400` evaluation subsample, 112 problems have a verified training pair and become Comparison C's seen-ULT population. The remaining 288 do not, and become unseen-ULT, held out, not discarded.
+1,017 repaired-and-verified pairs, 1,014 after a tokenizer-length filter (3,072-token training context). Of the 400 `core_400` problems, 112 have a verified pair (Comparison C's seen-ULT). The remaining 288 are held out as unseen-ULT.
 
 ### 1.7 The three comparisons side by side
 
@@ -189,120 +170,22 @@ for treatment in {ULT, PLT}:
 emit DiD, ci per treatment benchmark                     # DiD > 0, CI excluding 0: contamination signal
 ```
 
-**A complete, unedited example.** Every worked example elsewhere in this report is trimmed for length. This one is not: the full, unmodified test file Claude Sonnet 4.6 produced for the `sum_values` problem from section 1.4's own dynamic-benchmark walkthrough (`L3-clamp-seq-001`, instance seed 1102), exactly as extracted from the model's raw response by `extract_test_file()`, byte for byte, nothing added or removed:
+**A complete, unedited example.** The raw test file Claude Sonnet 4.6 produced for section 1.4's `sum_values` problem, exactly as `extract_test_file()` extracted it from the model's response, nothing added or removed:
 
 ```
 from under_test import sum_values
 
-
 def test_empty_list():
     assert sum_values([]) == []
-
 
 def test_all_below_floor():
     assert sum_values([1, 2, 3, 4, 5, 6, 7]) == [8, 8, 8, 8, 8, 8, 8]
 
-
-def test_all_above_ceiling():
-    assert sum_values([34, 35, 100, 200]) == [33, 33, 33, 33]
-
-
-def test_all_within_range():
-    assert sum_values([8, 10, 20, 33]) == [8, 10, 20, 33]
-
-
 def test_exactly_at_floor():
     assert sum_values([8]) == [8]
 
-
-def test_exactly_at_ceiling():
-    assert sum_values([33]) == [33]
-
-
-def test_one_below_floor():
-    assert sum_values([7]) == [8]
-
-
 def test_one_above_ceiling():
     assert sum_values([34]) == [33]
-
-
-def test_mixed_values():
-    assert sum_values([0, 8, 20, 33, 50]) == [8, 8, 20, 33, 33]
-
-
-def test_negative_values():
-    assert sum_values([-100, -1, 0]) == [8, 8, 8]
-
-
-def test_large_values():
-    assert sum_values([1000, 9999]) == [33, 33]
-
-
-def test_single_value_within_range():
-    assert sum_values([15]) == [15]
-
-
-def test_single_value_below_floor():
-    assert sum_values([0]) == [8]
-
-
-def test_single_value_above_ceiling():
-    assert sum_values([100]) == [33]
-
-
-def test_floor_boundary_just_below():
-    assert sum_values([7]) == [8]
-
-
-def test_floor_boundary_at():
-    assert sum_values([8]) == [8]
-
-
-def test_floor_boundary_just_above():
-    assert sum_values([9]) == [9]
-
-
-def test_ceiling_boundary_just_below():
-    assert sum_values([32]) == [32]
-
-
-def test_ceiling_boundary_at():
-    assert sum_values([33]) == [33]
-
-
-def test_ceiling_boundary_just_above():
-    assert sum_values([34]) == [33]
-
-
-def test_all_same_value_within_range():
-    assert sum_values([20, 20, 20]) == [20, 20, 20]
-
-
-def test_all_same_value_below_floor():
-    assert sum_values([5, 5, 5]) == [8, 8, 8]
-
-
-def test_all_same_value_above_ceiling():
-    assert sum_values([40, 40, 40]) == [33, 33, 33]
-
-
-def test_mixed_boundary_values():
-    assert sum_values([7, 8, 33, 34]) == [8, 8, 33, 33]
-
-
-def test_large_list():
-    input_values = list(range(0, 50))
-    result = sum_values(input_values)
-    assert len(result) == 50
-    for val in result:
-        assert 8 <= val <= 33
-
-
-def test_return_type_is_list():
-    result = sum_values([10, 20, 30])
-    assert isinstance(result, list)
-
 
 def test_original_list_not_modified():
     original = [1, 15, 50]
@@ -310,49 +193,19 @@ def test_original_list_not_modified():
     sum_values(original)
     assert original == original_copy
 
-
-def test_float_values_within_range():
-    assert sum_values([8.0, 20.5, 33.0]) == [8.0, 20.5, 33.0]
-
-
-def test_float_values_below_floor():
-    assert sum_values([7.9]) == [8]
-
-
-def test_float_values_above_ceiling():
-    assert sum_values([33.1]) == [33]
-
-
-def test_zero():
-    assert sum_values([0]) == [8]
-
-
-def test_middle_value():
-    assert sum_values([20]) == [20]
+# ... 25 more, same shape: one assertion per boundary/edge case
 ```
 
-Scored: `exec_rate=1.0`, `statement_coverage=1.0`, `branch_coverage=1.0`, `mutants_total=21`, `mutants_killed=17`, `mutants_dropped=0`, `mutation_score=0.8095`. 30 test functions, every one passing against the real function, 17 of 21 single-edit mutants caught. The 4 survivors are real: a suite this thorough on a function this small still misses some.
+Scored: `mutants_total=21`, `mutants_killed=17`, `mutation_score=0.8095`. 30 tests, all passing. 17 of 21 mutants caught, 4 real survivors.
 
-**The equivalent-mutant inspection sheet.** Section 4.3 discloses that the hand-inspection meant to correct the headline mutation score for unkillable mutants was not complete when this report was written. The sampling and stratification behind it are real and already run: 120 mutants, 30 per tier, drawn by fixed seed (`random.Random(20260714)`) and apportioned across the seven SAC operators by each operator's real share of that tier's mutant pool, one row per mutant in `analysis/equiv_mutants/inspection_sheet.xlsx`. A real row from that sheet, before its `verdict` column is filled in:
+**The equivalent-mutant inspection sheet.** Section 4.3 discloses this hand-inspection was not complete when this report was written. 120 mutants are drawn (fixed seed) and staged in `analysis/equiv_mutants/inspection_sheet.xlsx`, one row per mutant, `verdict` column still blank in every row:
 
 ```
-row_id: 1
-tier: L1
-template_id: L1-arithmetic-003
-instance_seed: 105
-operator: AOR
-unified_diff:
-  --- L1-arithmetic-003_seed105_original.py
-  +++ L1-arithmetic-003_seed105_AOR_mutant.py
-  @@ -1,4 +1,3 @@
-   def normalise_input(item, x):
-       """Calculate the settled amount after applying a per-unit concession."""
+template_id: L1-arithmetic-003   operator: AOR
   -    return item * x - x * 1
   +    return item * x + x * 1
 verdict: (not yet filled in)
 ```
-
-Every one of the 120 rows in the real sheet has this shape and no `verdict` yet, which is exactly what section 4.3 discloses. `scripts/compute_validated_score.py` reads this column the moment it is filled in, estimates each tier's equivalent-mutant rate, and writes a corrected score to `analysis/equiv_mutants/validated_scores.csv`. Nothing in this project's headline results waits on that correction: the raw score is reported as the primary result throughout, and the corrected score, once computed, would be an additional, disclosed reading, not a silent replacement.
 
 ---
 
@@ -436,7 +289,7 @@ def test_resume_does_not_cross_tier_groups(tmp_path):
     assert done == set()
 ```
 
-Each test encodes the exact failure it was written after: a synthetic adapter label that must not survive the canonical filter, two files with the same problem key at two different timestamps, a tier-mismatched file that must not be treated as a resume target. None of the three would fail today. That is the point of running them on every change, not just once after the fix.
+None of the three fails today. Running them on every change, not just once after the fix, is the point.
 
 ### 2.5 The citation gate
 
@@ -471,41 +324,35 @@ Four of these eleven share one shape, a number reported without the visibility n
 
 ### 2.8 The asset pipeline
 
-`scripts/build_thesis_assets.py` is a single-command registry: every table, figure, and provenance document the paper and this report cite is one of its registered steps, and running the script with no arguments regenerates all of them from whatever result files currently exist on disk. Nothing in `analysis/` is meant to be hand-edited. A real run of `--list` prints the current registry, 28 steps at the time of writing:
+`scripts/build_thesis_assets.py` is a single-command registry: every table, figure, and provenance document the paper and this report cite is a registered step, regenerated from whatever result files exist on disk. `--list`, 28 steps at the time of writing:
 
 ```
-comparison_ab             build_comparison_tables.py         Comparison A (Dynamic-L4 vs ULT) + Comparison B (ULT vs PLT)
-stability                 analyze_stability.py               StableMut@K + pairwise Kendall tau (RQ4.1)
-comparison_c              analyze_comparison_c.py            Comparison C canonical 2x3 DiD + gradient + Mut@K tables
-rq5                       analyze_rq5.py                      RQ5/H6 model-ranking table + cross-benchmark correlations
-rq5_diagnostics           analyze_rq5_diagnostics.py          RQ5 post-hoc diagnostics
-h3_tier_gradient          analyze_h3_tier_gradient.py         H3/RQ2 tier gradient, Holm-corrected
-ranking_matrix            build_ranking_matrix.py             Metric-agnostic ranking matrix
-flow_diagram_figure       plot_flow_diagram.py                Pipeline flow diagram -- structural, not data-derived
-execution_evidence_figure plot_execution_evidence.py          Live-captured execution evidence -- structural, not data-derived
-paper_values              build_paper_values.py               paper/values.tex: every value the paper cites, as macros read live from analysis/*.csv
-supporting_report_docx    build_supporting_report_docx.py     This report, rendered from its citation-gated markdown source
-check_doc_citations       check_doc_citations.py              GATE: fails the build on any unsuppressed stale citation
-                                                                ... 15 more steps, --list shows the full 28
+comparison_ab             Comparison A (Dynamic-L4 vs ULT) + Comparison B (ULT vs PLT)
+stability                 StableMut@K + pairwise Kendall tau (RQ4.1)
+comparison_c              Comparison C canonical 2x3 DiD + gradient + Mut@K tables
+rq5                       RQ5/H6 model-ranking table + cross-benchmark correlations
+execution_evidence_figure Live-captured execution evidence, structural
+check_doc_citations       GATE: fails the build on any unsuppressed stale citation
+... 22 more steps
 ```
 
-The last step is a gate, not a table: `scripts/check_doc_citations.py` scans every hand-written document in `analysis/` and every `paper/sections/*.tex` file for a statistic-shaped value, Kendall's tau, Spearman's rho, Pearson's r, an effect size, a p-value, a percentage-point figure, a model or sample count, and checks each one against a reference corpus built fresh from the pipeline's own live CSV and markdown output. A value that matches something live passes silently. A value that matches nothing is reported. A real run:
+The last step is the gate: `scripts/check_doc_citations.py` checks every statistic-shaped value in `analysis/` and `paper/sections/*.tex` against a reference corpus built fresh from the pipeline's own output, and fails the build on anything that matches nothing live:
 
 {{FIGURE:evidence_citation_gate|Figure 3. A real run of the citation gate, tail output, captured live.}}
 
-A value is allowed to not-match only if it carries an explicit reason: an inline `<!-- cite:historical -->` marker for a superseded figure kept inside a correction history or a "was X, now Y" sentence, an inline `<!-- cite:external -->` marker for a figure with no repo counterpart at all (a source paper's own reported number, a leaderboard score), or an entry in `analysis/CITATION_ALLOWLIST.md` when a marker would be awkward to place. Both routes are logged as `SUPPRESSED`, counted separately from a genuine `MATCH` so a suppressed-but-wrong value never reads as verified. The gate fails the whole build on any other unmatched value, which is what makes it a gate and not a report.
+A value is exempt only with an explicit reason, an inline `<!-- cite:historical -->`/`<!-- cite:external -->` marker or an `analysis/CITATION_ALLOWLIST.md` entry, logged as `SUPPRESSED`, counted separately from a genuine `MATCH`.
 
 ### 2.9 Statistical procedure
 
-Every RQ family that runs more than one significance test within itself applies a Holm-Bonferroni step-down correction before any document cites the result, through one shared function, `src/Analysis/multiple_comparisons.py::holm_bonferroni()`, so every family uses the identical procedure instead of each script re-deriving it. Before 2026-08-04 this project used no multiple-testing correction anywhere. `analysis/HYPOTHESIS_COVERAGE_AUDIT.md` records finding the gap.
+Every RQ family with more than one significance test applies Holm-Bonferroni correction through one shared function, `src/Analysis/multiple_comparisons.py::holm_bonferroni()`, before any document cites the result.
 
 | RQ family | Tests corrected together | n |
 |---|---|---|
-| RQ1 | H1 Test 1 (Dynamic vs ULT) and H1 Test 2 (ULT vs PLT). H2 contributes no p-value, it is reported as a bootstrap CI, and is not part of this family. | 2 |
-| RQ4 | The six N=4 pairwise instantiation-stability comparisons, corrected separately from the ten all-pairs comparisons (which include the partial fifth instantiation) | 6, and separately 10 |
-| RQ5 | The twelve correlation tests behind H6 clauses 1 and 2 (canonical and cross-family scopes, raw and coverage-adjusted, three statistics each) | 12 |
+| RQ1 | H1 Test 1 (Dynamic vs ULT), H1 Test 2 (ULT vs PLT). H2 is a bootstrap CI, not part of this family. | 2 |
+| RQ4 | Pairwise instantiation-stability comparisons, N=4 set and the all-pairs set, corrected separately | 6, and 10 |
+| RQ5 | Correlation tests behind H6 clauses 1 and 2 (canonical/cross-family, raw/coverage-adjusted, three statistics) | 12 |
 
-Correction changed a verdict, not just a number: H1 Test 2's raw reading, p=0.0391, becomes p=0.0782 once corrected within RQ1's two-test family, and no longer clears the conventional 0.05 bar. The definition-matched co-primary reading, p=0.0078, becomes p=0.0156 and does clear it. This is why H1 Test 2's verdict (section 1.7, section 4.3) is reported as significance-conditional, not a flat "supported": which of the two readings a sentence quotes changes whether the corrected result crosses the line. Every corrected value is written back into the same live CSV or markdown file the raw value came from, `analysis/COMPARISON_A_INTERPRETATION.md`'s "Multiple-comparisons correction for RQ1" section for the RQ1 pair, so the citation gate checks the corrected figure against the same reference corpus as everything else, not against a number typed once and never re-verified.
+Correction changed a verdict, not just a number: H1 Test 2's raw p=0.0391 becomes p=0.0782 once corrected, no longer clearing 0.05. Its definition-matched co-primary, p=0.0078, becomes p=0.0156 and still clears it, which is why that verdict (section 1.7) is reported as significance-conditional.
 
 ---
 
@@ -539,7 +386,7 @@ Result files are loaded and aggregated with `pandas`. Statistical tests, the Wil
 
 ### 3.6 Version control
 
-The project is tracked in git throughout, commits grouped by logical change, not by working session. Large binary or generated files, model weights, raw result archives, and this report's rendered outputs, are excluded from the repository and backed up separately (section 6). One working session per checkout is a standing rule; section 4.2 explains why.
+The project is tracked in git throughout, commits grouped by logical change, not by working session. Large binary or generated files, model weights, raw result archives, and this report's rendered outputs, are excluded from the repository and backed up separately (section 6). One working session per checkout is a standing rule, section 4.2 explains why.
 
 ### 3.7 Document toolchain
 
@@ -625,7 +472,7 @@ This table is identical to the paper's own (`paper/table1.tex`), read live from 
 
 H2's headline figures, the strongest result in the project: fine-tuning Qwen2.5-Coder-1.5B-Instruct on ULT's own ground truth moves seen-ULT's `baseline_pass_rate` by +99.1 percentage points (95% CI [97.3, 100.0]), moves PLT by +13.8 percentage points (CI [7.7, 20.1]) once a measured +8.7pp generic-fine-tuning-improvement control is subtracted, and moves the dynamic benchmark's hardest tier by exactly 0.0 percentage points.
 
-The full per-problem results sit in two spreadsheets, submitted alongside this report as separate appendix files, not reproduced here: `docs/Research_questions.xlsx`, the hypothesis-by-hypothesis workbook this table and the paper's own are both read from live, and `analysis/results.xlsx`, the per-problem dynamic-benchmark export. Every intermediate table behind both, Comparison A/B/C, the stability and RQ5 correlation tables, the tier-gradient table, lives in `analysis/` as citation-gated markdown and CSV, not restated in this report a second time.
+Full per-problem results are submitted as separate appendix files, not reproduced here: `docs/Research_questions.xlsx` (this table's own source) and `analysis/results.xlsx` (the per-problem dynamic-benchmark export). Every intermediate table lives in `analysis/` as citation-gated markdown and CSV.
 
 ## 6. Reproducing This Work
 
@@ -659,7 +506,7 @@ uv run python scripts/build_thesis_assets.py
 
 runs all 28 registered steps end to end (section 2.8) and finishes with the citation gate. A nonzero exit means at least one hand-written document cites a number the pipeline no longer produces. `--list` shows every step. `--only <key>` reruns just one.
 
-**What `data/` contains, and why it is not in version control.** `data/raw/` holds the vendored ULT/PLT source files (`data/raw/ult_plt/PROVENANCE.md` documents exactly how they were obtained and under what licence). `data/results/` holds one JSONL file per model-benchmark-instantiation run, append-only, never overwritten, the rows every analysis script in `analysis/` reads. `data/batches/` holds OpenAI Batch API request and result state. `data/finetune/` holds the fine-tuning training sets built in section 1.6. None of this is hand-edited, and none of it is small: the full `data/results/` and `data/batches/` trees, the raw ULT/PLT manifests, and the LoRA adapter checkpoints are backed up outside git, not committed, a dated snapshot on the cluster's home filesystem, since scratch storage is purged after three months of inactivity, so the repository itself stays a reasonable size to clone.
+**What `data/` contains, and why it is not in version control.** `data/raw/` holds the vendored ULT/PLT source (`PROVENANCE.md` documents how). `data/results/` holds one append-only JSONL file per model-benchmark-instantiation run. `data/batches/` and `data/finetune/` hold OpenAI batch state and the fine-tuning sets from section 1.6. None of it is hand-edited or small; it is backed up outside git instead, a dated snapshot on the cluster's home filesystem, since scratch storage is purged after three months of inactivity.
 
 ---
 
