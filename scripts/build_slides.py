@@ -1,11 +1,12 @@
 """Build the ECS8056 presentation deck as .pptx via python-pptx.
 
-Sixteen slides, ten for the ten-minute video, all sixteen for the
-twenty-minute live demo (the six "DEMO ONLY" slides are marked as such
-in their own speaker notes so a presenter knows to skip them for the
-video cut). Every number on every slide is transcribed from the same
-values.tex / analysis/*.md sources the paper and the supporting report
-cite, not re-derived here.
+Seventeen slides, fourteen for the ten-minute video, all seventeen for
+the twenty-minute live demo (the three "DEMO ONLY" slides are marked as
+such in their own speaker notes so a presenter knows to skip them for
+the video cut -- corrected 2026-08-27: the docstring previously claimed
+six DEMO ONLY slides, the script only ever marked three). Every number
+on every slide is transcribed from the same values.tex / analysis/*.md
+sources the paper and the supporting report cite, not re-derived here.
 
 Usage: python scripts/build_slides.py
 """
@@ -309,21 +310,21 @@ def build() -> None:
     # ---- Slide 8: contamination experiment ----
     s = blank_slide(prs)
     add_title(s, "Creating contamination on purpose")
-    add_body(s, "Fine-tune the smallest open-source model on ULT's ground-truth tests.",
+    add_body(s, "Fine-tune the smallest open-source model (Qwen2.5-Coder-1.5B) on ULT's ground-truth tests.",
               top=Inches(1.5), size=24)
-    add_body(s, "Re-score it on ULT, on PLT, and on a fresh dynamic instantiation it never saw.",
-              top=Inches(3.1), size=22, color=GREY)
-    add_notes(s, "This is the causal probe: LoRA fine-tune on repair-verified ULT ground truth, 112 pairs.")
+    add_body(s, "LoRA, rank 64 / alpha 16, 30 epochs, 1,014 repair-verified pairs. Re-score on ULT, on PLT, and on a fresh DyMuT instantiation it never saw.",
+              top=Inches(3.1), size=20, color=GREY)
+    add_notes(s, "This is the causal probe: LoRA fine-tune on repair-verified ULT ground truth, 112 of the 400-problem core set (1,014 pairs total training set). Same LoRA config as the six supplementary runs, not re-tuned per condition.")
 
     # ---- Slide 9: headline result ----
     s = blank_slide(prs)
     add_title(s, "Headline result")
     stat_callout(s, Inches(0.9), Inches(1.6), Inches(3.6), Inches(2.6), "+99.1pp", "seen-ULT gain\n(trained on)", RED, LIGHT_RED)
-    stat_callout(s, Inches(4.9), Inches(1.6), Inches(3.6), Inches(2.6), "+8.7pp", "generic control gain\n(dynamic L1-L3)", GREY, RGBColor(0xEC, 0xEC, 0xEC))
-    stat_callout(s, Inches(8.9), Inches(1.6), Inches(3.6), Inches(2.6), "+0.0pp", "dynamic-L4 gain\n(hardest tier)", GREEN, LIGHT_GREEN)
-    add_body(s, "The gain the model was trained to produce does not reach the dynamic benchmark.",
-              top=Inches(4.6), size=22, color=DARK)
-    add_notes(s, "99.1 points on the trained split, 8.7 points of that is plain improvement, 0.0 points on the dynamic benchmark's hardest tier.")
+    stat_callout(s, Inches(4.9), Inches(1.6), Inches(3.6), Inches(2.6), "+8.7pp", "generic control gain\n(DyMuT L1-L3)", GREY, RGBColor(0xEC, 0xEC, 0xEC))
+    stat_callout(s, Inches(8.9), Inches(1.6), Inches(3.6), Inches(2.6), "+0.0pp", "DyMuT L4 gain\n(hardest tier)", GREEN, LIGHT_GREEN)
+    add_body(s, "The gain the model was trained to produce does not reach DyMuT. Confirmed on a second, independently defined metric (coverage-adjusted DiD +37.7pp on seen-ULT).",
+              top=Inches(4.6), size=20, color=DARK)
+    add_notes(s, "99.1 points on the trained split, 8.7 points of that is plain improvement, 0.0 points on DyMuT's hardest tier. baseline_pass_rate and coverage_adjusted agree on the headline seen-ULT result independently.")
 
     # ---- Slide 10: onset curve ----
     s = blank_slide(prs)
@@ -336,29 +337,44 @@ def build() -> None:
     add_title(s, "Six hypotheses, nine verdicts")
     rows = [
         ["Hypothesis", "Verdict"],
-        ["H1 Test 1: Dynamic vs ULT", "Not supported"],
-        ["H1 Test 2: ULT vs PLT", "Mixed"],
+        ["H1a: DyMuT vs ULT", "Not supported"],
+        ["H1b: ULT vs PLT", "Mixed"],
         ["H2: fine-tuning DiD", "Supported"],
-        ["H2-supplementary", "Supplementary"],
+        ["H2-supp.: within-DyMuT leak (post-hoc)", "Supplementary"],
         ["H3: tier gradient", "Supported (trend)"],
         ["H4: tier interaction", "Dropped"],
         ["H5: stability", "Threshold not met"],
-        ["H6 clause 1: proxy correlation", "Mixed"],
-        ["H6 clause 2: dynamic vs static", "Not supported"],
+        ["H6a: proxy correlation", "Mixed"],
+        ["H6b: DyMuT vs static, proxy-agreement", "Not supported"],
     ]
     add_table(s, rows, Inches(1.6), Inches(1.15), Inches(10.1), Inches(5.9), font_size=15)
     add_notes(s, "Walk down the column. Do not skip the two not-supported rows or the dropped row.")
 
-    # ---- Slide 12: limitations ----
+    # ---- Slide 12: AI ethical considerations ----
+    s = blank_slide(prs)
+    add_title(s, "AI ethical considerations")
+    rows = [
+        ["Theme", "This project"],
+        ["Transparency", "Release the generator and seeds, not a fixed problem pool"],
+        ["Privacy", "6 of 9 models are commercial APIs; every prompt is disclosed to the provider"],
+        ["Bias / fairness", "English-only templates; ULT includes non-English prompts, an uncontrolled confound"],
+        ["Safety of execution", "Isolated temp directory, not a sandbox: accidental side effects, not adversarial code"],
+    ]
+    add_table(s, rows, Inches(0.7), Inches(1.4), Inches(12.0), Inches(4.4), font_size=16)
+    add_body(s, "Full account, including declared AI-assistance use, in the paper's own section and the supporting report.",
+              top=Inches(6.1), size=16, color=GREY)
+    add_notes(s, "The paper's AI Ethical Considerations section covers all four themes in full; this slide is the compressed version. Declared AI assistance: Claude Code used throughout implementation and drafting, under the author's specification and review.")
+
+    # ---- Slide 13: limitations ----
     s = blank_slide(prs)
     add_title(s, "Limitations")
-    add_body(s, "One model, one fine-tune method. Rank stability falls short of its target.",
+    add_body(s, "One model, one fine-tune method, not re-tuned per condition. Rank stability falls short of its target.",
               top=Inches(1.6), size=24)
-    add_body(s, "Template-generated code, not scraped from real repositories. Equivalent-mutant validation not complete at submission.",
-              top=Inches(3.3), size=20, color=GREY)
-    add_notes(s, "Name these plainly: single fine-tune, stability shortfall, synthetic code, unfinished validation sample.")
+    add_body(s, "Template-generated code, not scraped from real repositories. Equivalent-mutant validation not complete at submission. ULT's own shipped ground truth passes our harness unmodified only 8.4% of the time.",
+              top=Inches(3.3), size=19, color=GREY)
+    add_notes(s, "Name these plainly: single fine-tune at fixed hyperparameters, stability shortfall, synthetic code, unfinished validation sample, and the ULT ground-truth quality finding (recomputed CC also disagrees with vendor metadata at the CC>=8 boundary for 233/3909 records).")
 
-    # ---- Slide 13: future work ----
+    # ---- Slide 14: future work ----
     s = blank_slide(prs)
     add_title(s, "Future work")
     add_body(s, "Finish the mutant sample. Test the causal result at larger scale.",
@@ -367,21 +383,23 @@ def build() -> None:
               top=Inches(3.3), size=20, color=GREY)
     add_notes(s, "Four items, none of them a surprise given the limitations slide.")
 
-    # ---- Slide 14: DEMO ONLY repo structure ----
+    # ---- Slide 15: DEMO ONLY repo structure ----
     s = blank_slide(prs)
     add_title(s, "DEMO ONLY: repository structure")
     add_body(s, f"src/ the pipeline. scripts/ every analysis, plot, and build step. tests/ {TEST_SUITE_COLLECTED} tests. analysis/ every result and interpretation. paper/ the paper and this deck.",
               top=Inches(1.6), size=20)
-    add_notes(s, "Live demo only. Open the repo, point at each top-level directory in turn.", demo_only=True)
+    add_body(s, "Kelvin2 (QUB HPC), SLURM-scheduled, Python 3.10 / uv. 172 of 180 model x tier x instantiation cells complete (95.6%) at the 2026-08-12 freeze.",
+              top=Inches(3.4), size=18, color=GREY)
+    add_notes(s, "Live demo only. Open the repo, point at each top-level directory in turn. Environment and completeness figures for questions on reproducibility.", demo_only=True)
 
-    # ---- Slide 15: DEMO ONLY verification ----
+    # ---- Slide 16: DEMO ONLY verification ----
     s = blank_slide(prs)
     add_title(s, "DEMO ONLY: how the numbers are checked")
     add_body(s, f"{TEST_SUITE_COLLECTED} tests. A citation gate that checks every hand-typed number against live output. An 11-bug error ledger, each with a named fix.",
               top=Inches(1.6), size=20)
     add_notes(s, "Live demo only. Run the citation gate on screen if time allows; show one row of the error ledger.", demo_only=True)
 
-    # ---- Slide 16: DEMO ONLY what I'd do differently ----
+    # ---- Slide 17: DEMO ONLY what I'd do differently ----
     s = blank_slide(prs)
     add_title(s, "DEMO ONLY: what I would do differently")
     add_body(s, "Build the citation gate and config logging in week one.",
