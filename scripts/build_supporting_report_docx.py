@@ -205,7 +205,7 @@ def build() -> None:
     doc.add_page_break()
 
     # ---- body: walk the markdown from the first "## 1." heading onward ----
-    body_start = next(i for i, l in enumerate(lines) if l.startswith("## 1. Context"))
+    body_start = next(i for i, l in enumerate(lines) if l.startswith("## 1. Project development"))
     i = body_start
     fig_counter = 0
     while i < len(lines):
@@ -226,11 +226,16 @@ def build() -> None:
         elif stripped.startswith("## "):
             doc.add_heading(stripped[3:], level=1)
             i += 1
-        elif stripped.startswith("{{FIGURE:"):
+        elif stripped.startswith("{{FIGURE:") or stripped.startswith("{{IMAGE:"):
             fig_counter += 1
-            m = re.match(r"\{\{FIGURE:([a-z_]+)\|(.+)\}\}", stripped)
-            name, caption = m.group(1), m.group(2)
-            img_path = FIGURES / f"{name}.png"
+            is_image = stripped.startswith("{{IMAGE:")
+            if is_image:
+                m = re.match(r"\{\{IMAGE:([^|]+)\|(.+)\}\}", stripped)
+                img_path = ROOT / m.group(1)
+            else:
+                m = re.match(r"\{\{FIGURE:([a-z_]+)\|(.+)\}\}", stripped)
+                img_path = FIGURES / f"{m.group(1)}.png"
+            caption = m.group(2)
             doc.add_picture(str(img_path), width=Inches(6.3))
             doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
             cap = doc.add_paragraph(style="Caption") if "Caption" in doc.styles else doc.add_paragraph()
@@ -267,6 +272,11 @@ def build() -> None:
                         run.font.size = Pt(8.5)
             doc.add_paragraph()  # spacer after table
         elif stripped == "":
+            i += 1
+        elif stripped.startswith("- "):
+            bullet_style = "List Bullet" if "List Bullet" in doc.styles else None
+            p = doc.add_paragraph(style=bullet_style)
+            _add_inline_runs(p, stripped[2:])
             i += 1
         else:
             p = doc.add_paragraph()

@@ -10,49 +10,104 @@ School of Electronics, Electrical Engineering and Computer Science, Queen's Univ
 
 ---
 
-## 1. Context and Literature
+## 1. Project development
 
-### 1.1 The contamination problem
+### 1.1 Research questions and hypothesis
 
-A benchmark is contaminated when the model being tested has seen the benchmark's problems during training. A high score then reflects recall. It does not reflect the capability the benchmark was built to measure. Sainz et al. (2023) argue that contamination should be checked for every benchmark. It should not be assumed away. Balloccu et al. (2024) quantify how often this happens: roughly 42% of 255 evaluation papers they reviewed leaked benchmark data to closed-source models, some 4.7 million samples across 263 benchmarks. This leak happens through two routes. A published benchmark can be scraped from the web into a future training corpus. It can also leak indirectly: problems sent to a commercial model's API during evaluation are logged and reused as training signal. Neither route requires bad faith from anyone involved. Both follow from publishing the benchmark's content.
+Six hypotheses, pre-registered in `docs/Approved_Hypotheses.md`, drive this project. Section 5 states their verdicts. The wording below compresses each approved prediction to one line, see that file for the full text.
 
-Carlini et al. (2023) show the mechanism behind this. Large language models reproduce training sequences verbatim. The rate at which they do so grows with model scale and with how often a sequence is duplicated in the training corpus. A widely used benchmark, evaluated across many papers, is duplicated by construction. Dong et al. (2026) extend this line to code generation. Separating generalisation from memorisation is a live, unresolved problem for code-generation benchmarks.
+| # | RQ | Approved prediction |
+|---|---|---|
+| H1 | RQ1 | Dynamic mutation scores are lower than static, CC-controlled (Test 1: Dynamic vs ULT). The leaked twin PLT scores higher than decontaminated ULT (Test 2) |
+| H2 | RQ1 | Fine-tuning a small open-source model on a static benchmark's ground truth inflates its static-benchmark score more than its dynamic-benchmark score |
+| H3 | RQ2 | Mean mutation score never increases from tier L1 to L4 |
+| H4 | RQ3 | The static-dynamic score gap is larger at L1-L2 than at L3-L4 |
+| H5 | RQ4 | Kendall's τ between model rankings across N=5 dynamic-benchmark instantiations exceeds 0.7 |
+| H6 | RQ5 | Dynamic mutation score correlates positively but imperfectly with an external code-generation proxy's Pass@1, more weakly than the static benchmark's correlation with the same proxy |
 
-These findings establish that contamination is real and detectable after training has happened. None of them offer a way to stop it at measurement time. That gap is the starting point for this project.
+### 1.2 Where this project sits
 
-### 1.2 Dynamic evaluation
+This project does:
 
-One response to contamination is to stop publishing a fixed set of problems. A benchmark that generates fresh problem instances at evaluation time cannot be memorised in advance. Its content did not exist when any past model was trained.
+- Template-based, seeded regeneration of fresh problem instances at evaluation time.
+- A mutation-testing oracle as the scoring mechanism, in place of coverage or a fixed reference suite.
+- An observational and a causal contamination comparison against the current static state of the art. The observational comparison measures nine models against the dynamic benchmark, ULT, and ULT's leaked twin PLT. The causal comparison fine-tunes a small open-source model on ULT's ground truth and measures whether the resulting score inflation transfers to the dynamic benchmark.
+- A construct-validity check against BigCodeBench, an external benchmark this project had no part in building, confirming the dynamic benchmark measures a capability an independent instrument recognises.
 
-DyVal (Zhu et al., 2024) builds reasoning problems from dynamic graphs, so each evaluation run samples a new graph and a new problem. LiveBench (White et al., 2025) refreshes its problem pool on a schedule against continuously updated sources, so a model trained before a given refresh cannot have seen that refresh's content. BeyondBench (Srivastava et al., 2026) generates algorithmic problems with a mathematical correctness guarantee attached to each one. This removes the need for a curated answer key. MATHEMAGIC (O'Brien et al., 2025) applies the same generative principle to mathematics benchmarks. LLM-as-an-Interviewer (Kim et al., 2025) replaces a static test set with an adaptive, dialogue-driven evaluation, where the questions respond to the model's prior answers.
+### 1.3 The pipeline, end to end
 
-Each of these five systems shows that generative evaluation works at scale and resists the failure mode a static benchmark cannot avoid. None of them targets unit-test generation. A generated unit test is not scored the way a generated answer to a question is. It is scored by executing it.
+Section 2 verifies this pipeline phase by phase. Here is what it does, in one diagram:
 
-DyCodeEval (Chen et al., 2025) and the benchmark-usefulness study of Guan et al. (2025) bring dynamic regeneration to code-reasoning benchmarks. Code2Bench (Zhang et al., 2025) scales dynamic benchmark construction from source repositories, generating problems from real code instead of a template grammar. LiveCodeBench (Jain et al., 2025) takes the scheduled-refresh route from LiveBench and applies it to code, drawing its problems from programming contests held after each evaluated model's training cutoff. None of these four systems evaluates test generation. They evaluate code generation. The object produced is a function, not a test suite, and its correctness is checked against a fixed reference answer or a fixed set of assertions.
+{{IMAGE:paper/supporting_report/media/flow_diagram_handdrawn.png|Figure 1. The dynamic benchmark's pipeline, from template corpus to hypothesis test. Steps 6-7 are the two scoring gates. Step 9 feeds Comparisons A, B and C, which in turn feed the six hypothesis tests.}}
 
-### 1.3 Test-generation benchmarks and their limits
+### 1.4 Basic flow sample
 
-Automated test generation predates large language models. EvoSuite (Fraser and Arcuri, 2011) and Pynguin (Lukasczyk and Fraser, 2022) synthesise test suites for object-oriented and Python code, using evolutionary search instead of a language model. Both establish the scoring principle this project relies on. A generated test suite can be judged by running it. It does not need comparison to a reference suite's text.
+A hand-authored template:
 
-Recent work evaluates LLMs on the same task. Schafer et al. (2024) and Siddiq et al. (2024) study LLM-generated test suites empirically. TestEval (Wang et al., 2024) and the software-evolution study of Haroon et al. (2026) evaluate LLM test generation as their central concern. Haroon et al. track test quality as the codebase under test changes over time. MuCoCo (Chou et al., 2026) evaluates the consistency of code-generating LLMs through automated mutation-style perturbation, a close methodological relative of the scoring approach used here.
+```
+def {FN_NAME}({ARG}):
+    """{DOCSTRING}"""
+    if {ARG} > {THRESHOLD}:
+        return {ARG} * {FACTOR}
+    return {ARG}
+# domain: THRESHOLD in {0,5,10}, FACTOR in {2,3}, names from identifier bank
+# smoke_test_inputs: [3, 7]
+```
 
-The static comparator this project measures against, UnLeakedTestBench, or ULT (Huang et al., 2026), is a response to contamination. Its authors decontaminate a corpus of real-world functions and construct a second, leaked twin, PLT, from the same functions. A contamination-consistent score gap between ULT and PLT becomes observable. This design is reused here as one of the project's contamination-evidence comparisons. Codex, evaluated on HumanEval (Chen et al., 2021), established code-generation benchmarking as a discipline. It is now widely reported as contaminated in later models. That is the failure mode a static release cannot avoid over time, however carefully it was built at release. BigCodeBench (Zhuo et al., 2025) serves in this project as an external, independently maintained code-generation proxy. It checks whether the dynamic benchmark's ranking of models agrees with a benchmark this project had no part in building.
+`instantiate(seed=1101)` substitutes the sampled values and produces concrete, runnable code. That function is the oracle for this problem: there is no separate "reference implementation" sitting alongside instance 1101, the instantiated function is the reference implementation, correct by construction because its semantics came from the hand-written template.
 
-None of the systems in this section combines template-based, seeded regeneration with a mutation-testing oracle for unit-test generation. That is the gap this project fills.
+```
+def scale_above(value):
+    """Return value doubled when it exceeds 5, otherwise unchanged."""
+    if value > 5:
+        return value * 2
+    return value
+```
 
-### 1.4 Mutation testing as the quality measure
+Corpus validation: CC = 2 (the L2 band is 2 to 3), oracle smoke test `scale_above(3) == 3`, `scale_above(7) == 14` both hold. Admitted to the corpus. Three mutants are precomputed once here and reused by every model, for fairness and speed: M1 `>` to `>=`, M2 `*` to `+`, M3 the constant `5` to `6`.
 
-A generated test suite can be scored three ways. It can be checked for coverage, the fraction of lines or branches it executes. It can be checked against a fixed set of reference tests, matching the generated suite's assertions to a known-correct answer key. It can be checked by mutation testing, where the function under test is altered in small, controlled ways and the suite is judged by how many of those alterations it catches.
+Three models get the same prompt, built from the real system instruction every problem in this project uses, Dynamic and ULT/PLT alike (section 1.6):
 
-Coverage measures whether code was executed. It does not measure whether the test suite would notice if that code were wrong. A test with no assertions can still achieve full coverage. Fixed reference tests avoid that problem, but they need a human-curated answer key for every problem. That answer key is a form of static content, and it can leak the same way a benchmark's problems can.
+```
+SYSTEM_INSTRUCTION = (
+    "You are an expert Python developer writing a pytest test suite. "
+    "You are given a Python function. "
+    "Write a complete pytest test file that thoroughly tests this function, "
+    "covering normal cases, edge cases, and boundary conditions. "
+    "IMPORTANT: you must import the function under test with exactly "
+    "`from under_test import <function_name>` -- do NOT copy, redefine, or "
+    "reimplement the function in your test file. "
+    "Output only the test file, starting with the import statement."
+)
+```
 
-Mutation testing avoids both weaknesses. McCabe (1976) is the source of cyclomatic complexity, the structural measure this project uses to stratify its problem set into four tiers. Mutation testing's foundational case was made soon after, by DeMillo, Lipton, and Sayward (1978): a test suite's real job is to distinguish a correct program from a class of plausible incorrect ones, not to exercise lines of code. Jia and Harman (2011) survey four decades of mutation-testing research and show the method has matured into a standard technique. Andrews, Briand, and Labiche (2005) supply the empirical justification this project leans on: mutation score is an established, validated proxy for a suite's fault-detection ability, and it correlates with that ability more reliably than coverage does.
+**Model A**:
+```
+from under_test import scale_above
+def test_above():    assert scale_above(7) == 14
+def test_below():    assert scale_above(3) == 3
+def test_boundary(): assert scale_above(5) == 5
+```
+Runs and collects (`exec=True`), passes against the original function (`baseline_passed=True`). Against the mutants: M1 makes `scale_above(5)` return 10, so `test_boundary` fails, killed. M2 makes `scale_above(7)` return 9, killed. M3 (threshold 6): all three assertions still hold, since none of the three inputs sits at the new boundary, survived. `Mut@K = 2/3`.
 
-This project uses seven semantic-altering-change mutation operators: arithmetic, relational, and logical operator replacement, constant replacement, boundary mutation, statement deletion, and return or statement mutation, applied as single-edit mutants. A generated suite's mutation score is the fraction of these mutants it kills. This score is oracle-by-construction. Every generated problem instance carries a reference implementation, generated from the same template. No curated answer key is needed, so none can leak.
+**Model B**:
+```
+from under_test import scale_above
+def test_it(): assert scale_above(7) == 7
+```
+Valid Python, imports fine (`exec=True`), but `scale_above(7)` is really 14, so it fails against the correct function (`baseline_passed=False`). `Mut@K` is undefined, not zero: asking "does it fail on the mutant" makes no sense when it already fails on the original. This is the same mechanism behind a real, project-wide pattern: Mistral-7B's actual dynamic-benchmark exec_rate is 96.7% against only a 1.7% baseline_pass_rate, most attempts run cleanly and still fail the baseline gate, so most of them never reach a mutant at all.
 
-### 1.5 Where this project sits
+**Model C**: misspells the import, `ImportError` at collection, `exec=False`, never reaches the baseline gate.
 
-This project combines three things no prior system combines in one place. The first is template-based, seeded regeneration of fresh problem instances at evaluation time. The second is a mutation-testing oracle as the scoring mechanism, in place of coverage or a fixed reference suite. The third is both an observational and a causal contamination comparison against the current static state of the art. The observational comparison measures nine models against the dynamic benchmark, against ULT, and against ULT's leaked twin PLT. The causal comparison fine-tunes a small open-source model on ULT's ground truth and measures whether the resulting score inflation transfers to the dynamic benchmark. A construct-validity check against BigCodeBench, an external benchmark this project had no part in building, confirms the dynamic benchmark measures a capability an independent instrument recognises.
+A model that had memorised a previous instantiation of this template would have absorbed constants like `threshold=5, factor=2`. A fresh seed changes the threshold, the factor, the identifier names, and the docstring's wording, so memorised assertions now disagree with the new oracle: `baseline_passed=False`, `Mut@K` undefined, memorisation buys nothing. Comparison C (section 1.7) demonstrates the same mechanism from the other direction: on ULT, whose problems are fixed forever, memorisation took a model from 0.9% to 100% baseline-pass, because the memorised answers stayed valid. Dynamic has no fixed artefact to memorise.
+
+### 1.5 Equivalent mutants
+
+An equivalent mutant is one no test could ever kill, because the domain makes the change unobservable, for example `len(x) > 0` mutated to `len(x) != 0` when length is never negative. These sit in `Mut@K`'s denominator and deflate every model's score regardless of test quality. In the example above, M3 survived because no test exercised the value 6, a real test-suite weakness, and killable in principle, not an equivalent mutant. Section 1.8 shows the real, still-unfilled inspection sheet this project uses to estimate how much of that denominator is equivalent, not weak, mutants.
+
+The benchmark's actual scale, and how one instantiation's per-model scores combine into the cross-instantiation stability metric StableMut@K, sketched structurally (not filled in with live numbers, `analysis/STABILITY.md` and section 4.3's H5 discussion carry those):
+
+{{IMAGE:paper/supporting_report/media/instantiation_structure_sketch.png|Figure 2. One instantiation is 4 tiers x 15 templates x 5 seeds = 300 problems. N such instantiations, each scored independently, give each model N Mut@K values. Their mean and standard deviation are StableMut@K, the RQ4/H5 stability metric section 4.3 discusses.}}
 
 ### 1.6 How ULT and PLT problems are prepared
 
@@ -170,7 +225,7 @@ for treatment in {ULT, PLT}:
 emit DiD, ci per treatment benchmark                     # DiD > 0, CI excluding 0: contamination signal
 ```
 
-**A complete, unedited example.** The raw test file Claude Sonnet 4.6 produced for section 1.4's `sum_values` problem, exactly as `extract_test_file()` extracted it from the model's response, nothing added or removed:
+**A complete, unedited example.** Section 1.4 walks through a constructed, hand-simplified illustration. Here is a real one: the raw test file Claude Sonnet 4.6 produced for an actual dynamic-benchmark problem (`L3-clamp-seq-001`, a threshold-style function like section 1.4's), exactly as `extract_test_file()` extracted it from the model's response, nothing added or removed:
 
 ```
 from under_test import sum_values
@@ -211,9 +266,7 @@ verdict: (not yet filled in)
 
 ## 2. Project Life Cycle, Verification and Validation
 
-{{FIGURE:flow_diagram|Figure 1. The dynamic benchmark's pipeline, from template corpus to hypothesis test. The two scoring gates and the three experiments described in this section are marked.}}
-
-Before the phase-by-phase account below, Figure 1 sets out what the finished pipeline does end to end: a template becomes a seeded problem instance with an oracle and precomputed mutants, a model's response to that problem passes through the two scoring gates described in section 2.3, and the resulting record feeds the three experiments named on the diagram and, in turn, the six hypothesis tests in section 4.3.
+Figure 1 (section 1.3) already sets out what the finished pipeline does end to end. This section verifies it phase by phase.
 
 ### 2.1 The six gated phases, as executed
 
@@ -239,7 +292,7 @@ Untrusted code, whether a model's generated test file or a scraped ground-truth 
 
 The project's automated test suite collects 152 tests across the `tests/` directory, run with pytest. 16 of these are marked `torch` (need a working torch import) and are skipped in an environment without a working CPU torch install. The other 136 run everywhere:
 
-{{FIGURE:evidence_test_suite|Figure 2. A real run of the test suite, tail output, captured live.}}
+{{FIGURE:evidence_test_suite|Figure 3. A real run of the test suite, tail output, captured live.}}
 
 A count alone says nothing about what the tests actually guard. Three examples below are regression tests tied to a real bug that was found, cost something, and is also entered in the error ledger (section 2.7).
 
@@ -338,7 +391,7 @@ check_doc_citations       GATE: fails the build on any unsuppressed stale citati
 
 The last step is the gate: `scripts/check_doc_citations.py` checks every statistic-shaped value in `analysis/` and `paper/sections/*.tex` against a reference corpus built fresh from the pipeline's own output, and fails the build on anything that matches nothing live:
 
-{{FIGURE:evidence_citation_gate|Figure 3. A real run of the citation gate, tail output, captured live.}}
+{{FIGURE:evidence_citation_gate|Figure 4. A real run of the citation gate, tail output, captured live.}}
 
 A value is exempt only with an explicit reason, an inline `<!-- cite:historical -->`/`<!-- cite:external -->` marker or an `analysis/CITATION_ALLOWLIST.md` entry, logged as `SUPPRESSED`, counted separately from a genuine `MATCH`.
 
@@ -368,7 +421,7 @@ Compute runs on Kelvin2, Queen's University Belfast's HPC cluster, under SLURM. 
 
 A slice of this project's own real job accounting on Kelvin2, from the week the main evaluation sweep ran:
 
-{{FIGURE:evidence_slurm_jobs|Figure 4. This project's own SLURM job accounting (`sacct`), a fixed historical window, captured live.}}
+{{FIGURE:evidence_slurm_jobs|Figure 5. This project's own SLURM job accounting (`sacct`), a fixed historical window, captured live.}}
 
 The `FAILED` row is real, not curated out of the panel: this is exactly the kind of job the error ledger and section 4.2's lessons trace back to, a bug that only shows up after a real submission, not in a local dry run. The wide spread in `Elapsed` across otherwise identical `eval-mig` jobs, nineteen minutes to just over an hour, is why the partition choice described above is made per job by measured size, not by a single default.
 
@@ -404,7 +457,7 @@ The paper is written in IEEEtran LaTeX and compiled with `latexmk`. Every quanti
 
 **Template-generated problems instead of real-world code.** A benchmark built from real, scraped functions is a fixed artefact once published, and can leak the same way any other benchmark can. Template-generated problems are drawn fresh from a private grammar at evaluation time, so a specific problem instance need never be published. The alternative, drawing problems from a corpus of real repositories the way Code2Bench does, was rejected because that corpus is static content once assembled, and inherits the same leak risk this project set out to remove. The cost of this choice is disclosed in section 4.3: template-generated code may not carry the full structural variety of production code.
 
-**Mutation score as the headline metric.** Section 1.4 sets out the case against coverage and against a fixed reference suite. Coverage does not check whether a test suite would catch a real fault. A fixed reference suite needs a human-curated answer key that can leak. Mutation score needs neither: each problem's reference implementation can generate its mutants, and the suite is scored by execution, not by comparison to hand-written text.
+**Mutation score as the headline metric.** Coverage does not check whether a test suite would catch a real fault. A fixed reference suite needs a human-curated answer key that can leak. Mutation score needs neither: each problem's reference implementation can generate its mutants, and the suite is scored by execution, not by comparison to hand-written text.
 
 **Four complexity tiers.** Test-generation difficulty is not uniform across all code. A trivial, single-path function and a nested, multi-branch one are different tasks. Stratifying the corpus by cyclomatic complexity lets the benchmark report how test-generation quality changes with structural difficulty, and lets a comparison against a static benchmark be matched to the one complexity band both sides share. The four bands, and the target mutant-count range for each, were fixed before any evaluation data existed, so the boundaries could not be tuned to a result after the fact.
 
@@ -448,7 +501,7 @@ Section 5 states each hypothesis's verdict once, with the numbers behind it. Thi
 
 **What would be done differently with the same time.** Generation-config logging and the citation gate would be built in week one, not discovered as a need partway through. Both would have prevented real, costly incidents, not only explained them after the fact. The fifth benchmark instantiation would be budgeted for from the start, not treated as a cut candidate, since stability turned out to be the hypothesis with the least margin to spare. More of the equivalent-mutant hand-inspection would be scheduled earlier, so it did not compete with write-up time at the end of the project.
 
-**What the results do and do not support.** The results support treating a dynamic, template-based, mutation-scored benchmark as resistant to the specific contamination mechanism this project tested: direct fine-tuning on a static benchmark's ground truth. They do not support a claim that the benchmark's rankings are reliable enough to distinguish two closely scoring models with confidence, and they do not support any claim about contamination mechanisms this project did not test, indirect leakage through API logging, for one, which was named as a real route into contamination in section 1.1 but not isolated experimentally here.
+**What the results do and do not support.** The results support treating a dynamic, template-based, mutation-scored benchmark as resistant to the specific contamination mechanism this project tested: direct fine-tuning on a static benchmark's ground truth. They do not support a claim that the benchmark's rankings are reliable enough to distinguish two closely scoring models with confidence, and they do not support any claim about contamination mechanisms this project did not test: indirect leakage through API logging, for one, a real route into contamination this project never isolated experimentally.
 
 ---
 
@@ -496,7 +549,7 @@ uv sync
 uv run pytest -q -m "not torch"
 ```
 
-runs the 136 tests that need no working torch install. `uv run pytest -q` runs the full 152 on a machine with one. Figure 2 (section 2.4) is a real, live capture of this exact command.
+runs the 136 tests that need no working torch install. `uv run pytest -q` runs the full 152 on a machine with one. Figure 3 (section 2.4) is a real, live capture of this exact command.
 
 **Regenerate every table and figure with one command.**
 
