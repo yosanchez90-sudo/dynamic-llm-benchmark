@@ -25,7 +25,6 @@
 \usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage{tabularx}
 \usepackage[hidelinks]{hyperref}
 
 \graphicspath{{figures/}{../analysis/figures/}}
@@ -71,17 +70,15 @@ data contamination, dynamic benchmarking, large language models, mutation testin
 \input{sections/05a_ethics}
 \input{sections/06_conclusion}
 
-\input{sections/07_acknowledgment}
-
 % Pure layout, no content change: IEEEtran's own column-balance heuristic
-% packs the second-to-last page's right column to the very bottom edge
-% while leaving the left column short, pushing a single trailing reference
-% onto an otherwise-empty final page. IEEEtriggeratref/IEEEtriggercmd is
-% IEEEtran's documented mechanism for exactly this ("manually equalize the
-% lengths of two columns on the last page", per the class's own compile-
-% time reminder) -- it does not alter the reference list itself.
-\IEEEtriggeratref{30}
-\IEEEtriggercmd{\enlargethispage{2\baselineskip}}
+% strands the last few references on an otherwise-empty final page.
+% IEEEtriggeratref/IEEEtriggercmd is IEEEtran's documented mechanism for
+% manually equalizing the two columns on the last page; it does not alter
+% the reference list itself. Re-tuned after this pass's cuts changed the
+% document length (the previous trigger point/enlarge amount no longer
+% matched where the overflow actually falls).
+\IEEEtriggeratref{20}
+\IEEEtriggercmd{\enlargethispage{8\baselineskip}}
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 

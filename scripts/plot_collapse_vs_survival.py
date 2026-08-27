@@ -93,7 +93,7 @@ def main() -> None:
     # Single column, stacked, at the actual column width (FIGURE_TABLE_SPEC.md
     # G-3): \includegraphics[width=\columnwidth] applies almost no further
     # shrink, so in-panel text stays close to its authored size.
-    fig, axes = plt.subplots(2, 1, figsize=(COL_W, 2 * COL_W * 0.62), constrained_layout=True)
+    fig, axes = plt.subplots(2, 1, figsize=(COL_W, 2 * COL_W * 0.52), constrained_layout=True)
 
     for ax, (metric_label, col_a, col_b, pair_name, thin_col, panel_id) in zip(axes, rows_spec):
         corr_row = None

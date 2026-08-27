@@ -83,7 +83,7 @@ def main() -> None:
 % page width): ten data columns plus the model name do not fit one
 % IEEEtran column, same reasoning as Table I.
 \\begin{{table*}}[t]
-\\caption{{Descriptive results by model: DyMuT (pooled across tiers) and ULT (\\texttt{{core\\_400}}), all values \\%. Exec.\\ = exec\\_rate, BP = baseline\\_pass\\_rate, Mut@K = conditional mutation score (primary), Cov.-adj.\\ = coverage-adjusted mutation score (co-primary), $n_{{\\text{{def}}}}$ = problems with a defined Mut@K. $^\\dagger$ marks a thin cell ($n_{{\\text{{def}}}}<{THIN_THRESHOLD}$), the same convention as Figure~\\ref{{fig:collapse}}'s red-ringed marker.}}
+\\caption{{Descriptive results by model: DyMuT (pooled across tiers) and ULT (\\texttt{{core\\_400}}), all values \\%. Exec.\\ = exec\\_rate, BP = baseline\\_pass\\_rate, Mut@K = conditional mutation score (primary), Cov.-adj.\\ = coverage-adjusted mutation score (co-primary), $n_{{\\text{{def}}}}$ = problems with a defined Mut@K. $^\\dagger$ marks a thin cell ($n_{{\\text{{def}}}}<{THIN_THRESHOLD}$), the same convention used for the cross-family construct-validity check (Section~\\ref{{sec:results-h6}}).}}
 \\label{{tab:results}}
 \\centering
 \\scriptsize

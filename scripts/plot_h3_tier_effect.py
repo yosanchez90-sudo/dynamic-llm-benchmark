@@ -84,6 +84,7 @@ def main() -> None:
     ax.legend(loc="lower left", ncol=2, frameon=False, handlelength=1.6,
                columnspacing=0.8, labelspacing=0.3)
     fig.savefig(OUT_PATH, dpi=400, bbox_inches="tight", pad_inches=0.02)
+    fig.savefig(OUT_PATH.with_suffix(".png"), dpi=400, bbox_inches="tight", pad_inches=0.02)
     print(f"Wrote {OUT_PATH.relative_to(ROOT)}")
 
 

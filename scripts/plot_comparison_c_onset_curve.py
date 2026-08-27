@@ -88,13 +88,10 @@ def main() -> None:
     rows = list(csv.DictReader(ONSET_CSV.open()))
 
     bp_by_split_epoch: dict[str, dict[int, list[float]]] = defaultdict(lambda: defaultdict(list))
-    verb_by_epoch: dict[int, list[float]] = defaultdict(list)
     for r in rows:
         epoch = int(r["epoch"])
         split = r["split"]
         bp_by_split_epoch[split][epoch].append(1.0 if r["baseline_passed"] == "True" else 0.0)
-        if split == "seen":
-            verb_by_epoch[epoch].append(1.0 if r["verbatim_exact"] == "True" else 0.0)
 
     epoch30 = _epoch30_anchor()
 
@@ -103,11 +100,15 @@ def main() -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    # Stacked, not side-by-side (kept from the prior print-legibility pass,
-    # see module docstring): each panel at the actual column width so
-    # \includegraphics[width=\columnwidth] applies almost no further shrink.
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(COL_W, 2 * COL_W * 0.62),
-                                    constrained_layout=True)
+    # Single panel (baseline-pass rate only) for print: the verbatim-match
+    # panel this figure used to carry alongside it restated, at a coarser
+    # timescale, the same seen-ULT-only climb the shaded "memorization"
+    # region below already marks, and its one load-bearing fact (100% by
+    # epoch 20) is stated in the caption instead of costing a second panel
+    # of vertical space (RUBRIC_ACTION_PLAN.md-driven page-budget pass,
+    # 2026-08-27).
+    fig, ax1 = plt.subplots(1, 1, figsize=(COL_W, COL_W * 0.62),
+                             constrained_layout=True)
 
     for split, style in SPLIT_STYLE.items():
         epochs = sorted(bp_by_split_epoch[split].keys())
@@ -134,24 +135,10 @@ def main() -> None:
 
     ax1.set_xlabel("Training epoch")
     ax1.set_ylabel("Baseline pass rate (%)")
-    ax1.text(0.02, 0.95, "(a)", transform=ax1.transAxes, fontsize=8, fontweight="bold", va="top")
     ax1.legend(loc="lower center", bbox_to_anchor=(0.62, 0.0), frameon=False,
                handlelength=1.6, labelspacing=0.3)
     ax1.set_ylim(0, 105)
     ax1.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)
-
-    epochs = sorted(verb_by_epoch.keys())
-    vals = [sum(verb_by_epoch[e]) / len(verb_by_epoch[e]) * 100 for e in epochs]
-    epochs_full = [0] + epochs + [30]
-    vals_full = [0.0] + vals + [100.0]  # epoch 30: 112/112 exact match, PROVENANCE.md
-    ax2.plot(epochs_full, vals_full, label="seen-ULT verbatim match", markersize=4, linewidth=1.2,
-             color=SPLIT_STYLE["seen"]["color"], linestyle="-", marker="o")
-    ax2.set_xlabel("Training epoch")
-    ax2.set_ylabel("Verbatim-match rate (%)")
-    ax2.text(0.02, 0.95, "(b)", transform=ax2.transAxes, fontsize=8, fontweight="bold", va="top")
-    ax2.legend(frameon=False, handlelength=1.6)
-    ax2.set_ylim(0, 105)
-    ax2.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT_PATH, dpi=400, bbox_inches="tight", pad_inches=0.02)

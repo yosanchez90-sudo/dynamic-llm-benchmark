@@ -20,6 +20,10 @@ versa) raises loudly instead of silently producing a mismatched table,
 same "fail loud on a coverage gap" discipline as the rest of this
 project's validators.
 
+The section-pointer column (FIGURE_TABLE_SPEC.md T-4) uses \\ref{} to each
+hypothesis's own Section 4 subsection label, not a hardcoded number, so it
+can never go stale if Section 4 is ever reordered.
+
 Usage:
     python scripts/build_paper_table1.py
 
@@ -36,31 +40,35 @@ ROOT = Path(__file__).resolve().parent.parent
 XLSX = ROOT / "docs" / "Research_questions.xlsx"
 OUT_PATH = ROOT / "paper" / "table1.tex"
 
-# Fixed one-line paraphrase of each hypothesis's pre-registered prediction,
-# in table row order, plus the research question it addresses (supervisor's
-# point: the table should carry the RQ mapping the introduction used to
-# spell out in prose). See docs/Approved_Hypotheses.md for the exact wording
-# and RESEARCH_QUESTION_FOOTNOTE below for what each RQ short-name means.
-PARAPHRASES: list[tuple[str, str, str]] = [
-    ("H1 Test 1", "RQ1", "DyMuT scores lower than static, CC-matched"),
-    ("H1 Test 2", "RQ1", "Leaked twin (PLT) scores higher than decontaminated ULT"),
-    ("H2", "RQ1", "Static-benchmark gain from fine-tuning exceeds dynamic gain"),
-    ("H2-supplementary", "RQ1 (supplementary)", "Leaked instantiation inflates itself, not fresh instantiations (post-hoc)"),
-    ("H3", "RQ2", "Mutation score never increases from L1 to L4"),
-    ("H4", "RQ3", "Static-dynamic gap larger at low tiers than high tiers"),
-    ("H5", "RQ4", "Cross-instantiation Kendall $\\tau$ exceeds \\HFiveTauThreshold{}"),
-    ("H6 clause 1", "RQ5", "DyMuT-proxy correlation positive but imperfect"),
-    ("H6 clause 2", "RQ5", "DyMuT-proxy correlation weaker than static-proxy"),
+# (hypothesis ID in the sheet, RQ, abbreviated row label, section label to
+# \ref{}, one-line prediction paraphrase). Abbreviated labels are defined in
+# the table's own note (FIGURE_TABLE_SPEC.md T-3): trims "H1 Test 1/2" to
+# "H1a/H1b", "H6 clause 1/2" to "H6a/H6b", "H2-supplementary" to "H2-supp.",
+# freeing width for the Prediction column.
+PARAPHRASES: list[tuple[str, str, str, str, str]] = [
+    ("H1 Test 1", "RQ1", "H1a", "sec:results-h1test1", "DyMuT scores lower than static, CC-matched"),
+    ("H1 Test 2", "RQ1", "H1b", "sec:results-h1test2", "Leaked twin (PLT) scores higher than decontaminated ULT"),
+    ("H2", "RQ1", "H2", "sec:results-h2", "Static-benchmark gain from fine-tuning exceeds dynamic gain"),
+    ("H2-supplementary", "RQ1", "H2-supp.", "sec:results-h2supp", "Leaked instantiation inflates itself, not fresh instantiations (post-hoc)"),
+    ("H3", "RQ2", "H3", "sec:results-h3", "Mutation score never increases from L1 to L4"),
+    ("H4", "RQ3", "H4", "sec:results-h4", "Static-dynamic gap larger at low tiers than high tiers"),
+    ("H5", "RQ4", "H5", "sec:results-h5", "Cross-instantiation Kendall $\\tau$ exceeds \\HFiveTauThreshold{}"),
+    ("H6 clause 1", "RQ5", "H6a", "sec:results-h6", "DyMuT-proxy correlation positive but imperfect"),
+    ("H6 clause 2", "RQ5", "H6b", "sec:results-h6", "DyMuT-proxy correlation weaker than static-proxy"),
 ]
 
-# One-line footnote so the table is self-contained without forcing a reader
-# back to the introduction's prose for what each RQ actually asks.
-RESEARCH_QUESTION_FOOTNOTE = (
-    "RQ1 contamination resistance vs a static benchmark; RQ2 effect of "
-    "complexity tier; RQ3 whether overestimation is larger at low tiers; "
-    "RQ4 stability of rankings across re-instantiations; RQ5 agreement "
-    "with an external code-generation proxy."
-)
+# RQ legend + abbreviation key, as a wrapped table note (FIGURE_TABLE_SPEC.md
+# T-2): one RQ per line so a five-item legend is scannable, not one wrapped
+# paragraph. Kept inside the table (not only in the Introduction's prose,
+# see PA-7) so the table reads standalone.
+TABLE_NOTE_LINES = [
+    "RQ1: contamination resistance versus a static benchmark.",
+    "RQ2: effect of complexity tier.",
+    "RQ3: whether overestimation is larger at low tiers.",
+    "RQ4: stability of rankings across re-instantiations.",
+    "RQ5: agreement with an external code-generation proxy.",
+    "H1a/H1b: H1 Test 1/Test 2. H2-supp.: H2-supplementary (post-hoc). H6a/H6b: H6 clause 1/clause 2.",
+]
 
 _VERDICT_SPLIT_RE = re.compile(r"\s+-\s+|\.\s+")
 
@@ -89,7 +97,7 @@ def main() -> None:
             continue
         verdicts[str(hyp_id).strip()] = _verdict_tag(str(row[verdict_col]))
 
-    paraphrase_ids = {hid for hid, _, _ in PARAPHRASES}
+    paraphrase_ids = {hid for hid, *_ in PARAPHRASES}
     sheet_ids = set(verdicts)
     if paraphrase_ids != sheet_ids:
         missing_in_sheet = paraphrase_ids - sheet_ids
@@ -101,12 +109,15 @@ def main() -> None:
         )
 
     rows_tex = []
-    for hyp_id, rq, prediction in PARAPHRASES:
+    for hyp_id, rq, short_label, sec_label, prediction in PARAPHRASES:
         verdict = _escape(verdicts[hyp_id])
-        rows_tex.append(f"{_escape(rq)} & {_escape(hyp_id)} & {prediction} & {verdict} \\\\")
+        rows_tex.append(
+            f"{_escape(rq)} & {short_label} & \\ref{{{sec_label}}} & {prediction} & {verdict} \\\\"
+        )
 
     body = "\n".join(rows_tex)
-    # table* (not table): a 4-column RQ/Hyp./Prediction/Verdict table no
+    note = " ".join(TABLE_NOTE_LINES)
+    # table* (not table): a 5-column RQ/Hyp./Sec./Prediction/Verdict table no
     # longer fits a single IEEEtran column (confirmed 2026-08-27 -- adding
     # the RQ column overflowed the column width by ~35pt and visibly
     # collided with the adjacent column's text). table* spans the full
@@ -116,8 +127,9 @@ def main() -> None:
     tex = f"""% Auto-generated by scripts/build_paper_table1.py -- DO NOT EDIT DIRECTLY.
 % Compact hypothesis/prediction/verdict table. Predictions are fixed
 % paraphrases (see script docstring); verdicts are read live from
-% docs/Research_questions.xlsx's Hypotheses sheet. table* (full page width,
-% not table): see script docstring for why this must not be a single-column
+% docs/Research_questions.xlsx's Hypotheses sheet; the section pointer is a
+% live \\ref{{}}, not a hardcoded number. table* (full page width, not
+% table): see script docstring for why this must not be a single-column
 % table.
 \\begin{{table*}}[t]
 \\caption{{Pre-registered hypotheses, predictions, and verdicts}}
@@ -126,15 +138,14 @@ def main() -> None:
 \\small
 \\setlength{{\\tabcolsep}}{{3pt}}
 \\renewcommand{{\\arraystretch}}{{1.0}}
-\\begin{{tabular}}{{@{{}}lll l@{{}}}}
+\\begin{{tabular}}{{@{{}}llc l l@{{}}}}
 \\toprule
-\\textbf{{RQ}} & \\textbf{{Hyp.}} & \\textbf{{Prediction}} & \\textbf{{Verdict}} \\\\
+\\textbf{{RQ}} & \\textbf{{Hyp.}} & \\textbf{{\\S}} & \\textbf{{Prediction}} & \\textbf{{Verdict}} \\\\
 \\midrule
 {body}
 \\bottomrule
+\\multicolumn{{5}}{{@{{}}p{{\\textwidth}}@{{}}}}{{\\footnotesize {note}}} \\\\
 \\end{{tabular}}
-\\vspace{{2pt}}
-{{\\raggedright\\small {RESEARCH_QUESTION_FOOTNOTE}\\par}}
 \\end{{table*}}
 """
     OUT_PATH.write_text(tex)
