@@ -37,7 +37,7 @@ PYTHON = sys.executable
 # depend on earlier ones completing successfully, each runs regardless.
 STEPS: list[tuple[str, str, str]] = [
     ("comparison_ab", "scripts/build_comparison_tables.py",
-     "Comparison A (Dynamic-L4 vs ULT) + Comparison B (ULT vs PLT)"),
+     "Comparison A (DyMuT L4 vs ULT) + Comparison B (ULT vs PLT)"),
     ("stability", "scripts/analyze_stability.py",
      "StableMut@K + pairwise Kendall tau (RQ4.1)"),
     ("finetune_endpoint", "scripts/build_finetune_endpoint_table.py",
@@ -79,6 +79,8 @@ STEPS: list[tuple[str, str, str]] = [
      "supporting report and slide deck -- structural, not data-derived"),
     ("contamination_loop_figure", "scripts/plot_contamination_loop.py",
      "Three-step contamination-loop diagram, for the slide deck -- structural, not data-derived"),
+    ("project_timeline_figure", "scripts/plot_project_timeline.py",
+     "Project timeline: six planned phases vs. four real, dated deviations -- structural + a handful of logged dates"),
     ("execution_evidence_figure", "scripts/plot_execution_evidence.py",
      "Real, live-captured execution evidence (test suite, citation gate, SLURM job "
      "accounting) for the supporting report -- structural, not data-derived"),

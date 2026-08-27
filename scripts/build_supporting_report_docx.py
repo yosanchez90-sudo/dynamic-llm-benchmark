@@ -233,7 +233,7 @@ def build() -> None:
                 m = re.match(r"\{\{IMAGE:([^|]+)\|(.+)\}\}", stripped)
                 img_path = ROOT / m.group(1)
             else:
-                m = re.match(r"\{\{FIGURE:([a-z_]+)\|(.+)\}\}", stripped)
+                m = re.match(r"\{\{FIGURE:([a-z0-9_]+)\|(.+)\}\}", stripped)
                 img_path = FIGURES / f"{m.group(1)}.png"
             caption = m.group(2)
             doc.add_picture(str(img_path), width=Inches(6.3))
@@ -282,6 +282,19 @@ def build() -> None:
             p = doc.add_paragraph()
             _add_inline_runs(p, stripped)
             i += 1
+
+    # RUBRIC_ACTION_PLAN.md PS-5: force Word to recompute every field
+    # (the TOC included) the moment the document opens, so a marker never
+    # sees the literal "Right-click and choose 'Update Field'..." Word
+    # placeholder -- python-docx cannot itself run Word's layout engine to
+    # fill in real page numbers, so the field is written with that
+    # placeholder text, but this setting makes Word overwrite it with the
+    # real, page-numbered contents on the very first open, before anyone
+    # looks at it.
+    settings_el = doc.settings.element
+    update_fields = OxmlElement("w:updateFields")
+    update_fields.set(qn("w:val"), "true")
+    settings_el.append(update_fields)
 
     doc.save(OUT_PATH)
     print(f"Saved: {OUT_PATH.relative_to(ROOT)}")
