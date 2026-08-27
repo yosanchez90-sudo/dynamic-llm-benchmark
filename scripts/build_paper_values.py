@@ -43,6 +43,22 @@ def raw(name: str, value: str) -> None:
     macros[name] = value
 
 
+_SMALL_INT_WORDS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+                    6: "six", 7: "seven", 8: "eight", 9: "nine"}
+
+
+def word_count(name: str, value: int) -> None:
+    """Register a small-integer macro spelled out as a word (e.g. "eight"),
+    for a model/sample count quoted in the same sentence as another count
+    this paper always spells out (e.g. "the nine canonical models"). Mixing
+    a numeral with a spelled-out number in one phrase reads as inconsistent
+    (build_paper_values.py's own style-consistency pass, 2026-08-27); the
+    value itself stays live, only its rendering as a word is fixed."""
+    if value not in _SMALL_INT_WORDS:
+        raise ValueError(f"{name}={value} has no word form registered (only 1-9)")
+    macros[name] = _SMALL_INT_WORDS[value]
+
+
 def pp(name: str, value: float) -> None:
     """Register a percentage-points macro (0-1 fraction -> 'XX.Xpp')."""
     macros[name] = f"{value * 100:.1f}"
@@ -53,7 +69,7 @@ def main() -> None:
     a_w = pd.read_csv(ANALYSIS / "comparison_a_wilcoxon.csv").iloc[0]
     a_w_adj = pd.read_csv(ANALYSIS / "comparison_a_coverage_adjusted_wilcoxon.csv").iloc[0]
     a_w_thick = pd.read_csv(ANALYSIS / "comparison_a_wilcoxon_thick.csv").iloc[0]
-    num("HOneTOneN", a_w["n_pairs"], "g")
+    word_count("HOneTOneN", int(a_w["n_pairs"]))
     num("HOneTOneEffectR", a_w["effect_r"], ".3f")
     num("HOneTOneP", a_w["p_value"], ".4f")
     num("HOneTOneMeanDyn", a_w["mean_a"], ".4f")
@@ -130,6 +146,13 @@ def main() -> None:
     raw("HTwoPreMutkUndefined", f"{n_undefined}")
     raw("HTwoPreMutkTotal", f"{int(seen_pre_mutk['n_total'])}")
     num("HTwoPostMutk", seen_post_mutk["mut_at_k"], ".3f")
+    # Mutation score's own theoretical ceiling (every mutant killed), not a
+    # value derived from any CSV, contrasted against HTwoPostMutk in the
+    # discussion's "byte-identical recall does not imply Mut@K=1" point.
+    # Given its own macro rather than a bare literal for the same reason as
+    # SigLevel above: it sits mid-paragraph, where a same-line `% cite:`
+    # comment would swallow the rest of that physical line.
+    num("MutkCeiling", 1.0, ".1f")
 
     # ---------------------------------------------- Equivalent-mutant validation
     # analysis/equiv_mutants/inspection_sheet.xlsx is currently fully unfilled
