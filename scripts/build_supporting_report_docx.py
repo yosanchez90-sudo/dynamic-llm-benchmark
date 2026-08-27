@@ -30,6 +30,62 @@ FIGURES = ROOT / "analysis" / "figures"
 
 NAVY = RGBColor(0x1F, 0x3A, 0x5F)
 
+# Usable text width at this document's margins (21cm page, 2.5cm each
+# side -- see build()'s section setup): 21 - 2.5 - 2.5 = 16cm.
+USABLE_WIDTH_CM = 16.0
+
+
+def _set_table_column_widths(table, rows: list[list[str]]) -> None:
+    """Give every column an explicit, content-proportional width summing to
+    the page's usable width, and switch the table to fixed layout.
+
+    Without this, python-docx tables default to Word's "autofit to
+    contents" layout: a column sizes itself to its widest *unwrapped*
+    cell, so a table with a long-prose column (e.g. "What it cannot do")
+    next to short label columns (e.g. "#") renders far wider than the
+    page and everything on it -- text included -- reads as oversized,
+    because nothing is actually wrapping into a properly page-width
+    column. Confirmed absent from every table this script writes
+    (RUBRIC_ACTION_PLAN.md quality pass, 2026-08-28).
+    """
+    n_cols = len(rows[0])
+    # Proportional to each column's average cell length, not equal widths:
+    # a five-word "V or V" column next to a full-sentence "What it guards"
+    # column should not get the same share of the page.
+    avg_len = [
+        sum(len(row[c]) for row in rows) / len(rows)
+        for c in range(n_cols)
+    ]
+    min_frac = 0.09  # floor so a short column (e.g. "#", "n") stays legible
+    raw = [max(x, 1) for x in avg_len]
+    total = sum(raw)
+    fracs = [max(x / total, min_frac) for x in raw]
+    # Re-normalize after applying the floor, so fractions still sum to 1.
+    fracs = [f / sum(fracs) for f in fracs]
+    widths_cm = [USABLE_WIDTH_CM * f for f in fracs]
+
+    table.autofit = False
+    table.allow_autofit = False
+    for row in table.rows:
+        for c, cell in enumerate(row.cells):
+            cell.width = Cm(widths_cm[c])
+            _tighten_cell_margins(cell)
+
+
+def _tighten_cell_margins(cell) -> None:
+    """Word's default table-cell margins (~0.19cm left/right, more top/
+    bottom) are generous for a 3-column table and wasteful for a 6-column
+    one; tighten them so more of each column's already-narrow width goes
+    to text, not padding."""
+    tc_pr = cell._tc.get_or_add_tcPr()
+    mar = OxmlElement("w:tcMar")
+    for side, val in (("top", 40), ("bottom", 40), ("left", 60), ("right", 60)):
+        node = OxmlElement(f"w:{side}")
+        node.set(qn("w:w"), str(val))
+        node.set(qn("w:type"), "dxa")
+        mar.append(node)
+    tc_pr.append(mar)
+
 
 def _set_field(paragraph, field_code, result_text=""):
     """Insert a real Word field (e.g. TOC, PAGE) into a paragraph."""
@@ -251,25 +307,33 @@ def build() -> None:
             # Table: detect header + separator + rows.
             rows, i = _parse_table(lines, i)
             n_cols = len(rows[0])
+            # Smaller body text and tighter row spacing for wide tables
+            # (5+ columns): the same 8.5pt/9.5pt that reads fine at 3
+            # columns is cramped once that width is split six ways.
+            header_size = Pt(9.5) if n_cols <= 4 else Pt(8.5)
+            body_size = Pt(8.5) if n_cols <= 4 else Pt(7.5)
             table = doc.add_table(rows=1, cols=n_cols)
             table.style = "Light Grid Accent 1" if "Light Grid Accent 1" in [s.name for s in doc.styles] else "Table Grid"
             table.alignment = WD_TABLE_ALIGNMENT.CENTER
             hdr_cells = table.rows[0].cells
             for c, text_cell in enumerate(rows[0]):
-                hdr_cells[c].text = ""
+                # No cell.text = "" first: a freshly added cell's paragraph
+                # already has zero runs, so clearing it first only adds a
+                # stray empty run alongside the real one (harmless to
+                # rendering, but pointless).
                 p = hdr_cells[c].paragraphs[0]
                 r = p.add_run(text_cell)
                 r.bold = True
-                r.font.size = Pt(9.5)
+                r.font.size = header_size
             for row_vals in rows[1:]:
                 row_cells = table.add_row().cells
                 for c, cell_val in enumerate(row_vals):
-                    row_cells[c].text = ""
                     p = row_cells[c].paragraphs[0]
                     p.paragraph_format.space_after = Pt(2)
                     _add_inline_runs(p, cell_val)
                     for run in p.runs:
-                        run.font.size = Pt(8.5)
+                        run.font.size = body_size
+            _set_table_column_widths(table, rows)
             doc.add_paragraph()  # spacer after table
         elif stripped == "":
             i += 1

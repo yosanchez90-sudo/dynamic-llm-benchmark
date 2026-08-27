@@ -125,19 +125,25 @@ def main() -> None:
     # argument (including the epoch ranges) is in the caption; these two
     # in-axes labels only need to mark *which region* they refer to.
     ax1.axvline(1, color="gray", linestyle="-", linewidth=0.8, alpha=0.6, zorder=0)
-    ax1.annotate("generic gain", xy=(1, 27), xytext=(3.2, 58),
-                 fontsize=7, color="dimgray", ha="left",
+    ax1.annotate("generic gain", xy=(1, 27), xytext=(2.4, 68),
+                 fontsize=6.5, color="dimgray", ha="left",
                  arrowprops=dict(arrowstyle="->", color="dimgray", alpha=0.7))
     ax1.axvspan(5, 20, color="#d62728", alpha=0.06, zorder=0)
     ax1.annotate("memorization", xy=(12, 72), xytext=(12, 92),
-                 fontsize=7, color="#d62728", ha="center",
+                 fontsize=6.5, color="#d62728", ha="center",
                  arrowprops=dict(arrowstyle="->", color="#d62728", alpha=0.7))
 
     ax1.set_xlabel("Training epoch")
     ax1.set_ylabel("Baseline pass rate (%)")
-    ax1.legend(loc="lower center", bbox_to_anchor=(0.62, 0.0), frameon=False,
-               handlelength=1.6, labelspacing=0.3)
-    ax1.set_ylim(0, 105)
+    # Legend anchored in the bottom-right corner (epoch ~22-30, low
+    # baseline-pass rate): the only region genuinely clear of both flat
+    # series and the two in-axes annotations, confirmed by inspecting the
+    # rendered figure (the previous lower-center placement crossed the
+    # "generic gain" annotation's arrow).
+    ax1.legend(loc="lower right", frameon=True, framealpha=0.9, edgecolor="none",
+               fontsize=6.5, handlelength=1.6, labelspacing=0.3,
+               borderaxespad=0.3)
+    ax1.set_ylim(0, 108)
     ax1.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
