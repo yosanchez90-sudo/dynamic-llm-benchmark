@@ -524,6 +524,9 @@ _BARE_NUMBER_RE = re.compile(r"(?<![\w\\-])(-?\d+\.\d+|-?\d+pp\b|-?\d+%)")
 _TEX_CITE_MARKER_RE = re.compile(r"%\s*cite:(historical|external)\b")
 
 
+_UNESCAPED_PERCENT_RE = re.compile(r"(?<!\\)%")
+
+
 def find_hand_typed_numbers(path: Path) -> list[tuple[int, str]]:
     """Return [(line_no, matched_text)] for numeric literals in prose that
     are not part of a LaTeX command (\\NumXXX{}, \\cite{}, \\ref{}, a
@@ -537,7 +540,15 @@ def find_hand_typed_numbers(path: Path) -> list[tuple[int, str]]:
     for line_no, line in enumerate(text.splitlines(), start=1):
         if line.lstrip().startswith("%"):
             continue
-        code_part, _, comment_part = line.partition("%")
+        # A literal percent sign in prose is escaped as "\%" in LaTeX and is
+        # not a comment marker. Splitting on the first bare "%" (the old
+        # str.partition("%") behaviour) treated an escaped "\%" as the start
+        # of a comment, silently truncating the scanned portion of the line
+        # and hiding any hand-typed number after it (found 2026-08-27: "not
+        # 1.0" in 05_discussion.tex, after "despite 100\% verbatim
+        # reproduction", was never scanned because of this).
+        m = _UNESCAPED_PERCENT_RE.search(line)
+        code_part, comment_part = (line[:m.start()], line[m.end():]) if m else (line, "")
         if not code_part.strip():
             continue
         if _TEX_CITE_MARKER_RE.search("%" + comment_part):
