@@ -124,7 +124,7 @@ def main() -> None:
 \\label{{tab:hypotheses}}
 \\centering
 \\small
-\\setlength{{\\tabcolsep}}{{6pt}}
+\\setlength{{\\tabcolsep}}{{3pt}}
 \\renewcommand{{\\arraystretch}}{{1.0}}
 \\begin{{tabular}}{{@{{}}lll l@{{}}}}
 \\toprule
