@@ -1,0 +1,33 @@
+n,first_author,year,short_title,cited_in_paper,in_supporting_body,proposed_home_in_supporting_report,action,keep_minimum
+1,Andrews,2005,Is Mutation an Appropriate Tool for Testing Experiments?,"[27]",no,"S4.1 'Mutation score as the headline metric' - the fault-detection-proxy claim",cite in place,yes
+2,Angrist & Pischke,2009,Mostly Harmless Econometrics,"[30]",no,"S1.8(d) DiD pseudocode and S2.9 statistical procedure",cite in place,yes
+3,Balloccu,2024,"Leak, Cheat, Repeat","[2]",no,"New literature section - contamination evidence; also the API-retention ethics point",cite in new lit section,no
+4,Carlini,2023,Quantifying Memorization Across Neural Language Models,"[4]",no,"New lit section; also S4.1 rationale for choosing the smallest model for the probe",cite in both,no
+5,Chen S. (DyCodeEval),2025,Dynamic Benchmarking of Reasoning in Code LLMs under Contamination,"[11]",no,"New lit section - dynamic benchmarks comparison table",cite in new lit section,no
+6,Chen M. (Codex/HumanEval),2021,Evaluating Large Language Models Trained on Code,"[22]",no,"New lit section - background on code-gen benchmarking and its contamination",cite in new lit section,no
+7,Chou (MuCoCo),2026,Automated Consistency Testing of Code LLMs,"[21]",no,"New lit section - closest methodological parallel (mutation-style perturbation)",cite in new lit section,no
+8,DeMillo,1978,Hints on Test Data Selection,"[25]",no,"S4.1 mutation-testing origin",cite in place,yes
+9,Dong,2026,Generalization or Memorization (code generation),"[5]",no,"New lit section - memorisation vs generalisation in code",cite in new lit section,no
+10,Efron & Tibshirani,1994,An Introduction to the Bootstrap,"[31]",partial (term only),"S1.8(d) bootstrap_percentile_ci and S2.9",cite in place,yes
+11,Fraser & Arcuri (EvoSuite),2011,Automatic Test Suite Generation,"[15]",no,"New lit section - pre-LLM test generation baseline",cite in new lit section,no
+12,Guan,2025,Is Your Benchmark Still Useful?,"[12]",no,"New lit section - dynamic benchmarks comparison table",cite in new lit section,no
+13,Haroon,2026,Evaluating LLM-Based Test Generation Under Software Evolution,"[20]",no,"New lit section - test-generation evaluation table",cite in new lit section,no
+14,Holm,1979,A Simple Sequentially Rejective Multiple Test Procedure,"[32]",partial (name only),"S2.9 - the correction is described but not cited",cite in place,yes
+15,Hu (LoRA),2022,Low-Rank Adaptation of Large Language Models,"[29]",partial (term only),"S3.3 model-serving stack and S4.1 'LoRA on a small open-source model'",cite in place,yes
+16,Huang (ULT/PLT),2026,Benchmarking LLMs for Unit Test Generation from Real-World Functions,"[3]",partial (acronym only),"S1.6 ULT/PLT preparation; S2.7 bug 8; new lit section as the closest static comparator",cite in place + lit section,yes
+17,Hui (Qwen2.5-Coder),2024,Qwen2.5-Coder Technical Report,"[28]",partial (name only),"S3.3 model-serving and fine-tuning stack",cite in place,yes
+18,Jain (LiveCodeBench),2025,Holistic and Contamination Free Evaluation,"[14]",no,"New lit section - dynamic benchmarks comparison table",cite in new lit section,no
+19,Jia & Harman,2011,An Analysis and Survey of Mutation Testing,"[26]",no,"S1.5 equivalent mutants - the strongest place for it; also S4.1",cite in place,yes
+20,Kim,2025,LLM-as-an-Interviewer,"[10]",no,"New lit section - dynamic evaluation without a fixed test set",cite in new lit section,no
+21,Lukasczyk (Pynguin),2022,Automated Unit Test Generation for Python,"[16]",no,"New lit section; also S3.4 as a Python test-gen tool considered and not adopted",cite in both,no
+22,McCabe,1976,A Complexity Measure,"[24]",partial (concept only),"S2.2 corpus validation - cyclomatic complexity recompute",cite in place,yes
+23,O'Brien (MATHEMAGIC),2025,Dynamic Mathematics Benchmarks Robust to Memorization,"[9]",no,"New lit section - same generative principle in another domain",cite in new lit section,no
+24,Sainz,2023,NLP Evaluation in Trouble,"[1]",no,"New lit section - the contamination-measurement argument that motivates the project",cite in new lit section,no
+25,Schaefer,2024,Empirical Evaluation of LLMs for Automated Unit Test Generation,"[17]",no,"New lit section - test-generation evaluation table",cite in new lit section,no
+26,Siddiq,2024,Using LLMs to Generate JUnit Tests,"[18]",no,"New lit section - test-generation evaluation table",cite in new lit section,no
+27,Srivastava (BeyondBench),2026,Contamination-Resistant Evaluation of Reasoning,"[8]",no,"New lit section - dynamic benchmarks comparison table",cite in new lit section,no
+28,Wang (TestEval),2024,Benchmarking LLMs for Test Case Generation,"[19]",no,"New lit section - closest test-generation benchmark; say why it was not the comparator",cite in new lit section,no
+29,White (LiveBench),2025,A Challenging Contamination-Limited LLM Benchmark,"[7]",no,"New lit section - refresh-based rather than generative; note the maintenance cost",cite in new lit section,no
+30,Zhang (Code2Bench),2025,Scaling Source and Rigor for Dynamic Benchmark Construction,"[13]",yes (named),"S4.1 already names it as the rejected alternative - add the citation marker",add citation marker,yes
+31,Zhu (DyVal),2024,Dynamic Evaluation of LLMs for Reasoning Tasks,"[6]",no,"New lit section - the origin of the dynamic-generation approach",cite in new lit section,no
+32,Zhuo (BigCodeBench),2025,Benchmarking Code Generation with Diverse Function Calls,"[23]",yes (named),"S1.2 construct-validity check; S2.7 bug 3; new lit section",cite in place + lit section,yes
