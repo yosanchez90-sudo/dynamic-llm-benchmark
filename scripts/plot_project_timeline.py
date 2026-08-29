@@ -70,12 +70,12 @@ def main() -> None:
         b = FancyBboxPatch((i, 0), 0.92, 1, boxstyle="round,pad=0.02,rounding_size=0.05",
                             linewidth=1.4, edgecolor=PHASE_EDGE, facecolor=PHASE_COLOR, zorder=3)
         ax_top.add_patch(b)
-        ax_top.text(i + 0.46, 0.5, label, ha="center", va="center", fontsize=7.2, zorder=4)
+        ax_top.text(i + 0.46, 0.5, label, ha="center", va="center", fontsize=6.2, zorder=4)
     ax_top.set_xlim(-0.15, n + 0.05)
     ax_top.set_ylim(0, 1)
     ax_top.axis("off")
     ax_top.set_title("Planned (sixteen weeks, six gated phases, strict order)",
-                      fontsize=8, loc="left")
+                      fontsize=7, loc="left")
 
     # --- Bottom: the four real, dated deviation events on a date axis -----
     dates = [e[0] for e in EVENTS]
@@ -89,24 +89,24 @@ def main() -> None:
         ax_bot.axvline(date, color=EVENT_EDGE, linewidth=0.9, alpha=0.5, zorder=1)
         ax_bot.scatter([date], [0], color=EVENT_EDGE, s=28, zorder=3)
         ax_bot.annotate(f"{label}\n{date.isoformat()}", (date, 0), xytext=(0, y_above),
-                         textcoords="offset points", ha="center", fontsize=6.6,
+                         textcoords="offset points", ha="center", fontsize=5.6,
                          color="#333333")
         # connector to the planned phase it belongs to, showing out-of-order
         # phase work (FIGURE_TABLE_SPEC.md-style annotation, not a title)
         ax_bot.annotate(f"belongs to Phase {phase_idx + 1}", (date, 0), xytext=(0, y_below),
-                         textcoords="offset points", ha="center", fontsize=6.2,
+                         textcoords="offset points", ha="center", fontsize=5.2,
                          color=EVENT_EDGE, style="italic")
     ax_bot.set_xlim(xmin, xmax)
     ax_bot.set_ylim(-1.6, 1.6)
     ax_bot.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
     ax_bot.xaxis.set_major_locator(mdates.DayLocator(interval=7))
-    plt.setp(ax_bot.get_xticklabels(), rotation=30, ha="right", fontsize=6.5)
+    plt.setp(ax_bot.get_xticklabels(), rotation=30, ha="right", fontsize=5.5)
     ax_bot.get_yaxis().set_visible(False)
     for spine in ("top", "left", "right"):
         ax_bot.spines[spine].set_visible(False)
     ax_bot.set_title("Actual: dated deviations (2026-07-15 to 2026-08-12) -- note the "
                       "Phase 2 gate closes chronologically after the Phase-4-era signal "
-                      "that drove the 5th-instantiation cut", fontsize=7.3, loc="left")
+                      "that drove the 5th-instantiation cut", fontsize=6.3, loc="left")
 
     fig.tight_layout(pad=0.6)
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)

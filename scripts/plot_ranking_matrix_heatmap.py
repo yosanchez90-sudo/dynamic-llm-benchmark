@@ -32,6 +32,11 @@ from _figure_style import COL_W, apply_style
 
 CORR_CSV = ROOT / "analysis" / "ranking_matrix_correlations.csv"
 OUT_PATH = ROOT / "analysis" / "figures" / "ranking_matrix_heatmap.pdf"
+# Single-panel variant (canonical+cross-family scope only) for the paper's
+# own body: the paper shows just this one scope inline (the disclosure
+# point of comparing it against the canonical-only reading lives in the
+# supporting report, which still gets the full two-panel comparison above).
+CROSSFAMILY_OUT_PATH = ROOT / "analysis" / "figures" / "ranking_matrix_heatmap_crossfamily.pdf"
 
 METRICS = ["exec_rate", "baseline_pass_rate", "conditional_mutk", "coverage_adjusted"]
 METRIC_LABELS = {
@@ -87,7 +92,7 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id):
     # (not above it): a colorbar shared across both stacked panels leaves
     # too little vertical gap between panels for an above-axes title.
     ax.set_ylim(len(METRICS) - 0.5, -1.05)
-    ax.text(-0.5, -0.85, f"{panel_id} {scope_label}", fontsize=8, fontweight="bold", ha="left", va="top")
+    ax.text(-0.5, -0.85, f"{panel_id} {scope_label}", fontsize=7, fontweight="bold", ha="left", va="top")
     for i in range(len(METRICS)):
         for j in range(len(PAIRS)):
             val = grid[i, j]
@@ -95,7 +100,7 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id):
             # text on dark/saturated cells (dataviz skill's label-contrast rule)
             text_color = "white" if (not np.isnan(val) and abs(val) > 0.55) else "#222222"
             ax.text(j, i, annotations[i, j], ha="center", va="center",
-                     fontsize=7, color=text_color, linespacing=1.5)
+                     fontsize=6, color=text_color, linespacing=1.5)
     ax.set_xticks(np.arange(-0.5, len(PAIRS), 1), minor=True)
     ax.set_yticks(np.arange(-0.5, len(METRICS), 1), minor=True)
     ax.grid(which="minor", color="white", linewidth=1.5)
@@ -150,6 +155,18 @@ Output: {OUT_PATH.relative_to(ROOT)} (+ .png).
     PROVENANCE_OUT = ROOT / "analysis" / (OUT_PATH.stem + "_PROVENANCE.md")
     PROVENANCE_OUT.write_text(provenance)
     print(f"Saved: {OUT_PATH} and .png, {PROVENANCE_OUT.relative_to(ROOT)}")
+
+    # Single-panel crossfamily-only variant for the paper body (see
+    # CROSSFAMILY_OUT_PATH comment above).
+    fig2, ax2 = plt.subplots(1, 1, figsize=(COL_W, COL_W * 1.15))
+    sub = corr[corr["scope"] == "canonical_plus_cross_family"]
+    im2 = _heatmap_panel(ax2, sub, "Canonical + cross-family (13 models)", cmap, norm, "")
+    fig2.subplots_adjust(top=0.90, bottom=0.10, right=0.86, left=0.30)
+    cbar2 = fig2.colorbar(im2, ax=ax2, orientation="vertical", fraction=0.06, pad=0.12, shrink=0.9)
+    cbar2.set_label("Kendall $\\tau$ (rank agreement)")
+    fig2.savefig(CROSSFAMILY_OUT_PATH, dpi=400, bbox_inches="tight", pad_inches=0.02)
+    fig2.savefig(CROSSFAMILY_OUT_PATH.with_suffix(".png"), dpi=400, bbox_inches="tight", pad_inches=0.02)
+    print(f"Saved: {CROSSFAMILY_OUT_PATH} and .png")
 
 
 if __name__ == "__main__":

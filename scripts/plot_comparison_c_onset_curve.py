@@ -5,7 +5,7 @@ dynamic=purple dotted) so the two experiments read as mirror images.
 
 Top panel: baseline_pass_rate, all three splits (seen/unseen/dynamic_l1l2).
 Bottom panel: verbatim-match rate (exact), seen split only, the sharper
-memorization-onset diagnostic this canonical experiment adds. Both panels
+memorisation-onset diagnostic this canonical experiment adds. Both panels
 include epoch 0 (PRE, hardcoded 0%) and epoch 30 (Stage 3a/3b, full n=112/
 288/150) as anchors alongside the epochs {1,3,5,10,20} subsample. Panels
 are stacked one above the other, not side by side (changed 2026-08-27,
@@ -48,7 +48,7 @@ SPLIT_STYLE = {
     # plotted L1/L2 series and the L1--L3 population Section 4.1's prose
     # quotes at the pre/post endpoints are two different populations: the
     # unambiguous name difference is the fix, not a caption footnote.
-    "dynamic_l1l2": {"color": "#9467bd", "linestyle": ":",  "marker": "^", "label": "DyMuT L1--L2 (epoch series)"},
+    "dynamic_l1l2": {"color": "#9467bd", "linestyle": ":",  "marker": "^", "label": "DyMuT L1–L2 (epoch series)"},
 }
 
 
@@ -102,7 +102,7 @@ def main() -> None:
 
     # Single panel (baseline-pass rate only) for print: the verbatim-match
     # panel this figure used to carry alongside it restated, at a coarser
-    # timescale, the same seen-ULT-only climb the shaded "memorization"
+    # timescale, the same seen-ULT-only climb the shaded "memorisation"
     # region below already marks, and its one load-bearing fact (100% by
     # epoch 20) is stated in the caption instead of costing a second panel
     # of vertical space (RUBRIC_ACTION_PLAN.md-driven page-budget pass,
@@ -121,27 +121,26 @@ def main() -> None:
     # Two-timescale annotation (see analysis/COMPARISON_C_INTERPRETATION.md's
     # "Onset curve -- two timescales, not one"): a fast, one-time
     # generic-improvement jump shared by all three arms at epoch 0->1, then a
-    # slower, seen-ULT-only memorization climb from epoch 5 onward. The full
+    # slower, seen-ULT-only memorisation climb from epoch 5 onward. The full
     # argument (including the epoch ranges) is in the caption; these two
     # in-axes labels only need to mark *which region* they refer to.
     ax1.axvline(1, color="gray", linestyle="-", linewidth=0.8, alpha=0.6, zorder=0)
     ax1.annotate("generic gain", xy=(1, 27), xytext=(2.4, 68),
-                 fontsize=6.5, color="dimgray", ha="left",
+                 fontsize=5.5, color="dimgray", ha="left",
                  arrowprops=dict(arrowstyle="->", color="dimgray", alpha=0.7))
     ax1.axvspan(5, 20, color="#d62728", alpha=0.06, zorder=0)
-    ax1.annotate("memorization", xy=(12, 72), xytext=(12, 92),
-                 fontsize=6.5, color="#d62728", ha="center",
+    ax1.annotate("memorisation", xy=(12, 72), xytext=(17, 92),
+                 fontsize=5.5, color="#d62728", ha="center",
                  arrowprops=dict(arrowstyle="->", color="#d62728", alpha=0.7))
 
     ax1.set_xlabel("Training epoch")
     ax1.set_ylabel("Baseline pass rate (%)")
-    # Legend anchored in the bottom-right corner (epoch ~22-30, low
-    # baseline-pass rate): the only region genuinely clear of both flat
-    # series and the two in-axes annotations, confirmed by inspecting the
-    # rendered figure (the previous lower-center placement crossed the
-    # "generic gain" annotation's arrow).
-    ax1.legend(loc="lower right", frameon=True, framealpha=0.9, edgecolor="none",
-               fontsize=6.5, handlelength=1.6, labelspacing=0.3,
+    # Legend anchored in the upper-left corner (early epochs, before any
+    # series climbs): moved off the lower-right after the DyMuT L1-L2 and
+    # unseen-ULT series were confirmed to run through that corner by
+    # epoch ~20-30, overlapping the legend box there.
+    ax1.legend(loc="upper left", frameon=True, framealpha=0.9, edgecolor="none",
+               fontsize=5.5, handlelength=1.6, labelspacing=0.3,
                borderaxespad=0.3)
     ax1.set_ylim(0, 108)
     ax1.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)

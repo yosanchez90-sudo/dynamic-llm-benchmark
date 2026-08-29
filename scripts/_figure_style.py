@@ -28,13 +28,14 @@ THIN_RING_KW = dict(edgecolor=THIN_RING_COLOR, facecolor="none",
 def apply_style() -> None:
     """Call once at the top of a plotting script's main(), before creating
     any figure. One font-size scheme across every figure (FIGURE_TABLE_SPEC.md
-    G-4): axis labels 8pt, tick labels 7pt, annotations/legend 7pt."""
+    G-4): axis labels 7pt, tick labels 6pt, annotations/legend 6pt (reduced
+    one point project-wide per author request, 2026-08-29)."""
     plt.rcParams.update({
-        "font.size": 8,
-        "axes.titlesize": 8,
-        "axes.labelsize": 8,
-        "xtick.labelsize": 7,
-        "ytick.labelsize": 7,
-        "legend.fontsize": 7,
-        "figure.titlesize": 8,
+        "font.size": 7,
+        "axes.titlesize": 7,
+        "axes.labelsize": 7,
+        "xtick.labelsize": 6,
+        "ytick.labelsize": 6,
+        "legend.fontsize": 6,
+        "figure.titlesize": 7,
     })

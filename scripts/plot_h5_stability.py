@@ -60,7 +60,7 @@ def main() -> None:
     for yi, (_, row) in zip(y, df.iterrows()):
         ax.annotate(f"n={int(row['n_instantiations'])}",
                      (row["stable_mut_at_k"] + row["sd_mut_at_k"] + 0.03, yi),
-                     va="center", fontsize=7, color="#555555")
+                     va="center", fontsize=6, color="#555555")
     fig.savefig(OUT_PATH, dpi=400, bbox_inches="tight", pad_inches=0.02)
     fig.savefig(OUT_PATH.with_suffix(".png"), dpi=400, bbox_inches="tight", pad_inches=0.02)
     print(f"Wrote {OUT_PATH.relative_to(ROOT)}")

@@ -60,18 +60,18 @@ def _panel(ax, df, col_a, col_b, corr_row, thin_col: str | None, metric_label: s
                    edgecolor=("#d62728" if is_thin else "white"),
                    linewidth=(1.6 if is_thin else 0.5))
         ax.annotate(row["model_short"], (row[col_a], row[col_b]),
-                    fontsize=7, xytext=(5, 4), textcoords="offset points")
+                    fontsize=6, xytext=(5, 4), textcoords="offset points")
     ax.set_xlabel(f"DyMuT (pooled), {metric_label}")
     ax.set_ylabel("BigCodeBench Pass@1\n(Complete-split)")
     ax.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)
     ax.margins(x=0.22, y=0.14)
-    ax.text(0.02, 0.96, panel_id, transform=ax.transAxes, fontsize=8, fontweight="bold", va="top")
+    ax.text(0.02, 0.96, panel_id, transform=ax.transAxes, fontsize=7, fontweight="bold", va="top")
     if corr_row is not None:
         n = int(corr_row["n"])
         tau = corr_row["kendall_tau"]
         p = corr_row["kendall_p_perm"]
         ax.text(0.98, 0.04, f"$n$={n}  $\\tau$={tau:.3f}  $p$={p:.4f}",
-                transform=ax.transAxes, fontsize=7, ha="right", va="bottom",
+                transform=ax.transAxes, fontsize=6, ha="right", va="bottom",
                 color="#333333")
 
 
