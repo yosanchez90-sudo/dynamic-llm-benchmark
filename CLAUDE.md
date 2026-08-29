@@ -46,6 +46,24 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   recovered via a full three-way merge (docx vs. pre-merge LaTeX vs. the
   fixes already agreed in chat), a slow, error-prone recovery that a
   single source of truth would have made unnecessary.
+- **Corollary, confirmed again 2026-08-29 (same underlying mistake, opposite
+  direction): `scripts/build_paper_docx.py` regenerating `paper/paper.docx`
+  from the LaTeX is a one-way overwrite that silently destroys any edits
+  made in Word since the docx was last synced.** This happened for real:
+  the author had continued editing prose in `paper.docx` across several
+  rounds; a docx rebuild run to fix an unrelated table bug clobbered that
+  work with no warning, and the author had to re-supply the edited file
+  from their own copy. `build_paper_docx.py` now refuses to overwrite a
+  docx it detects was hand-edited since its own last write (checks
+  `docProps/core.xml`'s `lastModifiedBy`/`revision`, both untouched by a
+  fresh python-docx save but set the moment Word saves the file) unless
+  `--force` is passed. Before ever passing `--force`: read the existing
+  docx, build a fresh one into a scratch path (not `paper/paper.docx`),
+  diff the two paragraph-by-paragraph, and relay the real differences into
+  `paper/sections/*.tex` first -- only overwrite once nothing in the
+  hand-edited copy would be lost. The LaTeX is still the single source of
+  truth (previous rule); this rule is about not losing work in transit
+  while relaying an edit into it.
 - **`scripts/process_batch.py`'s `cost_usd` never applied OpenAI's 50% Batch
   API discount** (found 2026-08-07): `compute_cost()` (`src/pricing.py`)
   only knows the standard real-time rate. Every row this script has ever
