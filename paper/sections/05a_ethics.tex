@@ -3,9 +3,9 @@
 
 \textbf{Transparency.} Publishing DyMuT's sixty templates as a frozen instance set would contaminate it, the exact failure it is built to avoid. This work releases the generator and its seeds instead, not a fixed problem pool: results are reproducible without leaving a memorisable artefact behind.
 
-\textbf{Privacy.} Six of the nine evaluated models are accessed through commercial APIs, so every prompt sent during evaluation is disclosed to those providers, who may retain it for training~\cite{balloccu2024leakcheat}, the same channel this project studies. The mitigation is structural: a dynamic instance is discarded and freshly regenerated for every future evaluation, so a leaked run cannot leak the benchmark itself.
+\textbf{Privacy.} Six of the nine evaluated models are accessed through commercial APIs, so every prompt sent during evaluation is disclosed to those providers, who may retain it for training~\cite{balloccu2024leakcheat}. The mitigation is structural: a dynamic instance is discarded and freshly regenerated for every future evaluation, so a leaked run cannot leak the benchmark itself.
 
-\textbf{Bias and fairness.} The template grammar and identifier bank reflect one author's judgement of test-generation difficulty and are English-only, while ULT's corpus includes non-English prompts, an uncontrolled language confound between the two benchmarks. Comparing frontier commercial models against small locally-run models on one zero-shot template also does not advantage either group fairly; no claim here should be read as a fairness-adjusted ranking.
+\textbf{Bias and fairness.} The template grammar and identifier bank reflect one author's judgement of test-generation difficulty and are English-only, while ULT's corpus includes non-English prompts, an uncontrolled language confound between the two benchmarks.
 
 \textbf{Safety of execution.} Every generated test file and scraped ground-truth function is executed. Section~\ref{sec:discussion} discloses the actual guarantee: an isolated temporary directory, not a sandbox, defending against accidental side effects, not adversarial code.
 
