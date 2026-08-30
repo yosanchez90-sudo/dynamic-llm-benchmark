@@ -40,6 +40,8 @@ DyMuT L4 (CC-matched) & \HTwoEndpointLFourN{} & \HTwoEndpointLFourPre{} & \HTwoE
 \label{sec:results-h2supp}
 This is outside the six pre-registered hypotheses, it asks whether leaking a single DyMuT instantiation into training inflates that artefact specifically or the whole benchmark. Two Qwen models (1.5B, 7B) were each fine-tuned three ways on instantiation 1 (self-contamination on their own prior generations, cross-model contamination on GPT-5's generations, and a no-leak control filtered only by execution success); Table~\ref{tab:h2supp} reports \texttt{baseline\_pass\_rate} on the trained instantiation (seen) against two held-out instantiations (fresh). % cite:external -- "1.5" (Qwen 1.5B) is a model parameter-count identifier, not a result value
 
+Both leaked conditions show a seen-versus-fresh gap; the no-leak control shows none, within noise. Held-out execution rate also declines by epoch 30 for both cross-model-trained checkpoints (1.5B: \HSuppOneFiveBDeclineEpochZero{}\% to \HSuppOneFiveBDeclineEpochThirty{}\%; 7B: \HSuppSevenBDeclineEpochZero{}\% to \HSuppSevenBDeclineEpochThirty{}\%) but not for self-contamination or the control, so part of the cross-model gap reflects a general capability cost specific to training on another model's outputs, not memorisation alone. Both results locate memorisation at the artefact rather than the benchmark; the supporting report gives the full breakdown. \textbf{H2-supplementary is supported (post-hoc)}: the pattern holds under both self- and cross-model contamination at both model sizes, with no such gap for the non-leaked control, strengthening H2's second-clause reading that memorisation binds to the leaked artefact, not the benchmark. % cite:external -- "1.5" (Qwen 1.5B) is a model parameter-count identifier, not a result value
+
 \begin{table}[t]
 \caption{H2-supplementary: seen vs.\ fresh instantiation \texttt{baseline\_pass\_rate}}
 \label{tab:h2supp}
@@ -60,8 +62,6 @@ Qwen 7B & cross-model & \HSuppSevenBCrossSeen{} & \HSuppSevenBCrossFresh{} & \HS
 \bottomrule
 \end{tabular}
 \end{table}
-
-Both leaked conditions show a seen-versus-fresh gap; the no-leak control shows none, within noise. Held-out execution rate also declines by epoch 30 for both cross-model-trained checkpoints (1.5B: \HSuppOneFiveBDeclineEpochZero{}\% to \HSuppOneFiveBDeclineEpochThirty{}\%; 7B: \HSuppSevenBDeclineEpochZero{}\% to \HSuppSevenBDeclineEpochThirty{}\%) but not for self-contamination or the control, so part of the cross-model gap reflects a general capability cost specific to training on another model's outputs, not memorisation alone. Both results locate memorisation at the artefact rather than the benchmark; the supporting report gives the full breakdown. \textbf{H2-supplementary is supported (post-hoc)}: the pattern holds under both self- and cross-model contamination at both model sizes, with no such gap for the non-leaked control, strengthening H2's second-clause reading that memorisation binds to the leaked artefact, not the benchmark. % cite:external -- "1.5" (Qwen 1.5B) is a model parameter-count identifier, not a result value
 
 \subsection{H1 Test 1: DyMuT-L4 vs.\ ULT Shows No Directional Effect (Comparison A)}
 \label{sec:results-h1test1}
