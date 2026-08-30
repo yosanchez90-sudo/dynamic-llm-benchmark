@@ -127,36 +127,6 @@ entries:
     source_used: "arxiv.org/abs/2509.24210, cross-verified via github.com/ctrl-gaurav/BeyondBench README BibTeX (openreview.net/pdf itself returned a bot-check page, not content)"
     title_correction: "Spec gave the title as 'BeyondBench: Algorithmic Problem Generation with Mathematical Guarantees' -- the actual paper title (confirmed on arXiv and in the GitHub repo's own BibTeX) is 'BeyondBench: Contamination-Resistant Evaluation of Reasoning in Language Models'. The spec's phrase describes the paper's mechanism, not its title -- an earlier OpenReview-listed variant even used a third wording ('Benchmark-Free Evaluation'), so this was checked against two independent sources before correcting, not assumed."
 
-  - key: white2025livebench
-    spec_number: 6
-    authors:
-      - "Colin White"
-      - "Samuel Dooley"
-      - "Manley Roberts"
-      - "Arka Pal"
-      - "Ben Feuer"
-      - "Siddhartha Jain"
-      - "Ravid Shwartz-Ziv"
-      - "Neel Jain"
-      - "Khalid Saifullah"
-      - "Sreemanti Dey"
-      - "Shubh Agrawal"
-      - "Sandeep Singh Sandha"
-      - "Siddartha Naidu"
-      - "Chinmay Hegde"
-      - "Yann LeCun"
-      - "Tom Goldstein"
-      - "Willie Neiswanger"
-      - "Micah Goldblum"
-    title: "LiveBench: A Challenging, Contamination-Limited LLM Benchmark"
-    venue: "International Conference on Learning Representations (ICLR 2025, Spotlight)"
-    year: 2025
-    arxiv: "2406.19314"
-    url: "https://arxiv.org/abs/2406.19314"
-    status: COMPLETE
-    source_used: "arxiv.org/abs/2406.19314 (fetched directly, checked twice)"
-    title_correction: "Spec gave 'Contamination-Free' -- the actual title (verified twice, exact quote from the arXiv page both times) is 'Contamination-Limited'. Likely a paraphrase-from-memory error in the spec rather than a real title change between versions, but corrected from the verified current text either way."
-
   - key: kim2025interviewer
     spec_number: 7
     authors:
@@ -204,23 +174,6 @@ entries:
     status: COMPLETE
     source_used: "arxiv.org/abs/2503.06643 (fetched directly)"
     title_correction: "Spec gave 'Is My Benchmark (Still) Useful?' -- the actual title is 'Is Your Benchmark Still Useful?' (no parentheses, 'Your' not 'My')."
-
-  - key: zhang2025code2bench
-    spec_number: 10
-    authors:
-      - "Zhe Zhang"
-      - "Runlin Liu"
-      - "Aishan Liu"
-      - "Xingyu Liu"
-      - "Xiang Gao"
-      - "Hailong Sun"
-    title: "Code2Bench: Scaling Source and Rigor for Dynamic Benchmark Construction"
-    venue: "arXiv preprint"
-    year: 2025
-    arxiv: "2508.07180"
-    url: "https://arxiv.org/abs/2508.07180"
-    status: COMPLETE
-    source_used: "arxiv.org/abs/2508.07180 (fetched directly)"
 
   - key: chen2021codex
     spec_number: 11
@@ -528,24 +481,6 @@ entries:
     status: COMPLETE
     source_used: "ACM DL returned HTTP 403 to direct fetch; confirmed via conf.researchr.org's official ICSE 2022 demo listing (title, authors, DOI, arXiv preprint 2202.05218 all match) and independent corroboration of the pp. 168-172 range."
     why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- the other canonical search-based automated test-generation tool (with EvoSuite), specific to Python, this study's own target language. Present in the docx manual-review draft."
-
-  - key: schafer2024empirical
-    authors:
-      - "Max Schäfer"
-      - "Sarah Nadi"
-      - "Aryaz Eghbali"
-      - "Frank Tip"
-    title: "An Empirical Evaluation of Using Large Language Models for Automated Unit Test Generation"
-    venue: "IEEE Transactions on Software Engineering"
-    volume: 50
-    issue: 1
-    pages: "85-105"
-    year: 2024
-    doi: "10.1109/TSE.2023.3334955"
-    url: "https://doi.org/10.1109/TSE.2023.3334955"
-    status: COMPLETE
-    source_used: "IEEE Xplore returned HTTP 418 to direct fetch. Volume/issue/pages (50(1), 85-105) independently corroborated across multiple sources. Publication month ('Jan. 2024') is inferred from TSE's standard monthly issue numbering for no. 1, not seen printed verbatim on any accessible source -- flagged, not silently asserted."
-    why_added: "Restored during the paper.docx <-> LaTeX merge pass (2026-08-19) -- a direct predecessor evaluating LLMs on unit-test generation specifically, the closest prior empirical study to this dissertation's own task. Present in the docx manual-review draft."
 
   - key: siddiq2024junit
     authors:

@@ -54,18 +54,6 @@ PARAPHRASES: list[tuple[str, str, str, str, str]] = [
     ("H6 clause 2", "RQ5", "H6-c2", "sec:results-h6clause2", "DyMuT-proxy correlation weaker than static-proxy"),
 ]
 
-# Short parenthetical glosses for verdicts whose bare tag ("Not supported")
-# reads as a plain failure when the paper's own prose (Section 4) says
-# otherwise -- H1 Test 1's null is informative (rules out DyMuT being
-# simply harder), H6 clause 2's "not supported" is a reversal in DyMuT's
-# favour, not a weaker-than-predicted result. Fixed, hand-written glosses,
-# not derived from the sheet: they restate an interpretation already
-# spelled out in Section 4's prose, not a new claim.
-VERDICT_GLOSS: dict[str, str] = {
-    "H1 Test 1": "null informative",
-    "H6 clause 2": "reversed, favours DyMuT",
-}
-
 _VERDICT_SPLIT_RE = re.compile(r"\s+-\s+|\.\s+")
 
 
@@ -111,9 +99,6 @@ def main() -> None:
         # the sheet every time, so it can never go stale -- only how the
         # same live value is *styled* changes).
         verdict = _escape(verdicts[hyp_id].capitalize())
-        gloss = VERDICT_GLOSS.get(hyp_id)
-        if gloss:
-            verdict = f"{verdict} ({_escape(gloss)})"
         # \hyperref[label]{text}, not plain text: the Hyp. column links
         # straight to that hypothesis's own Section 4 subsection (uses
         # hyperref, already loaded in paper.tex for the PDF's other
@@ -143,7 +128,7 @@ def main() -> None:
 \\scriptsize
 \\setlength{{\\tabcolsep}}{{3pt}}
 \\renewcommand{{\\arraystretch}}{{1.15}}
-\\begin{{tabularx}}{{\\columnwidth}}{{@{{}}p{{0.10\\columnwidth}}p{{0.13\\columnwidth}} X p{{0.19\\columnwidth}}@{{}}}}
+\\begin{{tabularx}}{{\\columnwidth}}{{@{{}}p{{0.10\\columnwidth}}p{{0.13\\columnwidth}} X p{{0.24\\columnwidth}}@{{}}}}
 \\toprule
 \\textbf{{RQ}} & \\textbf{{Hyp.}} & \\textbf{{Prediction}} & \\textbf{{Verdict}} \\\\
 \\midrule

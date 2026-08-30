@@ -1,4 +1,4 @@
-\section{Benchmark Design and Experimental Setup}
+\section{Methods}
 \label{sec:methods}
 
 \subsection{Template Grammar and Complexity Tiers}
@@ -15,7 +15,7 @@ Test quality is scored by mutation testing, an established proxy for a suite's f
 
 Mut@K is \emph{conditional}: its mean is taken only over problems whose generated suite already passes the baseline-correctness gate (\texttt{baseline\_pass}=true), excluding non-passing problems from the average entirely rather than scoring them zero. This is the pre-registered primary metric throughout this study. \texttt{coverage\_adjusted} is an unconditional reading of the same data, averaging Mut@K over every attempted problem with non-passing suites (scored zero) and is reported as a co-primary metric, not a replacement. The two readings measure different quantities and can disagree for a model with a low baseline-pass rate. ``Coverage'' in \texttt{coverage\_adjusted} is inherited ULT/PLT naming for this baseline-pass-rate adjustment, not code (statement/branch) coverage.
 
-\subsection{Models}
+\subsection{Models Evaluated}
 \label{sec:methods-models}
 Nine models from four providers were evaluated: three closed-source frontier/efficient pairs from OpenAI (\texttt{gpt-5}/\texttt{gpt-5-mini}), Anthropic (Claude Sonnet 4.6/Claude Haiku 4.5), and Google (Gemini 3.1 Pro Preview/Flash-Lite -- a forced substitution for the originally specified Gemini 2.5 Pro/Flash, which returned model-unavailable errors); and a three-point open-source scaling sweep (Qwen2.5-Coder, 32B/7B/1.5B). Every model call is logged with identifier, snapshot, decoding parameters, seed, and timestamp; a fine-tuned checkpoint is a distinct model identity from its base weights. Text generation uses temperature \DecodeTemperature{} with top-$p$ \DecodeTopP{} across all models, except the two reasoning-class OpenAI models, which reject a custom sampling temperature and run at the provider's own fixed default. $K=\DecodeK{}$ throughout; results are single-sample and the benchmark itself has no circular dependency on those results. % cite:external -- "1.5"/"3.1"/"2.5" are model name/version/parameter-count identifiers (Qwen2.5-Coder, Gemini 3.1, Gemini 2.5), not result values
 
