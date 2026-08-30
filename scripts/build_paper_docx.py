@@ -424,7 +424,7 @@ def _walk_section_file(doc, path: Path, macros, bibcite, reflabels) -> None:
     i = 0
     while i < len(lines):
         line = lines[i].strip()
-        if not line or line.startswith("%") or line.startswith("\\section") or line.startswith("\\label"):
+        if not line or line.startswith("%") or line.startswith("\\section") or line.startswith("\\label") or line.startswith("\\vspace"):
             i += 1
             continue
         if line.startswith("\\subsection{"):
