@@ -72,14 +72,14 @@ def main() -> None:
             continue
         ys = [row.get(f"{t}_mutk") for t in TIERS]
         xs = [i for i, y in enumerate(ys) if pd.notna(y)]
-        ys = [y for y in ys if pd.notna(y)]
+        ys = [y * 100 for y in ys if pd.notna(y)]
         ax.plot(xs, ys, label=SHORT_NAME[row["model_label"]], markersize=4, linewidth=1.2, **style)
 
     ax.set_xticks(range(len(TIERS)))
     ax.set_xticklabels(TIERS)
     ax.set_xlabel("Complexity tier")
-    ax.set_ylabel("Conditional Mut@K")
-    ax.set_ylim(0, 1.05)
+    ax.set_ylabel("Conditional Mut@K (%)")
+    ax.set_ylim(0, 105)
     ax.grid(True, axis="y", linewidth=0.4, alpha=0.5)
     ax.legend(loc="lower left", ncol=2, frameon=False, handlelength=1.6,
                columnspacing=0.8, labelspacing=0.3)

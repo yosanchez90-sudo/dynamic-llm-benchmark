@@ -1,7 +1,7 @@
 # Held-out execution-rate decline table (epoch 0 vs epoch 30) — raw table
 
-Generated: 2026-08-26T07:52:23.241268+00:00
-Git commit: 09eb1bf
+Generated: 2026-08-29T23:30:27.453205+00:00
+Git commit: 9cdef55
 Script: scripts/build_finetune_decline_table.py
 
 Companion to `analysis/finetune_endpoint_table.csv` (baseline_pass_rate,

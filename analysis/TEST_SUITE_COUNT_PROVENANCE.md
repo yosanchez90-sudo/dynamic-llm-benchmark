@@ -1,7 +1,7 @@
 # Test suite count — provenance
 
-Generated: 2026-08-26T08:06:19.264010+00:00
-Git commit: 09eb1bf
+Generated: 2026-08-29T23:46:58.116148+00:00
+Git commit: 9cdef55
 Script: scripts/count_test_suite.py
 
 `pytest --collect-only -q` against `testpaths = ["tests"]`

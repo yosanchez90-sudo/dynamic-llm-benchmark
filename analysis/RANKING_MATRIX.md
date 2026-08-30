@@ -1,7 +1,7 @@
 # Ranking matrix — every metric, every benchmark, side by side
 
-Generated: 2026-08-26T08:05:26.126034+00:00
-Git commit: 09eb1bf
+Generated: 2026-08-29T23:44:05.890587+00:00
+Git commit: 9cdef55
 Script: scripts/build_ranking_matrix.py
 
 Supervisor reframe (2026-08-04): the ranking exercise is metric-agnostic.

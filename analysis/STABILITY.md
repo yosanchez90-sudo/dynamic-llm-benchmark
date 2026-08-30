@@ -1,7 +1,7 @@
 # Stability (RQ4.1) — raw tables
 
-Generated: 2026-08-26T07:52:22.152104+00:00
-Git commit: 09eb1bf
+Generated: 2026-08-29T23:30:26.904753+00:00
+Git commit: 9cdef55
 Script: scripts/analyze_stability.py
 
 **Interpretation lives in `analysis/STABILITY_INTERPRETATION.md`**

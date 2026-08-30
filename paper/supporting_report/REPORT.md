@@ -139,6 +139,8 @@ The dynamic path builds a problem: a new seed produces a problem that did not ex
 
 1,017 repaired-and-verified pairs, 1,014 after a tokenizer-length filter (3,072-token training context). Of the 400 `core_400` problems, 112 have a verified pair (Comparison C's seen-ULT). The remaining 288 are held out as unseen-ULT.
 
+The canonical fine-tune's LoRA hyperparameters (rank 64, alpha 16, 30 epochs, 2e-4 cosine) match the six supplementary runs exactly, not because no search was run: the difference-in-differences comparison drawn between the canonical run and those six supplementary runs isolates the effect of *what was leaked* only if the training recipe itself is held fixed across every arm, so a per-condition hyperparameter search would confound recipe differences with the contamination effect under study. The two DyMuT controls used alongside it also differ in size for a cost reason, not an oversight: the epoch-series control (the five-point onset curve) re-evaluates the checkpoint repeatedly, so it uses a fixed 75-problem baseline-pass-only subsample to keep that repeated evaluation tractable, while the endpoint control (pre/post only) reuses the full L1-L3 population already scored at full mutation-testing depth for the main comparison.
+
 ### 1.7 The three comparisons side by side
 
 One table, before the results in section 4, places the project's three central comparisons next to each other: what each one compares, what data it draws on, which hypothesis it tests, and what it found.
@@ -154,9 +156,23 @@ One table, before the results in section 4, places the project's three central c
 
 Full statistics, caveats, and the paper-ready wording for all six hypotheses are in section 5. `analysis/HYPOTHESIS_DEVIATIONS.md` is the source these figures are read from.
 
+The paper's Comparison C endpoint table (its Table II) reports Gain and DiD computed from full-precision pre/post values, not from the rounded percentages the table displays, so subtracting the displayed Post from the displayed Pre need not exactly reproduce the displayed Gain to one decimal place (e.g. unseen-ULT: displayed Post minus Pre gives 15.7, one tenth of a point off the reported Gain of 15.6) -- a rounding artefact of displaying two independently-rounded quantities side by side, not a computation error.
+
 ### 1.8 Algorithms
 
 Readable pseudocode for the four procedures behind sections 1.4, 1.6, and 1.7, each with the real file and function a reader can open to see the executable version. Kept under twenty lines each, so some real error handling and logging is left out. The cited modules carry the full version.
+
+The seven mutation operators referenced by Algorithm (c) below (`template_corpus/templates/_smoke/mutator.py`), each construct-gated (fires only when the relevant construct is present), not tier-gated -- every operator runs uniformly across all four complexity tiers:
+
+| Op. | Name | Example (before -> after) | Applies when |
+|---|---|---|---|
+| AOR | Arithmetic Operator Replacement | `a+b` -> `a-b` | any `BinOp` (`+ - * / // % **`) |
+| ROR | Relational Operator Replacement | `a<b` -> `a<=b` | any comparison |
+| LOR | Logical Operator Replacement | `a and b` -> `a or b`; `not x` -> `x` | any `and`/`or`/`not` |
+| CR | Constant Replacement | `n=5` -> `n=0` | any non-boundary bool/int/float literal |
+| BM | Boundary Mutation | `range(10)` -> `range(9)` or `range(11)` | an int literal in a `range()`, subscript/slice, or comparison operand |
+| SDL | Statement Deletion | deletes one assignment or bare-call statement (never `return`) | at least one such statement exists |
+| RSM | Return-Statement Mutation | `return x` -> `return None` | at least one `return` with a value |
 
 **(a) Dynamic instantiation** (`src/data/test_gen.py::load`, `template_corpus/templates/_smoke/engine.py::instantiate`)
 
@@ -473,8 +489,9 @@ Every RQ family with more than one significance test applies Holm-Bonferroni cor
 
 | RQ family | Tests corrected together | n |
 |---|---|---|
-| RQ1 | H1 Test 1 (Dynamic vs ULT), H1 Test 2 (ULT vs PLT). H2 is a bootstrap CI, not part of this family. | 2 |
-| RQ4 | Pairwise instantiation-stability comparisons, N=4 set and the all-pairs set, corrected separately | 6, and 10 |
+| RQ1 | H1 Test 2's two conditionings, PLT-vs-ULT (conditional and unconditional readings). H2 is a bootstrap CI, not part of this family. | 2 |
+| RQ2 | H3's per-model tier-vs-score correlation, all-tier family (9 canonical models) and a separate ceiling-robust family excluding the near-ceiling L1 tier (8 models, Qwen 1.5B excluded for insufficient L4 range) | 9, and 8 |
+| RQ4 | Pairwise instantiation-stability comparisons, N=4 headline set and the all-pairs set, corrected separately | 6, and 10 |
 | RQ5 | Correlation tests behind H6 clauses 1 and 2 (canonical/cross-family, raw/coverage-adjusted, three statistics) | 12 |
 
 Correction changed a verdict, not just a number: H1 Test 2's raw p=0.0391 becomes p=0.0782 once corrected, no longer clearing 0.05. Its definition-matched co-primary, p=0.0078, becomes p=0.0156 and still clears it, which is why that verdict (section 1.7) is reported as significance-conditional.
@@ -549,6 +566,8 @@ The table below gives every tool this project relies on a version, the lifecycle
 
 The project is written in Python 3.10, with type hints throughout. Dependencies and the virtual environment are managed with `uv`, chosen for reproducible, lock-file-based installs across the developer machine and the compute cluster. Python fits this project's subject matter: the benchmark evaluates Python code, so the same language runs the harness, the templates, and the models under test.
 
+Pinned versions (from `uv.lock`, `pyproject.toml`): CUDA 12.1 (`nvhpc-hpcx/23.11-cuda12` cluster module; `torch` built against `cu121`), `torch` 2.5.1, `transformers` 4.57.6, `peft` 0.19.1, `trl` 1.6.0, `vllm` 0.7.3, `accelerate` 1.13.0.
+
 ### 3.2 HPC cluster and job scheduler
 
 Compute runs on Kelvin2, Queen's University Belfast's HPC cluster, under SLURM. Interactive sessions are used only for short tests, since they end if the connection drops. Every real workload is submitted as a batch job. The cluster offers several GPU partitions, chosen per job by size: a shared A100 in sliced mode for most fine-tuning and inference work, a bank of eight V100 nodes as a fallback when the shared A100 queue is busy, full A100 and H100 cards for larger models, and experimental AMD and Intel partitions not used in this project. Scratch storage, not the home filesystem, holds the HuggingFace model cache and all generated data, since scratch carries no quota and home does.
@@ -582,6 +601,12 @@ The paper is written in IEEEtran LaTeX and compiled with `latexmk`. Every quanti
 ### 3.8 AI coding assistant
 
 Claude Code, an AI coding assistant, was used throughout development: implementing the template engine, the scoring harness, and the analysis scripts from a specification the author wrote; investigating and fixing the bugs recorded in the error ledger; and drafting documentation, including this report and the paper, from the author's project records and decisions. Every design decision, every hypothesis, every interpretation of a result, and the decision to fine-tune, to cut an instantiation, or to decline further data collection, was the author's, made in consultation with the supervisor. The assistant did not choose what to test or what a result meant; it wrote code and prose to a specification and had its output reviewed before being relied on. This declaration is stated here in full and in the paper's own AI Ethical Considerations section, consistent with the module's AI-assistance declaration requirement.
+
+### 3.9 Licensing and dual use
+
+ULT/PLT are MIT-licensed, BigCodeBench is Apache-2.0; both are used here for research evaluation only, as their own terms permit. DyMuT's sixty templates are original work authored for this study, with no external licensing dependency.
+
+The fine-tuning procedure used to demonstrate contamination causally (section 1.6) is, described plainly, a recipe for inducing benchmark-specific contamination on demand. It is disclosed in full because the risk it demonstrates -- that a static, published benchmark can be deliberately inflated by training on its own ground truth -- is already latent in any such benchmark, not created by publishing the recipe; DyMuT's own generator design (the paper's Transparency point) is this work's proposed mitigation. Every model call and fine-tuning run in this study also consumed real GPU time and, for six of the nine canonical models, third-party API compute; neither was offset, and no aggregate carbon or energy figure is tracked for this project.
 
 ---
 
@@ -636,6 +661,10 @@ Section 5 states each hypothesis's verdict once. This subsection asks what repor
 **What would be done differently with the same time.** Generation-config logging and the citation gate would be built in week one, not discovered as a need partway through. Both would have prevented real, costly incidents, not only explained them after the fact. The fifth benchmark instantiation would be budgeted for from the start, not treated as a cut candidate, since stability turned out to be the hypothesis with the least margin to spare. More of the equivalent-mutant hand-inspection would be scheduled earlier, so it did not compete with write-up time at the end of the project.
 
 **What the results do and do not support.** The results support treating a dynamic, template-based, mutation-scored benchmark as resistant to the specific contamination mechanism this project tested: direct fine-tuning on a static benchmark's ground truth. They do not support a claim that the benchmark's rankings are reliable enough to distinguish two closely scoring models with confidence, and they do not support any claim about contamination mechanisms this project did not test: indirect leakage through API logging, for one, a real route into contamination this project never isolated experimentally.
+
+**Returning to the five research questions.** RQ1's contamination-resistance question gets its clearest answer from H2's causal design, supported directly, while its observational complement (H1) is weaker and direction-inconsistent, models with unknown training histories scoring comparably on both benchmarks. RQ2's tier-discrimination question (H3) is supported as a monotone trend. RQ3's static-dynamic tier-gap question (H4) could not be tested, since ULT/PLT contain no problems below DyMuT's own complexity floor. RQ4's ranking-stability question (H5) falls short of its pre-registered threshold, the clearest limit on this study's present statistical power. RQ5's construct-validity question (H6) is mixed on its within-family clause but favours DyMuT on its across-family clause, the strongest evidence here that DyMuT measures capability the wider field already recognises, not an artefact of its own design.
+
+**Reading a published benchmark score, more broadly.** A static leaderboard score cannot by itself distinguish a model that solved a problem from one that recalled it; Section 5's finding that even byte-identical recall of a memorised test suite falls well short of a perfect mutation score shows the two are not even separable after the fact, since the ceiling is capped by the memorised suite's own quality, not the model's ability. A generator-based benchmark changes what a score can mean, not just its numeric value: because DyMuT draws every evaluation instance fresh from a private template grammar rather than reusing a fixed release, a score obtained today keeps the same evidential weight the next time the same model is asked, a guarantee no frozen-instance static benchmark can make once its instances have had any opportunity to enter a training corpus.
 
 ---
 

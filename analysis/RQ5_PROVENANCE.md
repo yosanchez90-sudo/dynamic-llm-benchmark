@@ -1,7 +1,7 @@
 # RQ5 / H6 — cross-benchmark validity (raw tables)
 
-Generated: 2026-08-26T07:53:10.911071+00:00
-Git commit: 09eb1bf
+Generated: 2026-08-29T23:32:02.322666+00:00
+Git commit: 9cdef55
 Script: scripts/analyze_rq5.py
 
 Per analysis/RQ5_ANALYSIS_PLAN.md (pre-registered 2026-07-27, before this

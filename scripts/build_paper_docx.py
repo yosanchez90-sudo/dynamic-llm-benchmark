@@ -220,6 +220,11 @@ def _add_latex_runs(p, text: str, macros: dict[str, str], bibcite: dict[str, str
         return "[" + ", ".join(nums) + "]"
 
     text = re.sub(r"\\cite\{([^{}]+)\}", cite_repl, text)
+    # \hyperref[label]{text} -> text, same treatment as \ref{} below: the
+    # docx isn't hyperlinked to its own internal sections (this project's
+    # own \ref{}/\cite{} resolve to plain numbers here too, never links),
+    # so this only needs the visible text kept.
+    text = re.sub(r"\\hyperref\[[^\[\]]+\]\{([^{}]*)\}", r"\1", text)
     text = re.sub(r"\\ref\{([^{}]+)\}", lambda m: reflabels.get(m.group(1), "?"), text)
     text = re.sub(r"\\label\{[^{}]+\}", "", text)
     text = re.sub(r"\\emph\{([^{}]*)\}", r"\1", text)

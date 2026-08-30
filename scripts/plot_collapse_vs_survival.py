@@ -55,14 +55,20 @@ def _panel(ax, df, col_a, col_b, corr_row, thin_col: str | None, metric_label: s
     for _, row in sub.iterrows():
         color, marker = _style(row["model_short"])
         is_thin = bool(row.get(thin_col, False)) if thin_col else False
-        ax.scatter(row[col_a], row[col_b], color=color, marker=marker,
+        x_val = row[col_a] * 100  # col_a is a 0-1 fraction; col_b (public_score)
+                                   # is already stored as a percentage, so scale
+                                   # col_a to match -- both axes read as % (P2-3,
+                                   # paper review action file, 2026-08-30: this
+                                   # panel previously mixed a 0-1 x-axis with a
+                                   # 0-100 y-axis in the same plot).
+        ax.scatter(x_val, row[col_b], color=color, marker=marker,
                    s=45, zorder=3,
                    edgecolor=("#d62728" if is_thin else "white"),
                    linewidth=(1.6 if is_thin else 0.5))
-        ax.annotate(row["model_short"], (row[col_a], row[col_b]),
+        ax.annotate(row["model_short"], (x_val, row[col_b]),
                     fontsize=6, xytext=(5, 4), textcoords="offset points")
-    ax.set_xlabel(f"DyMuT (pooled), {metric_label}")
-    ax.set_ylabel("BigCodeBench Pass@1\n(Complete-split)")
+    ax.set_xlabel(f"DyMuT (pooled), {metric_label} (%)")
+    ax.set_ylabel("BigCodeBench Pass@1\n(Complete-split, %)")
     ax.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)
     ax.margins(x=0.22, y=0.14)
     ax.text(0.02, 0.96, panel_id, transform=ax.transAxes, fontsize=7, fontweight="bold", va="top")
@@ -70,7 +76,7 @@ def _panel(ax, df, col_a, col_b, corr_row, thin_col: str | None, metric_label: s
         n = int(corr_row["n"])
         tau = corr_row["kendall_tau"]
         p = corr_row["kendall_p_perm"]
-        ax.text(0.98, 0.04, f"$n$={n}  $\\tau$={tau:.3f}  $p$={p:.4f}",
+        ax.text(0.98, 0.04, f"$n$={n}  $\\tau$={tau:.3f}  $p_{{\\mathrm{{raw}}}}$={p:.4f}",
                 transform=ax.transAxes, fontsize=6, ha="right", va="bottom",
                 color="#333333")
 

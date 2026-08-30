@@ -149,14 +149,19 @@ def main() -> None:
     n_undefined = int(seen_pre_mutk["n_total"]) - int(seen_pre_mutk["n_mut_defined"])
     raw("HTwoPreMutkUndefined", f"{n_undefined}")
     raw("HTwoPreMutkTotal", f"{int(seen_pre_mutk['n_total'])}")
-    num("HTwoPostMutk", seen_post_mutk["mut_at_k"], ".3f")
+    # Percentage form (pp(), not a raw 0-1 fraction): every other Mut@K/
+    # baseline-pass value quoted in Section 4/5's prose and tables is a
+    # percentage (P2-3, paper review action file, 2026-08-30 -- Section 5
+    # previously quoted this pair as a bare 0.438/1.0 fraction while every
+    # other figure/table in the paper reports %, a unit inconsistency).
+    pp("HTwoPostMutk", seen_post_mutk["mut_at_k"])
     # Mutation score's own theoretical ceiling (every mutant killed), not a
     # value derived from any CSV, contrasted against HTwoPostMutk in the
-    # discussion's "byte-identical recall does not imply Mut@K=1" point.
+    # discussion's "byte-identical recall does not imply Mut@K=100%" point.
     # Given its own macro rather than a bare literal for the same reason as
     # SigLevel above: it sits mid-paragraph, where a same-line `% cite:`
     # comment would swallow the rest of that physical line.
-    num("MutkCeiling", 1.0, ".1f")
+    pp("MutkCeiling", 1.0)
 
     # Coverage-adjusted gain + DiD (RUBRIC_ACTION_PLAN.md PA-6): a metric
     # defined pre-treatment (unlike raw Mut@K, undefined for all but one
@@ -301,6 +306,8 @@ def main() -> None:
     num("HSixDynBcbAdjTau", dyn_bcb_adj_cf["kendall_tau"], ".3f")
     num("HSixUltBcbRawTau", ult_bcb_raw_cf["kendall_tau"], ".3f")
     num("HSixUltBcbAdjTau", ult_bcb_adj_cf["kendall_tau"], ".3f")
+    num("HSixDynBcbRawP", dyn_bcb_raw_cf["kendall_p_perm"], ".4f")
+    num("HSixDynBcbAdjRawP", dyn_bcb_adj_cf["kendall_p_perm"], ".4f")
     num("HSixDynBcbAdjHolmP", dyn_bcb_adj_cf["kendall_p_perm_holm"], ".4f")
 
     dyn_bcb_raw_canon = cf_row("Dynamic(pooled) <-> public (Complete-split/Instruct) [raw Mut@K]", "canonical-only")
@@ -335,6 +342,37 @@ def main() -> None:
     raw("HSixCodeLlamaUltNDefined", f"{int(codellama['ult_n_defined'])}")
     raw("HSixMistralDynNDefined", f"{int(mistral['dynamic_n_defined'])}")
     raw("HSixMistralUltNDefined", f"{int(mistral['ult_n_defined'])}")
+    # P1-8 (paper review action file, 2026-08-30): the paper's own prose
+    # previously named only 2 of the 7 cross-family points as ULT-side
+    # thin cells (CodeLlama, Mistral). Checking cf_ranking's own ult_thin
+    # column directly against the full 7-model BigCodeBench-scored subset
+    # shows 4 are thin, not 2 -- Qwen 7B and Qwen 1.5B were never
+    # mentioned. Corrected here, not silently: both extra macros below are
+    # new, the two above are unchanged.
+    qwen7b_cf = cf_ranking[cf_ranking["model_short"] == "Qwen 7B"].iloc[0]
+    qwen1_5b_cf = cf_ranking[cf_ranking["model_short"] == "Qwen 1.5B"].iloc[0]
+    raw("HSixQwenSevenBUltNDefined", f"{int(qwen7b_cf['ult_n_defined'])}")
+    raw("HSixQwenOneFiveBUltNDefined", f"{int(qwen1_5b_cf['ult_n_defined'])}")
+
+    # Robustness check (P1-8): the two headline cross-family BigCodeBench
+    # correlations (HSixDynBcb*/HSixUltBcb* above), recomputed excluding
+    # each pair's own thin cells (n_defined<20 on the relevant side, same
+    # threshold and ult_thin/dynamic_thin flags analyze_rq5_cross_family.py
+    # already computes), alongside the full-sample values reported above.
+    # A re-derivation from already-collected cf_ranking data, not new compute.
+    cf_bcb = cf_ranking.dropna(subset=["public_score"])
+    dyn_no_thin = cf_bcb[~cf_bcb["dynamic_thin"]]
+    ult_no_thin = cf_bcb[~cf_bcb["ult_thin"]]
+    raw("HSixDynBcbNoThinN", f"{len(dyn_no_thin)}")
+    raw("HSixUltBcbNoThinN", f"{len(ult_no_thin)}")
+    dyn_raw_nothin_tau, dyn_raw_nothin_p = kendalltau(dyn_no_thin["dynamic_mutk_pooled"], dyn_no_thin["public_score"])
+    dyn_adj_nothin_tau, dyn_adj_nothin_p = kendalltau(dyn_no_thin["dynamic_coverage_adj"], dyn_no_thin["public_score"])
+    ult_raw_nothin_tau, ult_raw_nothin_p = kendalltau(ult_no_thin["ult_mutk"], ult_no_thin["public_score"])
+    ult_adj_nothin_tau, ult_adj_nothin_p = kendalltau(ult_no_thin["ult_coverage_adj"], ult_no_thin["public_score"])
+    num("HSixDynBcbRawNoThinTau", dyn_raw_nothin_tau, ".3f")
+    num("HSixDynBcbAdjNoThinTau", dyn_adj_nothin_tau, ".3f")
+    num("HSixUltBcbRawNoThinTau", ult_raw_nothin_tau, ".3f")
+    num("HSixUltBcbAdjNoThinTau", ult_adj_nothin_tau, ".3f")
 
     # -------------------------------------------------------------------- Project-wide constants
     test_count = pd.read_csv(ANALYSIS / "test_suite_count.csv").iloc[0]

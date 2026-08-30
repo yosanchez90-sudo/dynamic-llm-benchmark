@@ -1,7 +1,7 @@
 # Comparison C onset-curve figure — provenance
 
-Generated: 2026-08-29T00:57:14.147128+00:00
-Git commit: 533a797
+Generated: 2026-08-29T23:31:20.806512+00:00
+Git commit: 9cdef55
 Script: scripts/plot_comparison_c_onset_curve.py
 
 Sources: analysis/comparison_c_onset_curve.csv (epochs {1,3,5,10,20} subsample),

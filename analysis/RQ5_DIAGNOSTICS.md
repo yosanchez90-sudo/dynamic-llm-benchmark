@@ -1,7 +1,7 @@
 # RQ5 diagnostics (post-hoc, zero-compute)
 
-Generated: 2026-08-26T07:53:24.991246+00:00
-Git commit: 09eb1bf
+Generated: 2026-08-29T23:32:15.081966+00:00
+Git commit: 9cdef55
 Script: scripts/analyze_rq5_diagnostics.py
 
 Pooled Dynamic Mut@K vs ULT remains the pre-registered PRIMARY result

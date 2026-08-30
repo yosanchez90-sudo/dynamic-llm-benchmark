@@ -20,10 +20,6 @@ versa) raises loudly instead of silently producing a mismatched table,
 same "fail loud on a coverage gap" discipline as the rest of this
 project's validators.
 
-The section-pointer column (FIGURE_TABLE_SPEC.md T-4) uses \\ref{} to each
-hypothesis's own Section 4 subsection label, not a hardcoded number, so it
-can never go stale if Section 4 is ever reordered.
-
 Usage:
     python scripts/build_paper_table1.py
 
@@ -41,34 +37,34 @@ XLSX = ROOT / "docs" / "Research_questions.xlsx"
 OUT_PATH = ROOT / "paper" / "table1.tex"
 
 # (hypothesis ID in the sheet, RQ, abbreviated row label, section label to
-# \ref{}, one-line prediction paraphrase). Abbreviated labels are defined in
-# the table's own note (FIGURE_TABLE_SPEC.md T-3): trims "H1 Test 1/2" to
-# "H1a/H1b", "H6 clause 1/2" to "H6a/H6b", "H2-supplementary" to "H2-supp.",
-# freeing width for the Prediction column.
+# \ref{}, one-line prediction paraphrase). Abbreviated labels ("H1-t1/H1-t2"
+# for H1 Test 1/2, "H6-c1/H6-c2" for H6 clause 1/2) are self-explanatory
+# enough not to need a table note spelling them out (2026-08-29: the table's
+# own RQ1-RQ5/abbreviation note was dropped as redundant once Table I moved
+# to sit immediately after the Introduction's own RQ1-RQ5 paragraph).
 PARAPHRASES: list[tuple[str, str, str, str, str]] = [
-    ("H1 Test 1", "RQ1", "H1a", "sec:results-h1test1", "DyMuT scores lower than static, CC-matched"),
-    ("H1 Test 2", "RQ1", "H1b", "sec:results-h1test2", "Leaked twin (PLT) scores higher than decontaminated ULT"),
+    ("H1 Test 1", "RQ1", "H1-t1", "sec:results-h1test1", "DyMuT scores lower than static, CC-matched"),
+    ("H1 Test 2", "RQ1", "H1-t2", "sec:results-h1test2", "Leaked twin (PLT) scores higher than decontaminated ULT"),
     ("H2", "RQ1", "H2", "sec:results-h2", "Static-benchmark gain from fine-tuning exceeds dynamic gain"),
     ("H2-supplementary", "RQ1", "H2-supp.", "sec:results-h2supp", "Leaked instantiation inflates itself, not fresh instantiations (post-hoc)"),
     ("H3", "RQ2", "H3", "sec:results-h3", "Mutation score never increases from L1 to L4"),
     ("H4", "RQ3", "H4", "sec:results-h4", "Static-dynamic gap larger at low tiers than high tiers"),
     ("H5", "RQ4", "H5", "sec:results-h5", "Cross-instantiation Kendall $\\tau$ exceeds \\HFiveTauThreshold{}"),
-    ("H6 clause 1", "RQ5", "H6a", "sec:results-h6", "DyMuT-proxy correlation positive but imperfect"),
-    ("H6 clause 2", "RQ5", "H6b", "sec:results-h6", "DyMuT-proxy correlation weaker than static-proxy"),
+    ("H6 clause 1", "RQ5", "H6-c1", "sec:results-h6clause1", "DyMuT-proxy correlation positive but imperfect"),
+    ("H6 clause 2", "RQ5", "H6-c2", "sec:results-h6clause2", "DyMuT-proxy correlation weaker than static-proxy"),
 ]
 
-# RQ legend + abbreviation key, as a wrapped table note (FIGURE_TABLE_SPEC.md
-# T-2): one RQ per line so a five-item legend is scannable, not one wrapped
-# paragraph. Kept inside the table (not only in the Introduction's prose,
-# see PA-7) so the table reads standalone.
-TABLE_NOTE_LINES = [
-    "RQ1: contamination resistance versus a static benchmark.",
-    "RQ2: effect of complexity tier.",
-    "RQ3: whether overestimation is larger at low tiers.",
-    "RQ4: stability of rankings across re-instantiations.",
-    "RQ5: agreement with an external code-generation proxy.",
-    "H1a/H1b: H1 Test 1/Test 2. H2-supp.: H2-supplementary (post-hoc). H6a/H6b: H6 clause 1/clause 2.",
-]
+# Short parenthetical glosses for verdicts whose bare tag ("Not supported")
+# reads as a plain failure when the paper's own prose (Section 4) says
+# otherwise -- H1 Test 1's null is informative (rules out DyMuT being
+# simply harder), H6 clause 2's "not supported" is a reversal in DyMuT's
+# favour, not a weaker-than-predicted result. Fixed, hand-written glosses,
+# not derived from the sheet: they restate an interpretation already
+# spelled out in Section 4's prose, not a new claim.
+VERDICT_GLOSS: dict[str, str] = {
+    "H1 Test 1": "null informative",
+    "H6 clause 2": "reversed, favours DyMuT",
+}
 
 _VERDICT_SPLIT_RE = re.compile(r"\s+-\s+|\.\s+")
 
@@ -115,21 +111,19 @@ def main() -> None:
         # the sheet every time, so it can never go stale -- only how the
         # same live value is *styled* changes).
         verdict = _escape(verdicts[hyp_id].capitalize())
+        gloss = VERDICT_GLOSS.get(hyp_id)
+        if gloss:
+            verdict = f"{verdict} ({_escape(gloss)})"
+        # \hyperref[label]{text}, not plain text: the Hyp. column links
+        # straight to that hypothesis's own Section 4 subsection (uses
+        # hyperref, already loaded in paper.tex for the PDF's other
+        # cross-references; renders as plain unstyled text, [hidelinks]).
+        hyp_link = f"\\hyperref[{sec_label}]{{{short_label}}}"
         rows_tex.append(
-            f"{_escape(rq)} & {short_label} & {prediction} & {verdict} \\\\"
+            f"{_escape(rq)} & {hyp_link} & {prediction} & {verdict} \\\\"
         )
 
     body = "\n".join(rows_tex)
-    # Each RQ/abbreviation-key line on its own row inside the note cell
-    # (FIGURE_TABLE_SPEC.md T-2: "a five-item legend as one wrapped
-    # paragraph is harder to scan than five short lines"), not joined into
-    # one run-on paragraph.
-    # \newline, not a bare \\: a \\ inside a p{}/X paragraph cell that also
-    # sits inside a tabularx environment conflicts with tabularx's own
-    # column-width measuring pass (confirmed: "Missing \endgroup inserted"
-    # at \end{tabularx} when this used \\). \newline forces the same
-    # visible line break without being misread as a row separator.
-    note = " \\newline\n".join(TABLE_NOTE_LINES)
     # table (not table*): the author wants this table confined to a single
     # IEEEtran column, not spanning the full page width (2026-08-29
     # direction -- explicitly accepting heavier text wrapping and a taller
@@ -139,10 +133,9 @@ def main() -> None:
     tex = f"""% Auto-generated by scripts/build_paper_table1.py -- DO NOT EDIT DIRECTLY.
 % Compact hypothesis/prediction/verdict table. Predictions are fixed
 % paraphrases (see script docstring); verdicts are read live from
-% docs/Research_questions.xlsx's Hypotheses sheet; the section pointer is a
-% live \\ref{{}}, not a hardcoded number. table (single IEEEtran column,
-% not table*): see script docstring -- deliberately narrower than the page,
-% wraps heavily instead of spanning both columns.
+% docs/Research_questions.xlsx's Hypotheses sheet. table (single IEEEtran
+% column, not table*): see script docstring -- deliberately narrower than
+% the page, wraps heavily instead of spanning both columns.
 \\begin{{table}}[t]
 \\caption{{Pre-registered hypotheses, predictions, and verdicts}}
 \\label{{tab:hypotheses}}
@@ -156,7 +149,6 @@ def main() -> None:
 \\midrule
 {body}
 \\bottomrule
-\\multicolumn{{4}}{{@{{}}p{{\\columnwidth}}@{{}}}}{{\\scriptsize {note}}} \\\\
 \\end{{tabularx}}
 \\end{{table}}
 """

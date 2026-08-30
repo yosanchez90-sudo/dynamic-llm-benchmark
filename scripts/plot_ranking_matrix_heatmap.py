@@ -54,7 +54,7 @@ PAIRS = ["Dynamic<->ULT", "Dynamic<->BigCodeBench", "ULT<->BigCodeBench"]
 PAIR_LABELS = ["DyMuT\n↔ ULT", "DyMuT\n↔ BCB", "ULT\n↔ BCB"]
 
 
-def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id):
+def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id, center_title=False):
     grid = np.full((len(METRICS), len(PAIRS)), np.nan)
     annotations = np.empty((len(METRICS), len(PAIRS)), dtype=object)
     for i, metric in enumerate(METRICS):
@@ -91,8 +91,18 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id):
     # already needs to say). Placed just above the grid, inside the axes
     # (not above it): a colorbar shared across both stacked panels leaves
     # too little vertical gap between panels for an above-axes title.
-    ax.set_ylim(len(METRICS) - 0.5, -1.05)
-    ax.text(-0.5, -0.85, f"{panel_id} {scope_label}", fontsize=7, fontweight="bold", ha="left", va="top")
+    if center_title:
+        # A real title, not in-axes text: it sits above the axes box
+        # entirely, so it's never framed by the left/right spines the way
+        # extending ylim upward (the 2-panel branch below) leaves them
+        # running through the blank title space -- confirmed as exactly
+        # the "lines overlapping the title" the reader flagged on the
+        # single-panel crossfamily figure.
+        ax.set_ylim(len(METRICS) - 0.5, -0.5)
+        ax.set_title(scope_label, fontsize=7, fontweight="bold", pad=8)
+    else:
+        ax.set_ylim(len(METRICS) - 0.5, -1.05)
+        ax.text(-0.5, -0.85, f"{panel_id} {scope_label}", fontsize=7, fontweight="bold", ha="left", va="top")
     for i in range(len(METRICS)):
         for j in range(len(PAIRS)):
             val = grid[i, j]
@@ -160,7 +170,7 @@ Output: {OUT_PATH.relative_to(ROOT)} (+ .png).
     # CROSSFAMILY_OUT_PATH comment above).
     fig2, ax2 = plt.subplots(1, 1, figsize=(COL_W, COL_W * 1.15))
     sub = corr[corr["scope"] == "canonical_plus_cross_family"]
-    im2 = _heatmap_panel(ax2, sub, "Canonical + cross-family (13 models)", cmap, norm, "")
+    im2 = _heatmap_panel(ax2, sub, "Canonical + cross-family (13 models)", cmap, norm, "", center_title=True)
     fig2.subplots_adjust(top=0.90, bottom=0.10, right=0.86, left=0.30)
     cbar2 = fig2.colorbar(im2, ax=ax2, orientation="vertical", fraction=0.06, pad=0.12, shrink=0.9)
     cbar2.set_label("Kendall $\\tau$ (rank agreement)")
