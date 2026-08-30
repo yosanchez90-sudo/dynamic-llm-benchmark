@@ -109,25 +109,33 @@ def _set_field(paragraph, field_code, result_text=""):
     r_element.append(fld_end)
 
 
-def _add_inline_runs(paragraph, text: str):
-    """Handle **bold**, *italic*, and `code` spans within one line of text."""
+def _add_inline_runs(paragraph, text: str, bold: bool = False, italic: bool = False):
+    """Handle **bold**, *italic*, and `code` spans within one line of text,
+    recursing into bold/italic matches so a nested code span (e.g. the
+    "**`file.py`, guards bug 5**" convention used throughout section 2.4)
+    still gets stripped and monospaced instead of surviving as literal
+    backticks -- confirmed 2026-08-30: the non-recursive version added the
+    whole "**...**" match as one opaque bold run via part[2:-2], so any
+    backtick inside it was never re-parsed."""
     token_re = re.compile(r"(\*\*.+?\*\*|\*.+?\*|`.+?`)")
     parts = token_re.split(text)
     for part in parts:
         if not part:
             continue
         if part.startswith("**") and part.endswith("**"):
-            run = paragraph.add_run(part[2:-2])
-            run.bold = True
+            _add_inline_runs(paragraph, part[2:-2], bold=True, italic=italic)
         elif part.startswith("*") and part.endswith("*"):
-            run = paragraph.add_run(part[1:-1])
-            run.italic = True
+            _add_inline_runs(paragraph, part[1:-1], bold=bold, italic=True)
         elif part.startswith("`") and part.endswith("`"):
             run = paragraph.add_run(part[1:-1])
             run.font.name = "Consolas"
             run.font.size = Pt(10)
+            run.bold = bold
+            run.italic = italic
         else:
-            paragraph.add_run(part)
+            run = paragraph.add_run(part)
+            run.bold = bold
+            run.italic = italic
 
 
 def _shade_paragraph(paragraph, hex_color: str) -> None:
