@@ -63,4 +63,19 @@ this table was created):
 | METRICS_AND_FINDINGS_EXPLAINED.md | 1035 | n_models | 13 | verified-current — same cross-family n=13 structural gap as RQ5_INTERPRETATION.md:411 |
 | METRICS_AND_FINDINGS_EXPLAINED.md | 1084 | kendall_tau | 0.143 | historical — findings-ledger table row describing a specific, dated, past-tense diagnostic finding ("was found to ... flip its sign") |
 | METRICS_AND_FINDINGS_EXPLAINED.md | 1084 | kendall_tau | -0.2 | historical — same findings-ledger table row |
+| REPORT.md | 698 | p_value | 88.7 | verified-current — main results table's baseline_pass_rate (%) column, live from ranking_matrix_scores.csv, matching paper/table_results.tex exactly; the checker misreads the "BP" column header context as a p_value pattern, a structural extraction gap, not a real p-value claim |
+| REPORT.md | 698 | p_value | 69.8 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 699 | p_value | 83.8 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 699 | p_value | 54.8 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 700 | p_value | 70.3 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 700 | p_value | 19.5 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 701 | p_value | 50.2 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 702 | p_value | 95.6 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 703 | p_value | 65.2 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 703 | p_value | 26.5 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 704 | p_value | 29.1 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 704 | p_value | 7.8 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 705 | p_value | 20.4 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 705 | p_value | 1.8 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 706 | p_value | 2.0 | verified-current — same table, same structural BP-column misread as above |
 | METRICS_AND_FINDINGS_EXPLAINED.md | 1084 | n_models | 5 | historical — same findings-ledger table row, the n=5-scope diagnostic reading it describes |

@@ -5,8 +5,4 @@ Transparency. Publishing DyMuT's sixty templates as a frozen instance set would 
 
 Privacy. Six of the nine evaluated models are accessed through commercial APIs, so every prompt sent during evaluation is disclosed to those providers, who may retain it for training~\cite{balloccu2024leakcheat}. The mitigation is structural: a dynamic instance is discarded and freshly regenerated for every future evaluation, so a leaked run cannot leak the benchmark itself.
 
-Bias and fairness. The template grammar and identifier bank reflect one author's judgement of test-generation difficulty and are English-only, while ULT's corpus includes non-English prompts, an uncontrolled language confound between the two benchmarks.
-
-Safety of execution. Every generated test file and scraped ground-truth function is executed. Section~\ref{sec:discussion} discloses the actual guarantee: an isolated temporary directory, not a sandbox, defending against accidental side effects, not adversarial code.
-
 Declared AI assistance. An AI coding assistant was used throughout implementation and drafting, under the author's specification and review, per the module's declaration requirement and the fuller account in the supporting report.

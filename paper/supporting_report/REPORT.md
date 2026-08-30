@@ -602,9 +602,13 @@ The paper is written in IEEEtran LaTeX and compiled with `latexmk`. Every quanti
 
 Claude Code, an AI coding assistant, was used throughout development: implementing the template engine, the scoring harness, and the analysis scripts from a specification the author wrote; investigating and fixing the bugs recorded in the error ledger; and drafting documentation, including this report and the paper, from the author's project records and decisions. Every design decision, every hypothesis, every interpretation of a result, and the decision to fine-tune, to cut an instantiation, or to decline further data collection, was the author's, made in consultation with the supervisor. The assistant did not choose what to test or what a result meant; it wrote code and prose to a specification and had its output reviewed before being relied on. This declaration is stated here in full and in the paper's own AI Ethical Considerations section, consistent with the module's AI-assistance declaration requirement.
 
-### 3.9 Licensing and dual use
+### 3.9 Ethics: bias, safety, licensing, and dual use
 
-ULT/PLT are MIT-licensed, BigCodeBench is Apache-2.0; both are used here for research evaluation only, as their own terms permit. DyMuT's sixty templates are original work authored for this study, with no external licensing dependency.
+Bias and fairness. The template grammar and identifier bank reflect one author's judgement of test-generation difficulty and are English-only, while ULT's corpus includes non-English prompts, an uncontrolled language confound between the two benchmarks.
+
+Safety of execution. Every generated test file and scraped ground-truth function is executed. Section 2.3 discloses the actual guarantee: an isolated temporary directory, not a sandbox, defending against accidental side effects, not adversarial code.
+
+Licensing. ULT/PLT are MIT-licensed, BigCodeBench is Apache-2.0; both are used here for research evaluation only, as their own terms permit. DyMuT's sixty templates are original work authored for this study, with no external licensing dependency.
 
 The fine-tuning procedure used to demonstrate contamination causally (section 1.6) is, described plainly, a recipe for inducing benchmark-specific contamination on demand. It is disclosed in full because the risk it demonstrates -- that a static, published benchmark can be deliberately inflated by training on its own ground truth -- is already latent in any such benchmark, not created by publishing the recipe; DyMuT's own generator design (the paper's Transparency point) is this work's proposed mitigation. Every model call and fine-tuning run in this study also consumed real GPU time and, for six of the nine canonical models, third-party API compute; neither was offset, and no aggregate carbon or energy figure is tracked for this project.
 
@@ -684,7 +688,24 @@ Section 4.3 discusses what these results mean. This section states them once, in
 | H6 clause 1 | Dynamic-proxy correlation positive but imperfect | MIXED |
 | H6 clause 2 | Dynamic-proxy correlation weaker than static-proxy | NOT SUPPORTED |
 
-This table's verdicts are read live from the same workbook as the paper's own Table II (`paper/table1.tex`), not restated independently; the paper's version additionally carries a research-question column, an abbreviated hypothesis label, and a pointer to the reporting subsection.
+This table's verdicts are read live from the same workbook as the paper's own Table I (`paper/table1.tex`), not restated independently; the paper's version additionally carries a research-question column, an abbreviated hypothesis label, and a pointer to the reporting subsection.
+
+The paper's own page budget carries a hyperlinked pointer to this table rather than reproducing it; it is the same live-generated table as `paper/table_results.tex` (Table II), read from `analysis/ranking_matrix_scores.csv`. All values %. Exec = exec_rate, BP = baseline_pass_rate, Mut@K = conditional mutation score, Cov-adj = coverage-adjusted mutation score, n_def = problems with a defined Mut@K. † marks a thin cell (n_def<20). ‡ marks an incomplete ULT crawl (Gemini 3.1 Pro Preview, 101/400), not the full `core_400`, a separate, pre-existing data gap unrelated to DyMuT's own pooling.
+
+| Model | Exec | BP | Mut@K | Cov-adj | n_def | Exec | BP | Mut@K | Cov-adj | n_def |
+|---|---|---|---|---|---|---|---|---|---|---|
+| | **DyMuT (pooled)** | | | | | **ULT (core_400)** | | | | |
+| GPT-5 | 99.7 | 88.7 | 96.0 | 85.2 | 1331 | 99.2 | 69.8 | 86.9 | 60.6 | 279 |
+| GPT-5-mini | 99.6 | 83.8 | 95.8 | 80.3 | 1257 | 98.2 | 54.8 | 85.1 | 46.6 | 219 |
+| Claude Sonnet 4.6 | 80.5 | 70.3 | 95.4 | 67.1 | 1055 | 45.2 | 19.5 | 75.6 | 14.7 | 78 |
+| Claude Haiku 4.5 | 94.2 | 50.2 | 95.5 | 48.0 | 753 | 39.2 | 8.8 | 80.1 | 7.0 | 35 |
+| Gemini 3.1 Pro Preview | 99.8 | 95.6 | 96.0 | 91.7 | 1147 | 92.1‡ | 73.3‡ | 88.8‡ | 65.1‡ | 74 |
+| Gemini 3.1 Flash-Lite | 83.9 | 65.2 | 95.3 | 62.2 | 783 | 83.2 | 26.5 | 82.1 | 21.8 | 106 |
+| Qwen 32B | 99.7 | 29.1 | 95.5 | 27.8 | 436 | 94.8 | 7.8 | 90.1 | 7.0 | 31 |
+| Qwen 7B | 99.6 | 20.4 | 92.5 | 18.9 | 306 | 93.5 | 1.8 | 89.4† | 1.6† | 7 |
+| Qwen 1.5B | 79.5 | 5.2 | 81.3 | 4.2 | 78 | 65.2 | 2.0 | 40.7† | 0.8† | 8 |
+
+DyMuT pools unequal N: 5 instantiations for GPT-5, GPT-5-mini, Claude Sonnet 4.6, Claude Haiku 4.5, Qwen 32B, Qwen 7B, Qwen 1.5B; 4 instantiations for Gemini 3.1 Pro Preview, Gemini 3.1 Flash-Lite (an already-disclosed gap, section 2.6/2.9). This snapshot is current as of the same pipeline run the paper's own Table II regenerates from; re-run `scripts/build_paper_results_table.py` after any new data lands and update both together.
 
 H2's headline figures, the strongest result in the project: fine-tuning Qwen2.5-Coder-1.5B-Instruct on ULT's own ground truth moves seen-ULT's `baseline_pass_rate` by +99.1 percentage points (95% CI [97.3, 100.0]), moves PLT by +13.8 percentage points (CI [7.7, 20.1]) once a measured +8.7pp generic-fine-tuning-improvement control is subtracted, and moves DyMuT's hardest tier by exactly 0.0 percentage points.
 
