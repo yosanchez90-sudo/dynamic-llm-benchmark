@@ -105,6 +105,9 @@ def main() -> None:
     for scope_name, models in SCOPES.items():
         for benchmark_view, (src_df, tier_filter) in {
             "dynamic_pooled": (dynamic, None),
+            "dynamic_L1": (dynamic, "L1"),
+            "dynamic_L2": (dynamic, "L2"),
+            "dynamic_L3": (dynamic, "L3"),
             "dynamic_L4": (dynamic, "L4"),
             "ult_core400": (ult, None),
         }.items():

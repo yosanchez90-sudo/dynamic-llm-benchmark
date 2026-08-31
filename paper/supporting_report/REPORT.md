@@ -126,7 +126,7 @@ A real ULT record, abridged:
 
 The dynamic path builds a problem: a new seed produces a problem that did not exist before. The ULT/PLT path adapts one: the same 400 real functions every run. Both call the same message builder from section 1.4. (A different, unrelated "reconstruct": `process_batch.py::build_problem_map()` re-derives an already-built `TestGenProblem` from its own key when an OpenAI batch result returns, not a build-vs-adapt distinction.)
 
-**Repairing ULT's ground truth for fine-tuning.** ULT's own shipped tests are not reliable enough to train on directly. `scripts/repair_ult_ground_truth.py` ran all 2,986 CC≥8 ULT records through the real scoring harness (section 2.3) and classified each:
+**Repairing ULT's ground truth for fine-tuning.** ULT's own shipped tests are not reliable enough to train on directly. `scripts/repair_ult_ground_truth.py` ran all 2,986 CC≥8 ULT records with a parseable shipped test file through the real scoring harness (section 2.3) and classified each. This 2,986 is not the full CC≥8 population: of ULT's 3,909 records, 233 fail the CC≥8 floor (the paper's own figure, section 1.6), leaving 3,676 at or above it; of those 3,676, a further 690 have a shipped test that fails to parse as valid Python at all and were excluded before this stage, never entering the taxonomy below. Confirmed directly against `data/raw/ult_plt/ULT.jsonl` with the same `_target_function_node`/`compute_cc`/`build_test_file` functions this script itself calls (not assumed from either figure): 3,909 total, 233 below the CC≥8 floor, 690 more with an unparseable shipped test, 2,986 remaining -- the paper's 233 and this report's 2,986 were each independently correct all along; only the missing "690 more" step made them look inconsistent.
 
 | Category | Count | % |
 |---|---|---|
@@ -710,6 +710,36 @@ DyMuT pools unequal N: 5 instantiations for GPT-5, GPT-5-mini, Claude Sonnet 4.6
 H2's headline figures, the strongest result in the project: fine-tuning Qwen2.5-Coder-1.5B-Instruct on ULT's own ground truth moves seen-ULT's `baseline_pass_rate` by +99.1 percentage points (95% CI [97.3, 100.0]), moves PLT by +13.8 percentage points (CI [7.7, 20.1]) once a measured +8.7pp generic-fine-tuning-improvement control is subtracted, and moves DyMuT's hardest tier by exactly 0.0 percentage points.
 
 Full per-problem results are submitted as separate appendix files, not reproduced here: `docs/Research_questions.xlsx` (this table's own source) and `analysis/results.xlsx` (the per-problem dynamic-benchmark export). Every intermediate table lives in `analysis/` as citation-gated markdown and CSV.
+
+The pooled table above collapses across DyMuT's four complexity tiers and, for the cross-family extension models used in H6 clause 1 (section 4.2/analysis/RQ5_CROSS_FAMILY_INTERPRETATION.md), is limited to the nine canonical models only. The two tables below break the same live source (`analysis/ranking_matrix_scores.csv`, regenerated with per-tier `dynamic_L1`/`L2`/`L3` rows added alongside the pre-existing `dynamic_L4` for this purpose) out further: by tier, and to the four cross-family models.
+
+**Table 6. Canonical model scores by complexity tier on DyMuT.** All values %. Cond. = conditional Mut@K, Cov-adj = coverage-adjusted Mut@K, n_def = problems with a defined Mut@K at that tier. † marks a thin cell (n_def<20).
+
+| Model | L1 Cond | L1 Cov-adj | L1 n_def | L2 Cond | L2 Cov-adj | L2 n_def | L3 Cond | L3 Cov-adj | L3 n_def | L4 Cond | L4 Cov-adj | L4 n_def |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| GPT-5 | 98.5 | 74.9 | 285 | 99.1 | 87.5 | 331 | 96.1 | 90.7 | 354 | 91.1 | 87.7 | 361 |
+| GPT-5-mini | 98.3 | 71.6 | 273 | 99.0 | 92.4 | 350 | 96.1 | 84.0 | 328 | 89.6 | 73.2 | 306 |
+| Claude Sonnet 4.6 | 98.3 | 83.4 | 318 | 97.9 | 94.8 | 363 | 94.4 | 63.2 | 251 | 82.7 | 27.1 | 123 |
+| Claude Haiku 4.5 | 98.6 | 49.2 | 187 | 97.6 | 79.1 | 304 | 92.9 | 40.7 | 164 | 87.5 | 22.9 | 98 |
+| Gemini 3.1 Pro Preview | 98.5 | 88.0 | 268 | 98.0 | 96.4 | 295 | 95.6 | 93.1 | 292 | 91.9 | 89.4 | 292 |
+| Gemini 3.1 Flash-Lite | 98.8 | 63.2 | 192 | 97.7 | 87.3 | 268 | 94.0 | 55.8 | 178 | 88.1 | 42.6 | 145 |
+| Qwen 32B | 99.6 | 15.9 | 60 | 97.6 | 73.7 | 283 | 91.6 | 19.6 | 80 | 54.7† | 1.9† | 13 |
+| Qwen 7B | 100.0 | 12.3 | 46 | 92.6 | 52.8 | 214 | 85.1 | 10.2 | 45 | 54.1† | 0.1† | 1 |
+| Qwen 1.5B | 100.0† | 3.2† | 12 | 78.1 | 13.3 | 64 | 72.2† | 0.4† | 2 | --† | --† | 0 |
+
+5 of these 36 cells are thin: Qwen 32B/L4 (n_def=13), Qwen 7B/L4 (n_def=1), Qwen 1.5B/L1 (n_def=12), Qwen 1.5B/L3 (n_def=2), Qwen 1.5B/L4 (n_def=0, undefined -- no problem in that cell has a baseline-passing run to score a mutant against). Conditional Mut@K is strictly monotone decreasing across every tier a model has defined data for in 7 of 9 models; the two exceptions are small L1→L2 rises, not reversals: GPT-5 (+0.53pp) and GPT-5-mini (+0.75pp), both comfortably sub-one-point.
+
+**Table 7. Cross-family extension models: pooled scores and external proxy.** Same columns and formatting as the pooled table above, plus BigCodeBench (published Complete-split Pass@1, `analysis/rq5_public_scores.csv`, an external proxy, not a DyMuT/ULT score of this project's own).
+
+| Model | Exec | BP | Mut@K | Cov-adj | n_def | Exec | BP | Mut@K | Cov-adj | n_def | BCB Pass@1 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| | **DyMuT (pooled)** | | | | | **ULT (core_400)** | | | | | |
+| DeepSeek-Coder-6.7B | 98.3 | 15.3 | 95.5 | 14.6 | 46 | 96.2 | 6.2 | 65.7 | 4.1 | 25 | 35.5 |
+| CodeLlama-13B | 86.0 | 14.7 | 87.6 | 12.9 | 44 | 87.2 | 2.0 | 60.5† | 1.2† | 8 | 28.5 |
+| StarCoder2-15B | 92.3 | 25.0 | 91.9 | 23.0 | 75 | 88.8 | 14.0 | 55.4 | 7.7 | 56 | 37.6 |
+| Mistral-7B | 96.7 | 1.7 | 93.5† | 1.6† | 5 | 82.2 | 0.2 | 93.1† | 0.2† | 1 | 19.5 |
+
+All four cross-family models were run on a single DyMuT instantiation (n_total=300, one problem set), not the five (seven canonical models) or four (both Gemini models) pooled for the canonical set above -- confirmed both from `n_total` and directly from the raw result filenames under `data/results/dynamic/`, each of which has exactly one `inst1` file pair (`tiersL1L2`/`tiersL3L4`), no `inst2`-`inst5`. This was previously undocumented for three of the four models; only Mistral-7B's single-instantiation status had been separately confirmed (section 4.2/H6).
 
 ### 5.1 Supplementary figures
 

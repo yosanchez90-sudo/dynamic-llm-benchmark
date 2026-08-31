@@ -78,4 +78,10 @@ this table was created):
 | REPORT.md | 705 | p_value | 20.4 | verified-current — same table, same structural BP-column misread as above |
 | REPORT.md | 705 | p_value | 1.8 | verified-current — same table, same structural BP-column misread as above |
 | REPORT.md | 706 | p_value | 2.0 | verified-current — same table, same structural BP-column misread as above |
+| REPORT.md | 737 | p_value | 15.3 | verified-current — Table 7 (cross-family extension models) baseline_pass_rate column, live from ranking_matrix_scores.csv canonical_plus_cross_family scope, matching paper/SUPPORTING_REPORT.docx's Table 7 exactly; same structural BP-column misread as the pooled-table entries above |
+| REPORT.md | 738 | p_value | 14.7 | verified-current — same Table 7, same structural BP-column misread as above |
+| REPORT.md | 738 | p_value | 2.0 | verified-current — same Table 7, same structural BP-column misread as above |
+| REPORT.md | 739 | p_value | 25.0 | verified-current — same Table 7, same structural BP-column misread as above |
+| REPORT.md | 739 | p_value | 14.0 | verified-current — same Table 7, same structural BP-column misread as above |
+| REPORT.md | 740 | p_value | 1.7 | verified-current — same Table 7, same structural BP-column misread as above |
 | METRICS_AND_FINDINGS_EXPLAINED.md | 1084 | n_models | 5 | historical — same findings-ledger table row, the n=5-scope diagnostic reading it describes |
