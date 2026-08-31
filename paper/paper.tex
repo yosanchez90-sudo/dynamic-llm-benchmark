@@ -75,11 +75,26 @@ data contamination, dynamic benchmarking, large language models, mutation testin
 % strands the last few references on an otherwise-empty final page.
 % IEEEtriggeratref/IEEEtriggercmd is IEEEtran's documented mechanism for
 % manually equalizing the two columns on the last page; it does not alter
-% the reference list itself. Re-tuned after this pass's cuts changed the
-% document length (the previous trigger point/enlarge amount no longer
-% matched where the overflow actually falls).
-\IEEEtriggeratref{20}
-\IEEEtriggercmd{\enlargethispage{18\baselineskip}}
+% the reference list itself. Re-tuned 2026-08-31 after restoring Table II
+% and two Ethics paragraphs pushed the document to 9 pages: 6 of 21
+% references no longer fit on page 8 at all (verified: paper.bbl has 21
+% \bibitem entries, but at the previous trigger{20}/enlarge{18skip} only
+% 15-18 rendered -- the rest were silently absent from the PDF with zero
+% Overfull warning, not flowed to a new page). CAUTION found the hard way:
+% enlargethispage can push text past the physical page bottom with no
+% warning at all if pushed too far (confirmed at trigger{16}/enlarge{18skip}:
+% right column hit y=787.5 of 792, and 3 references vanished from the
+% rendered PDF entirely, still present in paper.bbl). Before touching these
+% two numbers again: rebuild, then verify every \bibitem's first author
+% surname still appears somewhere in `pdftotext paper.pdf -`, not just
+% that pdflatex exits cleanly -- a clean compile with 0 Overfull warnings
+% is not proof nothing was dropped. Current values (trigger{16},
+% enlarge{6skip}) were chosen as the smallest enlarge that pulls
+% references 16-17 onto page 8 while keeping page 8's fullest column
+% comfortably under y=780 (measured 772), leaving margin before the
+% y=787.5 loss threshold found above.
+\IEEEtriggeratref{16}
+\IEEEtriggercmd{\enlargethispage{6\baselineskip}}
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 

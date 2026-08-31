@@ -256,6 +256,27 @@ experiment fine-tuning a small open-source model on perturbed benchmark data.
   hardcoded README summary, found and fixed 2026-08-03, documented in
   `analysis/VALIDATOR_SWEEP.md`).
 
+- **`\IEEEtriggeratref`/`\enlargethispage` (paper.tex's last-page column-balance
+  trick) can silently drop content off the bottom of the PDF with zero
+  warning if pushed too far.** Confirmed 2026-08-31: restoring Table II
+  (per-model results) and two Ethics paragraphs to the paper pushed it
+  from 8 to 9 pages. Retuning the trigger to force it back to 8 pages
+  (`\IEEEtriggeratref{16}` + `\enlargethispage{18\baselineskip}`) compiled
+  clean -- 0 Overfull warnings, exit code 0 -- but silently rendered only
+  18 of 21 references; the last 3 (`angrist2009mostly`, `efron1993bootstrap`,
+  `holm1979simple`) were pushed past the physical page bottom (y=787.5 of
+  792) and vanished from the PDF entirely, though `paper.bbl` still had
+  all 21 `\bibitem` entries and pdflatex raised no error. A clean compile
+  with 0 Overfull/Underfull-vbox warnings is therefore not proof nothing
+  was dropped by this mechanism -- verify by grepping every reference's
+  first-author surname (or any other content pushed near a page trigger)
+  out of `pdftotext paper.pdf -` after any retune, not just checking the
+  page count and warning-free compile. Resolved by accepting 9 pages
+  (`\IEEEtriggeratref{16}` + `\enlargethispage{6\baselineskip}`, page 8's
+  fullest column measured at y=772, comfortably under the y=787.5 loss
+  threshold found above) rather than fighting the page budget with this
+  mechanism further.
+
 ## Layout
 - `src/` library code
 - `configs/` experiment configs (Hydra/YAML)
