@@ -129,14 +129,15 @@ explicit go-ahead given before anything is submitted.**
 OpenAI, and no money has been spent at any point in this pass. Submission
 requires: (1) the setup steps in §6 above, then (2) either
 `python scripts/create_batch.py <configs> --submit` (uploads and submits
-for real — the explicit opt-in, safe-by-default as of this pass) or the
-manual upload/create flow in `SUPERVISOR_HANDOFF_SUBMIT_ALL.md` — only
+for real — the explicit opt-in, safe-by-default as of this pass) or a
+direct `client.files.create` + `client.batches.create` call against the
+already-prepared `batch_input_*.jsonl`/`batch_state_*.json` pair — only
 after an explicit go-ahead.
 
 ## Addendum, 2026-08-06 — submission attempted, one real gap in this checklist found and fixed
 
 Explicit go-ahead was given and credits were loaded. Submission used the
-direct upload/create path (`SUPERVISOR_HANDOFF_SUBMIT_ALL.md`'s pattern,
+direct upload/create path (`client.files.create` + `client.batches.create`,
 applied to the exact three audited files) rather than regenerating via
 `create_batch.py --submit`, specifically so the artifacts already
 drift-checked and dry-run-validated in this document were the literal

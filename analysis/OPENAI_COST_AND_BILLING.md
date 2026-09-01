@@ -6,10 +6,10 @@ money was spent producing this document** — every number below comes from
 disk, (b) real logged usage from GPT-5/-mini's inst1 runs, and (c) OpenAI's
 live public pricing/docs pages, fetched directly (curl) and cross-checked
 against a second, independent fetch — not fetched once and trusted, and not
-recalled from training data. See `analysis/SUPERVISOR_HANDOFF_20260714.md`,
-`analysis/SUPERVISOR_HANDOFF_ULT_PLT_20260713.md`, and
-`analysis/SUPERVISOR_HANDOFF_SUBMIT_ALL.md` for the original (now partially
-superseded — see §1 below) handoff docs this reconciles against.
+recalled from training data. This reconciles against three batches prepared
+in July 2026 (2,400-request Dynamic-benchmark coverage backfill, a 7-request
+retry, and a 1,600-request ULT/PLT `core_400` batch, ~$81 combined at the
+original estimate — now partially superseded, see §1 below).
 
 ## 1. What's actually still needed — reconciled against the coverage matrix
 
@@ -139,8 +139,8 @@ $5.00 out per 1M; gpt-5-mini: $0.125 / $1.00 per 1M):
 | **TOTAL** | | **4,007** | **1,244,519** | **$39.01** | **$51.47** | **$59.72** |
 
 **Headline: ~$51 mid-estimate, plausible range $39-$60.** This is
-meaningfully *lower* than the ~$81 figure in
-`analysis/SUPERVISOR_HANDOFF_SUBMIT_ALL.md` — almost entirely because of
+meaningfully *lower* than the original ~$81 estimate (prepared July 2026,
+before submission) — almost entirely because of
 the §2 pricing-table bug (the old figure used the wrong, pricier `gpt-5.4`
 rate), with a small additional correction from ULT/PLT's real input tokens
 running noticeably higher than assumed (measured mean 498 tokens/request,
@@ -262,9 +262,8 @@ Every request line across all three prepared files contains only
 `custom_id`, `method`, `url`, and `body` (itself only `model`, `messages`,
 `max_completion_tokens`) — grepped for anything resembling an org ID,
 API key, username, or absolute path (`org-*`, `sk-*`, `/users/*`,
-`/home/*`): **zero matches**. The files are exactly as portable as
-`SUPERVISOR_HANDOFF_SUBMIT_ALL.md` already claimed — any valid OpenAI API
-key with `gpt-5-2025-08-07`/`gpt-5-mini-2025-08-07` access can submit them
+`/home/*`): **zero matches**. Any valid OpenAI API key with
+`gpt-5-2025-08-07`/`gpt-5-mini-2025-08-07` access can submit them
 unmodified.
 
 **What submission actually needs** (mechanically): an `OPENAI_API_KEY`
@@ -284,10 +283,7 @@ invocation now only ever writes the JSONL/state files, never uploads or
 charges anything, matching the "no spend by default" posture this whole
 pass is operating under. Updated everywhere `--no-submit` was referenced
 (`scripts/slurm/run_create_batch_core400.slurm`, the four
-`configs/gpt_5*__{ult,plt}__core400.yaml` header comments) to match; the
-two `SUPERVISOR_HANDOFF_*.md` docs' historical `--no-submit` mentions are
-left as-is (they're a record of what was actually run at the time, not
-live instructions to re-execute).
+`configs/gpt_5*__{ult,plt}__core400.yaml` header comments) to match.
 
 ## 7. Summary for Part 2 / the GO/NO-GO gate
 

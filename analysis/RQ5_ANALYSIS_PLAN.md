@@ -140,5 +140,4 @@ all-Qwen size-sweep confound the harvest's n_models=3 result left unresolved. It
 is a genuine post-hoc addition to this research program, not something
 pre-registered here in advance, even though it answers the same research
 question. Executed and reported in full in `analysis/RQ5_INTERPRETATION.md`
-("Cross-family extension — final results") and condensed in
-`analysis/RQ5_SUPERVISOR_SUMMARY_20260729.md`.
+("Cross-family extension — final results").

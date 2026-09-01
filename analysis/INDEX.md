@@ -93,11 +93,6 @@ audit trail, not as current/live guidance.
 | `RQ5_CROSS_DEFINITION_AUDIT.md` | Revision history resolving a Mut@K definition contradiction against the ULT source paper. |
 | `RQ5_CROSS_FAMILY_PROPOSAL.md` | Original proposal for the 4-model cross-family extension, preserved as written. |
 | `RQ5_LEADERBOARD_HARVEST.md` | Dated log of which pinned model snapshots have published BigCodeBench numbers. |
-| `RQ5_SUPERVISOR_SUMMARY_20260729.md` | Dated supervisor-meeting summary. Its headline correlation figure is superseded. The current figure is in `RQ5_INTERPRETATION.md`. |
-| `SUPERVISOR_HANDOFF_20260714.md` | Handoff note: GPT-5/-mini Dynamic-benchmark batch requests, ready to submit. |
-| `SUPERVISOR_HANDOFF_SUBMIT_ALL.md` | Consolidated submission summary for all three pending GPT batches. |
-| `SUPERVISOR_HANDOFF_ULT_PLT_20260713.md` | Handoff note: GPT-5/-mini ULT/PLT `core_400` batch, ready to submit. |
-| `SUPERVISOR_NOTE_COMPARISON_C_20260726.md` | Note flagging a ULT training-data quality issue ahead of a supervisor meeting. |
 | `TIER_SYMMETRY_AUDIT.md` | Read-only audit confirming cross-benchmark comparisons are like-for-like. |
 | `ULT_DATA_QUALITY_AUDIT.md` | Consolidates three findings on ULT/PLT's published data-quality issues. |
 | `VALIDATOR_SWEEP.md` | Sweep of every validator/audit script for silent-failure bug patterns. |

@@ -465,9 +465,8 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
   accommodation (`supports_system_role: false`: its chat_template rejects
   `role="system"` outright) logged per-row as `prompt_delivery_mode`.
   Full write-up incl. Discussion-chapter stub and the cross-family final
-  results: `analysis/RQ5_INTERPRETATION.md`. Condensed supervisor-meeting
-  version: `analysis/RQ5_SUPERVISOR_SUMMARY_20260729.md`. One-command
-  regeneration for all of the above plus Comparison A/B/C and stability:
+  results: `analysis/RQ5_INTERPRETATION.md`. One-command regeneration for
+  all of the above plus Comparison A/B/C and stability:
   `scripts/build_thesis_assets.py`.
 - **Hypothesis reconciliation (2026-08-12)**: `docs/Approved_Hypotheses.md`
   and `docs/Research_questions.xlsx` (both supervisor-facing reference

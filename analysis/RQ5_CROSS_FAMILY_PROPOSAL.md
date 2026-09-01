@@ -3,9 +3,8 @@
 **STATUS: approved 2026-07-28, completed 2026-07-29.** All 4 candidates
 below ran to completion (300/300 Dynamic + 400/400 ULT each). Final
 results, superseding the projections in this document: `analysis/
-RQ5_INTERPRETATION.md`'s "Cross-family extension — final results" section
-and the condensed `analysis/RQ5_SUPERVISOR_SUMMARY_20260729.md`. This
-document is preserved as-is below for the historical record of what was
+RQ5_INTERPRETATION.md`'s "Cross-family extension — final results" section.
+This document is preserved as-is below for the historical record of what was
 proposed and why (cost estimates, candidate selection rationale, snapshot
 verification) — not updated to match final numbers.
 
