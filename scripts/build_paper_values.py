@@ -420,7 +420,7 @@ def main() -> None:
     # same environment that runs this very script), not hand-typed: found
     # while writing this block that the project actually pins Python 3.10
     # (pyproject.toml's requires-python, confirmed by the running
-    # interpreter), not 3.11 as CLAUDE.md and the supporting report both
+    # interpreter), not 3.11 as CONVENTIONS.md and the supporting report both
     # currently (incorrectly) state, and that `statsmodels` is not an
     # installed dependency at all (Holm-Bonferroni is a hand-written
     # function over numpy, src/Analysis/multiple_comparisons.py).

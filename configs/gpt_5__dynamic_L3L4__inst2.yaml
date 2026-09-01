@@ -8,7 +8,7 @@ task: test_generation
 
 model:
   provider: openai
-  id: gpt-5-2025-08-07             # pinned snapshot (CLAUDE.md: no aliases)
+  id: gpt-5-2025-08-07             # pinned snapshot (CONVENTIONS.md: no aliases)
   revision: gpt-5-2025-08-07
 
 benchmark: dynamic

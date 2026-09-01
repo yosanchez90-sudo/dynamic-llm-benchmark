@@ -325,7 +325,7 @@ Investigation traced this to `process_batch.py` never applying OpenAI's
 50% Batch API discount when computing `cost_usd` (confirmed by exact
 arithmetic: a real row's `cost_usd=$0.0314625` reproduces precisely from
 `154*1.25 + 3127*10.00` over 1e6, the *standard* rate, not the batch
-rate) — full writeup and fix in `CLAUDE.md`. Halving the logged total
+rate) — full writeup and fix in `CONVENTIONS.md`. Halving the logged total
 gives **$53.15 real cost for this pass's 4,007 requests** — within the
 original estimate band, $1.68 above the $51.47 midpoint. This is a strong
 independent cross-check that both the estimate methodology (exact

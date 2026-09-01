@@ -9,7 +9,7 @@ problem-set noise across points):
   - 75 Dynamic L1/L2 instantiation-1 problems (of the 150-problem L1+L2 pool)
 
 Drawn with a recorded seed so the manifest is reproducible from this script
-alone. Output is force-added under data/ (CLAUDE.md: manifest files under
+alone. Output is force-added under data/ (CONVENTIONS.md: manifest files under
 data/ are force-added despite the blanket /data/ gitignore).
 
 Usage: python scripts/build_onset_curve_manifest.py

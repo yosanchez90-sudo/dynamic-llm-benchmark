@@ -32,7 +32,7 @@ from validation_helpers import require_library  # noqa: E402
 # BLEU-4 in every within-tier diversity run before 2026-07-14 (sacrebleu
 # was never a declared dependency until commit d16f122), with nothing but
 # one print() line distinguishing which metric had actually run. See
-# CLAUDE.md's "library fallbacks must raise, not approximate" rule.
+# CONVENTIONS.md's "library fallbacks must raise, not approximate" rule.
 sacrebleu = require_library("sacrebleu", "real BLEU-4 in the within-tier diversity check")
 
 

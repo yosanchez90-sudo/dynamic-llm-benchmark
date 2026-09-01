@@ -135,7 +135,7 @@ stale relative to the data behind it.
 
 `PROJECT_BRIEF.md` (repo root) is the canonical statement of the project's
 plan and scope: objectives, research questions, the six-phase roadmap, and a
-full deviations log. `CLAUDE.md` (repo root) is the operational reference:
+full deviations log. `CONVENTIONS.md` (repo root) is the operational reference:
 environment specifics, hard rules the codebase follows, and a detailed
 incident history of every measurement bug found and fixed.
 

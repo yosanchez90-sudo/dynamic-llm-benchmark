@@ -1,10 +1,10 @@
 # Project Brief — Memorisation-Robust Benchmarking of LLM Test Generation
 
 > Canonical, distilled reference for this dissertation. Keep this in the repo root
-> alongside `README.md` and `CLAUDE.md`. `README.md`/`CLAUDE.md` own the *operational*
+> alongside `README.md` and `CONVENTIONS.md`. `README.md`/`CONVENTIONS.md` own the *operational*
 > details (how to run things, environment, current state). This file owns the *plan*
 > (what the project is, what it must deliver, and in what order). When code and this
-> brief disagree, treat the code + `CLAUDE.md` as ground truth for *state* and this
+> brief disagree, treat the code + `CONVENTIONS.md` as ground truth for *state* and this
 > brief as ground truth for *intent*.
 
 - **Full title:** Memorisation-Robust Benchmarking of LLM Test Generation: A Dynamic, Template-Based Benchmark with Complexity-Tiered Mutation Analysis
@@ -280,7 +280,7 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
 - Stack: Python 3.10.5, CUDA 12, `uv`-managed venv; multi-provider harness (HuggingFace + Anthropic + OpenAI + Google); SLURM batch submission.
 - Fine-tuning: LoRA/QLoRA on Qwen-1.5B (fits the MIG slice; larger Qwen sizes do not).
 
-*(If any of the above has changed, `CLAUDE.md`/`README.md` are authoritative.)*
+*(If any of the above has changed, `CONVENTIONS.md`/`README.md` are authoritative.)*
 
 ---
 
@@ -507,7 +507,7 @@ for closed-source free-tier APIs, full set for local open-source) · **PLT** (le
   0.667 to 0.583 as Gemini Pro Preview's L4 data landed. Full decision
   record: `analysis/OPEN_ITEMS.md`, `analysis/HYPOTHESIS_DEVIATIONS.md`'s
   H5 entry. A permanent backup of adapters, results, batches, manifests,
-  and `analysis/` as they stood at freeze is recorded in `CLAUDE.md`'s
+  and `analysis/` as they stood at freeze is recorded in `CONVENTIONS.md`'s
   hard rules, path `/users/40492566/dissertation_backups/20260812_preflight`.
   No further Dynamic/ULT/PLT data collection is expected before
   submission. Any exception to this freeze must update this entry.

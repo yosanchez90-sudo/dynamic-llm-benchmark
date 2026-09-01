@@ -34,7 +34,7 @@ see PROJECT_BRIEF-adjacent notes / analysis/README.md, into a false
   - repetition_penalty is set explicitly (not left to inherit from
     the base model's own generation_config.json, confirmed via explicit A/B
     toggling to have zero effect on the corruption either way, but per
-    CLAUDE.md's "resolved generation config is part of run identity" rule,
+    CONVENTIONS.md's "resolved generation config is part of run identity" rule,
     an inherited default must never be implicit).
   - Every row logs the full resolved generation config, not just exec/
     baseline outcomes.
@@ -51,7 +51,7 @@ see PROJECT_BRIEF-adjacent notes / analysis/README.md, into a false
   - Every row logs adapter_path and adapter_weights_hash (added
     2026-07-16, see analysis/reports/inst1_control_verification.md's
     addendum). Previously there was no per-row record of which adapter
-    directory produced a given row at all. CLAUDE.md's "adapter identity
+    directory produced a given row at all. CONVENTIONS.md's "adapter identity
     (path + hash) is part of model identity" rule had been retrofitted
     into the dynamic-benchmark JSONL pipeline (process_batch.py/
     run_eval.py) but never into this script. adapter_weights_hash is a
@@ -235,7 +235,7 @@ class _ProcessWatchdog:
 
 def resolved_generation_config(do_sample: bool, seed: int | None, max_seconds: float) -> dict:
     """The full resolved generation config for one draw, logged into every
-    result row per CLAUDE.md's "resolved generation config is part of run
+    result row per CONVENTIONS.md's "resolved generation config is part of run
     identity" rule.
     """
     return {
@@ -295,7 +295,7 @@ def _run_inference(model, tokenizer, problems, do_sample: bool, seed: int | None
 
 
 def adapter_weights_hash(ckpt_dir: Path) -> str | None:
-    """sha256 of the adapter weights file, for CSV provenance (CLAUDE.md:
+    """sha256 of the adapter weights file, for CSV provenance (CONVENTIONS.md:
     "Adapter identity (path + hash) is part of model identity"). None for
     the no-adapter baseline. Hashes the file on disk directly, not
     tensor contents, so it also catches a same-weights-different-format

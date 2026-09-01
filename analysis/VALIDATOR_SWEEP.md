@@ -66,7 +66,7 @@ silently-skipped-loop bugs were found beyond what's listed above.
   `try/except ImportError: HAVE_X = False` pattern that enables a silent
   fallback. Applied to `diversity_v2.py`'s `sacrebleu` import (#4).
 
-CLAUDE.md's "Hard rules" now states this as a standing rule ("library
+CONVENTIONS.md's "Hard rules" now states this as a standing rule ("library
 fallbacks must raise, not approximate"), so future validator/metric code
 in this project has a documented standard to follow instead of
 re-deriving the same fix a third time.

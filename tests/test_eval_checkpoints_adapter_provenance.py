@@ -2,7 +2,7 @@
 adapter_weights_hash CSV provenance columns (added 2026-07-16, see
 analysis/reports/inst1_control_verification.md's addendum for why: no
 epoch_perf_*.csv row previously recorded which adapter directory produced
-it, an outright gap relative to CLAUDE.md's "adapter identity (path +
+it, an outright gap relative to CONVENTIONS.md's "adapter identity (path +
 hash) is part of model identity" rule).
 """
 from __future__ import annotations

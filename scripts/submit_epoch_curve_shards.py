@@ -12,7 +12,7 @@ non-final epochs, and by (epoch=30, draw) for the endpoint (greedy +
 Each shard writes to its OWN CSV file under
 data/results/finetune_rebuild/shards/ to avoid concurrent-write races on
 NFS; merge_epoch_curve_shards.py combines them afterward, after verifying
-shard-count / row-count completeness. See CLAUDE.md: results are
+shard-count / row-count completeness. See CONVENTIONS.md: results are
 append-only, so shard files are never combined by overwriting. The merge
 script only ever creates the new epoch_perf_<name>.csv once, or appends
 rows a resumed eval_checkpoints.py run hadn't already written.
@@ -60,7 +60,7 @@ def _mem_for(config_name: str, is_slow: bool) -> str:
     weights alone (14GB bf16), and bp_gpt5's longer generations (bigger
     KV-cache / accumulated response text) push even the 1.5B variant over a
     flat budget that was never differentiated by size or condition. V100
-    nodes have 512GB (see CLAUDE.md), so headroom here doesn't meaningfully
+    nodes have 512GB (see CONVENTIONS.md), so headroom here doesn't meaningfully
     compete for scheduling.
     """
     is_7b = "qwen7b" in config_name
@@ -155,7 +155,7 @@ def submit(shard: Shard) -> str:
         f"BASELINE_FLAG={shard.baseline_flag}",
     ])
     job_name = f"epc_{shard.config_name.replace('finetune_', '')}_{shard.label}"
-    # env -u BASH_ENV per CLAUDE.md, avoids BASH_ENV hook conflicts on sbatch.
+    # env -u BASH_ENV per CONVENTIONS.md, avoids BASH_ENV hook conflicts on sbatch.
     # --mem overrides run_eval_checkpoints_shard.slurm's flat #SBATCH --mem=16G
     # default (sbatch CLI args win over in-script pragmas), see _mem_for()'s
     # docstring for why a flat value across model sizes/conditions OOM-killed

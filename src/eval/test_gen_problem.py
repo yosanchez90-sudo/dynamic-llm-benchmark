@@ -104,7 +104,7 @@ class TestGenRecord:
     generation_latency_seconds: float
 
     # --- provenance (carried from ModelOutput; not in the spec's column list
-    #     but required by CLAUDE.md and good practice) ---
+    #     but required by CONVENTIONS.md and good practice) ---
     model_revision: str = ""
     provider: str = ""
     prompt_hash: str = ""

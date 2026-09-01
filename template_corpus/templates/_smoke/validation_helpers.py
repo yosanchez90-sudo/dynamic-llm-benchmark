@@ -10,7 +10,7 @@ written. All three are "looked like it passed, wasn't actually checking
 anything" -- the two helpers below make that class of bug impossible to
 introduce silently: `assert_checked` fails loudly instead of letting an
 empty population read as a clean pass, and `require_library` fails loudly
-instead of silently substituting a weaker approximation (see CLAUDE.md's
+instead of silently substituting a weaker approximation (see CONVENTIONS.md's
 "library fallbacks must raise, not approximate" rule, added for the same
 reason after diversity_v2.py's sacrebleu-to-Jaccard fallback was found).
 """
@@ -55,5 +55,5 @@ def require_library(module_name: str, purpose: str) -> ModuleType:
         raise ImportError(
             f"{module_name} is required for {purpose} and is not installed. "
             f"Install it -- do not fall back to an approximation, per "
-            f"CLAUDE.md's 'library fallbacks must raise, not approximate' rule."
+            f"CONVENTIONS.md's 'library fallbacks must raise, not approximate' rule."
         ) from e

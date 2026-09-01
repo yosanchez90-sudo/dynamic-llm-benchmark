@@ -18,7 +18,7 @@ gemini-3.1-pro-preview  Dynamic-L4  n_total=300  n_defined=292
 
 Gemini Pro Preview's Dynamic-L4 crawl finished during this same working
 session (a daily-quota-limited crawl that started 2026-08-06, completed
-2026-08-11 — see `CLAUDE.md`'s crawl-incident entries and
+2026-08-11 — see `CONVENTIONS.md`'s crawl-incident entries and
 `analysis/COMPARISON_A_INTERPRETATION.md`). It is no longer floor-limited
 or missing at L4; it is now one of the best-covered models at that tier
 (292/300, second only to GPT-5's 361/375). This changes the floor-effect

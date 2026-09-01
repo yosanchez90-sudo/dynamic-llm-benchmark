@@ -102,7 +102,7 @@ finding, not part of the regular pipeline going forward.
 | `audit_unseen_ult_vs_plt.py` | Checks whether unseen-ULT is a systematically harder population than PLT core_400, to explain a gain-inversion finding in Comparison C. | `analysis/COMPARISON_C_INTERPRETATION.md`, `analysis/VALIDATOR_SWEEP.md` |
 | `check_ult_ground_truth_baseline.py` | Pre-flight check: does ULT's shipped `tests` field pass against its shipped `code`? Found only 8.5% of CC≥8 records fully passing. | `analysis/ULT_DATA_QUALITY_AUDIT.md`, `analysis/VALIDATOR_SWEEP.md` |
 | `repair_ult_ground_truth.py` | Taxonomy, repair, and verification for ULT's ground-truth tests, following the baseline-check finding above. | `analysis/ULT_DATA_QUALITY_AUDIT.md`, `analysis/COMPARISON_C_INTERPRETATION.md` |
-| `migrate_add_model_label.py` | One-off migration: backfills `model_label` into pre-2026-07-09 result files, using the loader's filename-fallback logic. | No dedicated write-up in `analysis/` or `CLAUDE.md`. See git commits `328f0b6`/`b7d92da` and the script's module docstring. |
+| `migrate_add_model_label.py` | One-off migration: backfills `model_label` into pre-2026-07-09 result files, using the loader's filename-fallback logic. | No dedicated write-up in `analysis/` or `CONVENTIONS.md`. See git commits `328f0b6`/`b7d92da` and the script's module docstring. |
 
 ## Notes on borderline classifications
 
@@ -119,4 +119,4 @@ finding, not part of the regular pipeline going forward.
   archives sweep outputs on an ongoing basis. A historical bug in its
   README-generation logic (hardcoded pass/fail numbers instead of reading
   them from the data just computed, fixed 2026-08-03) is documented in
-  `analysis/VALIDATOR_SWEEP.md` and `CLAUDE.md`.
+  `analysis/VALIDATOR_SWEEP.md` and `CONVENTIONS.md`.

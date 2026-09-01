@@ -13,7 +13,7 @@ task: test_generation
 
 model:
   provider: anthropic
-  id: claude-haiku-4-5-20251001        # pinned snapshot (CLAUDE.md: no -latest tags)
+  id: claude-haiku-4-5-20251001        # pinned snapshot (CONVENTIONS.md: no -latest tags)
   revision: claude-haiku-4-5-20251001
 
 benchmark: dynamic

@@ -126,7 +126,7 @@ def main() -> None:
     # Pre-registered PRIMARY reading (pooled, unfiltered Dynamic Mut@K vs ULT) --
     # computed once, live, here, so every prose reference below (including the
     # preamble) cites the SAME number the tables show, instead of a hardcoded
-    # literal that silently goes stale as new data lands (see CLAUDE.md's
+    # literal that silently goes stale as new data lands (see CONVENTIONS.md's
     # library-fallback/hardcoded-summary discipline).
     _primary_sub = df.dropna(subset=["dyn_pooled_mutk", "ult_mutk"])
     _primary_res = (

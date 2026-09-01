@@ -61,7 +61,7 @@ model's Hugging Face commit history:
   repetition_penalty defaults) — after the 1.5B/7B eval dates, and for 32B
   well after its Sep-19 eval date too. This is immaterial here (BigCodeBench
   controls its own decoding parameters rather than relying on a checkpoint's
-  shipped defaults — the same class of concern CLAUDE.md flags for *this*
+  shipped defaults — the same class of concern CONVENTIONS.md flags for *this*
   project's own harness, but not applicable to a benchmark that sets greedy/
   fixed-temperature decoding itself), but recorded per this project's
   standing rule to never wave away a config-provenance question silently.

@@ -19,7 +19,7 @@ unseen-ULT/Dynamic (no training target exists for those).
 
 Output: analysis/comparison_c_onset_curve.csv (one row per epoch x split x
 problem), with model_label/adapter_path/adapter_hash/resolved generation
-config on every row per CLAUDE.md's identity-logging rule.
+config on every row per CONVENTIONS.md's identity-logging rule.
 
 Usage: python scripts/run_onset_curve.py (submit via SLURM, GPU required)
 """

@@ -55,7 +55,7 @@ from src.pricing import compute_cost  # noqa: E402
 # original inst1 batches) is exactly 2x the real billed amount. Not
 # corrected retroactively in already-written rows, same policy as the
 # gpt-5.4 pricing-table bug found earlier this pass (cost_usd is a
-# logged-at-the-time field), see CLAUDE.md / OPENAI_COST_AND_BILLING.md
+# logged-at-the-time field), see CONVENTIONS.md / OPENAI_COST_AND_BILLING.md
 # for the disclosure.
 _BATCH_DISCOUNT = 0.5
 

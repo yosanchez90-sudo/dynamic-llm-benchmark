@@ -2,7 +2,7 @@
 matching its two-column IEEE layout, section/table/figure numbering, and
 resolved citations -- for review and markup only.
 
-CLAUDE.md hard rule: the LaTeX in paper/ is the single source of truth
+CONVENTIONS.md hard rule: the LaTeX in paper/ is the single source of truth
 for the paper; this .docx is a rendering of it, never an editing base.
 If changes are made in the .docx, they need to be relayed back and
 applied to paper/sections/*.tex directly, not treated as authoritative.
@@ -449,7 +449,7 @@ def _walk_section_file(doc, path: Path, macros, bibcite, reflabels) -> None:
             block_text = "\n".join(block)
             img_m = re.search(r"\\includegraphics(?:\[[^\]]*\])?\{([^{}]+)\}", block_text)
             # MULTILINE only, no DOTALL: this project writes each \caption{}
-            # as a single physical source line (CLAUDE.md convention), so a
+            # as a single physical source line (CONVENTIONS.md convention), so a
             # greedy same-line match is safe and, critically, does NOT run
             # past the caption's own closing brace onto the following
             # \label{fig:...} line -- confirmed this was happening with a

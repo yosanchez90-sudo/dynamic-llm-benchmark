@@ -25,7 +25,7 @@ already-generated file, not an edit).
 prompts directly from the current corpus/manifest (bypassing mutant
 generation, which is irrelevant to prompt content and expensive enough on
 ULT/PLT's real-world functions that running it at full scale on the login
-node would itself violate CLAUDE.md's SLURM-only compute rule) and diffed
+node would itself violate CONVENTIONS.md's SLURM-only compute rule) and diffed
 against the exact `messages` array stored in each prepared batch request:
 
 | Batch | Sampled | Result |
@@ -51,7 +51,7 @@ against real landed rows rather than only trusted transitively.
 
 - **Tier-aware resume-matcher fix**: doesn't apply to the batch path at
   all, by construction, not merely "covered." `_find_resume_file` /
-  `_tier_signature` (the fix CLAUDE.md documents) are called only from
+  `_tier_signature` (the fix CONVENTIONS.md documents) are called only from
   `test_gen_runner.py::run_test_gen_experiment`, the live/interactive eval
   path — grepped, `process_batch.py` never calls either. Each batch (or
   future chunk) gets a uniquely-timestamped output filename keyed on its

@@ -10,7 +10,7 @@ task: test_generation
 
 model:
   provider: anthropic
-  id: claude-sonnet-4-6        # pinned snapshot, no date suffix (CLAUDE.md: no -latest tags) — verified via models.list(), -20250620 404s
+  id: claude-sonnet-4-6        # pinned snapshot, no date suffix (CONVENTIONS.md: no -latest tags) — verified via models.list(), -20250620 404s
   revision: claude-sonnet-4-6
 
 benchmark: ult

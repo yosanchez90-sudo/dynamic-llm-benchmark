@@ -52,7 +52,7 @@ def _tier_signature(config: dict[str, Any]) -> str:
     sets (e.g. L1L2 vs L3L4, the standard tier-group split for this project)
     used to be indistinguishable to the resume matcher, which keyed only on
     (model, benchmark, instantiation), see the 2026-07-26 race audit
-    (CLAUDE.md) for the real duplicate/conflicting rows this caused when two
+    (CONVENTIONS.md) for the real duplicate/conflicting rows this caused when two
     such configs' jobs had overlapping runtimes.
     """
     tiers = config.get("tiers")

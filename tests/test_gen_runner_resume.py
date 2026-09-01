@@ -9,7 +9,7 @@ jobs 9376519/9376524 for claude-haiku-4-5 inst4) that a later L1L2 retry job
 (9468234, 2026-07-23) resumed into the L3L4 job's own output file, and a
 later L3L4 retry (9468238) did the same again, producing duplicate,
 sometimes content-conflicting rows for the same (template_id, instance_seed)
-across the two tier groups' files. See CLAUDE.md's isolation/matcher note
+across the two tier groups' files. See CONVENTIONS.md's isolation/matcher note
 and data/raw/ult_plt/PROVENANCE.md-adjacent audit output for the full trail.
 No data was lost (coverage_matrix.py's set-based check shows every in-scope
 cell complete) and src/Analysis/loader.py's existing timestamp-based dedup

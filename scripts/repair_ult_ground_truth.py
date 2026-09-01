@@ -176,7 +176,7 @@ def repair_test(code: str, func_name: str, test_src: str):
     # relative-path file I/O as a side effect of normal operation (a sibling
     # check script that exec'd ULT code with cwd left at the repo root
     # littered it with fort.*/moldyn.vel-style debris from whatever those
-    # functions happened to write; see CLAUDE.md's isolation rule). Isolate
+    # functions happened to write; see CONVENTIONS.md's isolation rule). Isolate
     # this exec()/eval() in a throwaway directory and always restore cwd,
     # since repair_test() is called many times in this one long-lived process.
     orig_cwd = os.getcwd()

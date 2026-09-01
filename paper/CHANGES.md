@@ -8,7 +8,7 @@ code`), run as part of this write-up phase's Phase 4 verification pass.
 
 Scanned every file under `src/`, `scripts/`, `tests/`, `template_corpus/`
 (comments and docstrings), every `analysis/*.md` document,
-`PROJECT_BRIEF.md`, `CLAUDE.md`, `README.md`, and `docs/*.md` for
+`PROJECT_BRIEF.md`, `CONVENTIONS.md`, `README.md`, and `docs/*.md` for
 direct-address and first-person narration left over from how these
 documents were originally drafted: phrases like "the user", "per your
 instruction/decision/framing", "I found/checked/flagged", and "this

@@ -87,7 +87,7 @@ worth knowing before committing to include it.
 Confirmed directly: the login node has outbound access to huggingface.co
 (a live HTTP HEAD request just now returned a normal 307 redirect with
 resolved commit hash, no timeout or block). Kelvin2's documented
-restriction (`CLAUDE.md`: "Kelvin2 compute nodes drop outbound TCP
+restriction (`CONVENTIONS.md`: "Kelvin2 compute nodes drop outbound TCP
 silently") applies to **compute nodes**, not the login node — matches how
 the existing Qwen models were presumably cached originally. Downloads would
 run via `huggingface-cli download` (or `snapshot_download`) **from the
