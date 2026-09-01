@@ -1,8 +1,8 @@
-"""Plot H3's tier-effect result (RUBRIC_ACTION_PLAN.md PA-3): conditional
-Mut@K by complexity tier (L1-L4), one line per canonical model. The
-monotone-decline pattern is currently reported only as a sentence
-(paper/sections/04_results.tex Section 4.5); this figure makes it visible
-directly, following paper/FIGURE_TABLE_SPEC.md's per-figure checklist
+"""Plot H3's tier-effect result: conditional Mut@K by complexity tier
+(L1-L4), one line per canonical model. The monotone-decline pattern is
+reported only as a sentence in paper/sections/04_results.tex Section 4.5;
+this figure makes it visible directly, following
+paper/FIGURE_TABLE_SPEC.md's per-figure checklist
 (no title, axis-label units, in-figure model labels via a legend since
 nine lines have no natural in-axes annotation space).
 

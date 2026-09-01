@@ -163,10 +163,11 @@ def main() -> None:
     # comment would swallow the rest of that physical line.
     pp("MutkCeiling", 1.0)
 
-    # Coverage-adjusted gain + DiD (RUBRIC_ACTION_PLAN.md PA-6): a metric
-    # defined pre-treatment (unlike raw Mut@K, undefined for all but one
-    # seen-ULT PRE row), reported alongside baseline_pass_rate rather than
-    # replacing it.
+    # Coverage-adjusted gain + DiD: reported alongside baseline_pass_rate,
+    # not as a replacement for it, because coverage_adjusted is defined
+    # pre-treatment (unlike raw Mut@K, undefined for all but one seen-ULT
+    # PRE row) -- it gives H2's headline result a second, independently
+    # defined metric to confirm it.
     cov_adj_gradient = pd.read_csv(ANALYSIS / "comparison_c_coverage_adjusted_gradient.csv")
     cov_adj_did = pd.read_csv(ANALYSIS / "comparison_c_coverage_adjusted_did.csv")
 
@@ -381,7 +382,7 @@ def main() -> None:
     # ------------------------------------------------- H2 LoRA hyperparameters
     # Read live from the actual training config, not hand-typed, so a future
     # change to the config (e.g. a re-tuned learning rate) can't silently
-    # diverge from what the paper reports (RUBRIC_ACTION_PLAN.md PA-4).
+    # diverge from what the paper reports.
     ft_cfg = yaml.safe_load((ROOT / "configs" / "finetune_qwen1_5b_ult_30ep.yaml").read_text())
     raw("FtLoraR", f"{ft_cfg['lora']['r']}")
     raw("FtLoraAlpha", f"{ft_cfg['lora']['alpha']}")

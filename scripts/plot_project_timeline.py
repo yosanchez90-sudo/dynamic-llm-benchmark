@@ -1,8 +1,9 @@
-"""Plot the project timeline for the supporting report (RUBRIC_ACTION_PLAN.md
-PS-3): the six gated phases as planned, against the real, dated deviations
-already described in prose in section 2.1 (phases brought forward, the
-fifth-instantiation cut, the corpus sign-off, the contamination-comparison
-completion, the experimental freeze).
+"""Plot the project timeline for the supporting report: the six gated
+phases as planned, against the real, dated deviations already described
+in prose in section 2.1 (phases brought forward, the fifth-instantiation
+cut, the corpus sign-off, the contamination-comparison completion, the
+experimental freeze) -- a schedule shown as a figure, not only described
+in prose.
 
 Deliberately NOT a precision Gantt chart with invented week boundaries: this
 project's own records give six phases in planned order and four specific

@@ -99,8 +99,10 @@ fig.savefig(path, dpi=400, bbox_inches="tight", pad_inches=0.02)
 IEEE captions sit below the figure and can be several sentences. Structure each as:
 *what is plotted → what the reader should see → any caveat*. Fig. 1's current caption is
 close to right; it just needs to absorb the deleted text block and drop the awkward
-trailing parenthetical about the L1–L3 control (see `RUBRIC_ACTION_PLAN.md` C-9 — fix the
-series names instead of explaining them in the caption).
+trailing parenthetical about the L1–L3 control — fix this by giving the plotted L1–L2
+series and the L1–L3 endpoint-control population unambiguous, distinct names (done in
+`scripts/plot_comparison_c_onset_curve.py`'s `SPLIT_STYLE` labels) instead of explaining
+the mismatch in the caption.
 
 ---
 

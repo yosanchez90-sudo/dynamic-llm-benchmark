@@ -81,12 +81,15 @@ def _load_dynamic(model_label: str) -> pd.DataFrame:
 
 def _coverage_adjusted_gain(pre: pd.DataFrame, post: pd.DataFrame, label: str,
                              n_boot: int = 2000, seed: int = 0) -> dict | None:
-    """Coverage-adjusted gain (RUBRIC_ACTION_PLAN.md PA-6): conditional
-    Mut@K x baseline_pass_rate, the same aggregate-level definition used
-    project-wide (scripts/build_ranking_matrix.py::_cell), bootstrapped at
-    the per-row level (resample rows, recompute both component means on
-    the resample, then take their product) so the CI reflects the actual
-    joint sampling variability of the two components, not just one."""
+    """Coverage-adjusted gain: conditional Mut@K x baseline_pass_rate, the
+    same aggregate-level definition used project-wide
+    (scripts/build_ranking_matrix.py::_cell), bootstrapped at the per-row
+    level (resample rows, recompute both component means on the resample,
+    then take their product) so the CI reflects the actual joint sampling
+    variability of the two components, not just one. Reported alongside
+    baseline_pass_rate, not as a replacement for it, because it is defined
+    pre-treatment (unlike raw Mut@K, undefined for all but one seen-ULT
+    PRE row)."""
     pre_rows = pre[pre["benchmark"] == label]
     post_rows = post[post["benchmark"] == label]
     if pre_rows.empty or post_rows.empty:
@@ -185,7 +188,8 @@ def main() -> None:
     print("\n=== Gradient table (raw gain, no control subtraction) ===")
     print(gradient.to_string(index=False))
 
-    # --- Coverage-adjusted gain + DiD (RUBRIC_ACTION_PLAN.md PA-6) ----------
+    # --- Coverage-adjusted gain + DiD (pre-treatment-defined companion to
+    # baseline_pass_rate -- see _coverage_adjusted_gain's docstring) -------
     cov_adj_rows = []
     for label in ["seen_ult", "unseen_ult", "plt", "dynamic_l4", "dynamic_l1l3"]:
         row = _coverage_adjusted_gain(pre, post, label)

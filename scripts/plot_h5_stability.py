@@ -1,9 +1,10 @@
-"""Plot H5's score-level stability result (RUBRIC_ACTION_PLAN.md PA-3):
-each canonical model's StableMut@K, mean +/- SD across benchmark
-re-instantiations, as a point-with-error-bar plot. Makes the paper's own
-"SD is tiny, but rank agreement (tau) is not" argument (Section 4.6)
-visible directly: every error bar is a sliver relative to the score axis,
-while Figure 3's pairwise tau values are far from 1.0.
+"""Plot H5's score-level stability result: each canonical model's
+StableMut@K, mean +/- SD across benchmark re-instantiations, as a
+point-with-error-bar plot. H5 (Section 4.6) is reported only as prose
+numbers; this figure makes the paper's own "SD is tiny, but rank
+agreement (tau) is not" argument visible directly: every error bar is a
+sliver relative to the score axis, while Figure 3's pairwise tau values
+are far from 1.0.
 
 Read live from analysis/stability_stablemut.csv (itself produced by
 scripts/analyze_stability.py), the same source Section 4.6's prose draws on.

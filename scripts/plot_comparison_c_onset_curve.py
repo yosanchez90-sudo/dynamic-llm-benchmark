@@ -44,10 +44,11 @@ OUT_PATH = ROOT / "analysis" / "figures" / "comparison_c_onset_curve.pdf"
 SPLIT_STYLE = {
     "seen":         {"color": "#d62728", "linestyle": "-",  "marker": "o", "label": "seen-ULT (train)"},
     "unseen":       {"color": "#1f77b4", "linestyle": "--", "marker": "s", "label": "unseen-ULT (held-out)"},
-    # "epoch series" (not "control"), per RUBRIC_ACTION_PLAN.md C-9: this
-    # plotted L1/L2 series and the L1--L3 population Section 4.1's prose
-    # quotes at the pre/post endpoints are two different populations: the
-    # unambiguous name difference is the fix, not a caption footnote.
+    # "epoch series" (not "control"): this plotted L1--L2 series and the
+    # L1--L3 population Section 4.1's prose quotes at the pre/post
+    # endpoints are two different populations -- an unambiguous name
+    # difference prevents the mismatch, rather than needing a caption
+    # footnote to explain it.
     "dynamic_l1l2": {"color": "#9467bd", "linestyle": ":",  "marker": "^", "label": "DyMuT L1–L2 (epoch series)"},
 }
 
@@ -105,8 +106,7 @@ def main() -> None:
     # timescale, the same seen-ULT-only climb the shaded "memorisation"
     # region below already marks, and its one load-bearing fact (100% by
     # epoch 20) is stated in the caption instead of costing a second panel
-    # of vertical space (RUBRIC_ACTION_PLAN.md-driven page-budget pass,
-    # 2026-08-27).
+    # of vertical space (page-budget pass, 2026-08-27).
     fig, ax1 = plt.subplots(1, 1, figsize=(COL_W, COL_W * 0.62),
                              constrained_layout=True)
 

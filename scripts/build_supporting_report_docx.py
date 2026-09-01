@@ -46,7 +46,7 @@ def _set_table_column_widths(table, rows: list[list[str]]) -> None:
     page and everything on it -- text included -- reads as oversized,
     because nothing is actually wrapping into a properly page-width
     column. Confirmed absent from every table this script writes
-    (RUBRIC_ACTION_PLAN.md quality pass, 2026-08-28).
+    (2026-08-28).
     """
     n_cols = len(rows[0])
     # Proportional to each column's average cell length, not equal widths:
@@ -355,10 +355,10 @@ def build() -> None:
             _add_inline_runs(p, stripped)
             i += 1
 
-    # RUBRIC_ACTION_PLAN.md PS-5: force Word to recompute every field
-    # (the TOC included) the moment the document opens, so a marker never
-    # sees the literal "Right-click and choose 'Update Field'..." Word
-    # placeholder -- python-docx cannot itself run Word's layout engine to
+    # Force Word to recompute every field (the TOC included) the moment
+    # the document opens, so a reader never sees the literal "Right-click
+    # and choose 'Update Field'..." Word placeholder -- python-docx cannot
+    # itself run Word's layout engine to
     # fill in real page numbers, so the field is written with that
     # placeholder text, but this setting makes Word overwrite it with the
     # real, page-numbered contents on the very first open, before anyone
