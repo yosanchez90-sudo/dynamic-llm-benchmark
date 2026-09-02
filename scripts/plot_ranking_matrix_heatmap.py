@@ -54,7 +54,9 @@ PAIRS = ["Dynamic<->ULT", "Dynamic<->BigCodeBench", "ULT<->BigCodeBench"]
 PAIR_LABELS = ["DyMuT\n↔ ULT", "DyMuT\n↔ BCB", "ULT\n↔ BCB"]
 
 
-def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id, center_title=False):
+def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id, center_title=False,
+                    metric_labels=None, annotation_fontsize=6, tick_fontsize=6):
+    metric_labels = metric_labels or METRIC_LABELS
     grid = np.full((len(METRICS), len(PAIRS)), np.nan)
     annotations = np.empty((len(METRICS), len(PAIRS)), dtype=object)
     for i, metric in enumerate(METRICS):
@@ -83,9 +85,9 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id, center_title=F
 
     im = ax.imshow(grid, cmap=cmap, norm=norm, aspect="auto")
     ax.set_xticks(range(len(PAIRS)))
-    ax.set_xticklabels(PAIR_LABELS)
+    ax.set_xticklabels(PAIR_LABELS, fontsize=tick_fontsize)
     ax.set_yticks(range(len(METRICS)))
-    ax.set_yticklabels([METRIC_LABELS[m] for m in METRICS])
+    ax.set_yticklabels([metric_labels[m] for m in METRICS], fontsize=tick_fontsize)
     # Panel identity is (a)/(b); the model count moves to the caption
     # (FIGURE_TABLE_SPEC.md G-1: a plot title duplicates what the caption
     # already needs to say). Placed just above the grid, inside the axes
@@ -110,7 +112,7 @@ def _heatmap_panel(ax, sub_df, scope_label, cmap, norm, panel_id, center_title=F
             # text on dark/saturated cells (dataviz skill's label-contrast rule)
             text_color = "white" if (not np.isnan(val) and abs(val) > 0.55) else "#222222"
             ax.text(j, i, annotations[i, j], ha="center", va="center",
-                     fontsize=6, color=text_color, linespacing=1.5)
+                     fontsize=annotation_fontsize, color=text_color, linespacing=1.5)
     ax.set_xticks(np.arange(-0.5, len(PAIRS), 1), minor=True)
     ax.set_yticks(np.arange(-0.5, len(METRICS), 1), minor=True)
     ax.grid(which="minor", color="white", linewidth=1.5)
@@ -167,11 +169,26 @@ Output: {OUT_PATH.relative_to(ROOT)} (+ .png).
     print(f"Saved: {OUT_PATH} and .png, {PROVENANCE_OUT.relative_to(ROOT)}")
 
     # Single-panel crossfamily-only variant for the paper body (see
-    # CROSSFAMILY_OUT_PATH comment above).
-    fig2, ax2 = plt.subplots(1, 1, figsize=(COL_W, COL_W * 1.15))
+    # CROSSFAMILY_OUT_PATH comment above). Height ratio trimmed from 1.15
+    # to 0.92 to 0.83 (2026-08-31, page-budget pass, two rounds): each of
+    # the 4x3 cells gets less vertical room each round -- checked by eye
+    # against the rendered PNG each time, not just assumed from the ratio.
+    # Metric row labels wrap "Mut@K" onto its own line (paper-figure-only:
+    # METRIC_LABELS itself, used by the two-panel comparison above, is
+    # untouched) so the widest y-tick label shrinks from "coverage-adjusted
+    # Mut@K" to "coverage-adjusted", letting the left margin narrow and the
+    # cells grow horizontally. Annotation/tick fontsize bumped 6->7 to stay
+    # legible at the smaller cell size (paper-figure-only, via the function's
+    # now-parameterised fontsize args -- the shared apply_style() rcParams
+    # that set every other figure's 6pt ticks are untouched).
+    wrapped_metric_labels = dict(METRIC_LABELS)
+    wrapped_metric_labels["conditional_mutk"] = "conditional\nMut@K"
+    wrapped_metric_labels["coverage_adjusted"] = "coverage-adjusted\nMut@K"
+    fig2, ax2 = plt.subplots(1, 1, figsize=(COL_W, COL_W * 0.83))
     sub = corr[corr["scope"] == "canonical_plus_cross_family"]
-    im2 = _heatmap_panel(ax2, sub, "Canonical + cross-family (13 models)", cmap, norm, "", center_title=True)
-    fig2.subplots_adjust(top=0.90, bottom=0.10, right=0.86, left=0.30)
+    im2 = _heatmap_panel(ax2, sub, "Canonical + cross-family (13 models)", cmap, norm, "", center_title=True,
+                          metric_labels=wrapped_metric_labels, annotation_fontsize=7, tick_fontsize=7)
+    fig2.subplots_adjust(top=0.86, bottom=0.14, right=0.86, left=0.24)
     cbar2 = fig2.colorbar(im2, ax=ax2, orientation="vertical", fraction=0.06, pad=0.12, shrink=0.9)
     cbar2.set_label("Kendall $\\tau$ (rank agreement)")
     fig2.savefig(CROSSFAMILY_OUT_PATH, dpi=400, bbox_inches="tight", pad_inches=0.02)

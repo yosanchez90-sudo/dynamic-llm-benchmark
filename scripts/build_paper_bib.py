@@ -39,8 +39,13 @@ BIB_PATH = ROOT / "paper" / "references.bib"
 ET_AL_THRESHOLD = 10
 
 
-def _bibtex_authors(authors: list[str]) -> str:
-    if len(authors) > ET_AL_THRESHOLD:
+def _bibtex_authors(authors: list[str], render_et_al: bool = False) -> str:
+    # render_et_al: a per-entry rendering override (references.yaml's
+    # `render_et_al: true`) for an entry under ET_AL_THRESHOLD that still
+    # needs the shorter printed form, e.g. for page-budget reasons. The
+    # full `authors` list is unaffected either way -- this only changes
+    # what gets rendered into the .bib file, never references.yaml itself.
+    if render_et_al or len(authors) > ET_AL_THRESHOLD:
         return f"{authors[0]} and others"
     return " and ".join(authors)
 
@@ -76,7 +81,7 @@ def build_entry(e: dict) -> str:
     key = e["key"]
     entry_type = _entry_type(e["venue"])
     lines = [f"@{entry_type}{{{key},"]
-    lines.append(f"  author = {{{_bibtex_authors(e['authors'])}}},")
+    lines.append(f"  author = {{{_bibtex_authors(e['authors'], e.get('render_et_al', False))}}},")
     lines.append(f"  title = {{{{{_escape(e['title'])}}}}},")
     field_name, field_value = _venue_field(entry_type, e["venue"])
     lines.append(f"  {field_name} = {{{_escape(field_value)}}},")
