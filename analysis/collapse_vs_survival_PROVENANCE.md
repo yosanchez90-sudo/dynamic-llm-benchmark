@@ -1,7 +1,7 @@
 # Collapse vs survival figure — provenance
 
-Generated: 2026-08-30T01:30:24.158620+00:00
-Git commit: 9cdef55
+Generated: 2026-09-02T00:02:19.090204+00:00
+Git commit: 8611e4e
 Script: scripts/plot_collapse_vs_survival.py
 
 Sources: analysis/rq5_cross_family_model_ranking.csv, analysis/rq5_cross_family_correlations.csv.

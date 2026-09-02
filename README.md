@@ -162,3 +162,7 @@ Kelvin2's `python3/3.10.5/gcc-9.3.0` was compiled without `libreadline`
 support, so the standard library `readline` module is missing. We add
 `gnureadline` to provide a drop-in replacement. It's required by
 `inspect_ai` and useful for any package that needs terminal line editing.
+
+## figures
+
+paper/ holds the LaTeX sources and the asset pipeline, and the build_thesis_assets.py regenerates every table and figure from current results

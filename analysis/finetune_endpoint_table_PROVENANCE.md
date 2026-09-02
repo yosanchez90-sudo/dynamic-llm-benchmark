@@ -1,7 +1,7 @@
 # Fine-tune endpoint table (epoch 30, n_problems=150) — raw table
 
-Generated: 2026-08-29T23:30:27.358747+00:00
-Git commit: 9cdef55
+Generated: 2026-09-01T23:45:32.237011+00:00
+Git commit: 8611e4e
 Script: scripts/build_finetune_endpoint_table.py
 
 This is the regenerable raw-table companion to the hand-written
