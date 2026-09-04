@@ -53,6 +53,13 @@ entries:
       - "Julen Etxaniz"
       - "Oier Lopez de Lacalle"
       - "Eneko Agirre"
+    # render_et_al: rendering-only, does not shorten the `authors` record
+    # above (this file's whole point is keeping the full author list --
+    # see file header). Set 2026-08-31 purely to pull reference [1] onto
+    # fewer printed lines for page-budget reasons (it was overflowing the
+    # left reference column onto the right), well under the file-wide
+    # ET_AL_THRESHOLD=10 in build_paper_bib.py that normally triggers this.
+    render_et_al: true
     title: "NLP Evaluation in Trouble: On the Need to Measure LLM Data Contamination for each Benchmark"
     venue: "Findings of the Association for Computational Linguistics: EMNLP 2023"
     year: 2023

@@ -105,13 +105,17 @@ def main() -> None:
 % scores the paper's pass/fail verdicts are computed from, shown nowhere
 % else. Read live from analysis/ranking_matrix_scores.csv. table (single
 % IEEEtran column, not table*): see script docstring -- Model is a p{{}}
-% column so long names wrap instead of forcing the table wide. [H] (float
-% package, paper.tex preamble), not [t]: pins this table to its source
-% position right before Section 4.1, instead of letting it float to
-% whichever column top happened to break nearest -- which was landing it
-% (2026-08-31 page-budget pass) after the 4.1 heading in reading order.
-\\begin{{table}}[H]
-\\caption{{Results by model: DyMuT (pooled across tiers) and ULT (\\texttt{{core\\_400}}), all values \\%. Exec.\\ = exec\\_rate, BP = baseline\\_pass\\_rate, Mut@K = conditional mutation score, Cov.-adj.\\ = coverage-adjusted mutation score, $n_{{\\text{{def}}}}$ = problems with a Mut@K. $^\\dagger$ marks a thin cell ($n_{{\\text{{def}}}}<{THIN_THRESHOLD}$); $^\\ddagger$ marks an incomplete ULT crawl (Section~\\ref{{sec:results-h1test1}}). DyMuT's unequal per-model N is discussed in Section~\\ref{{sec:results-h5}}.}}
+% column so long names wrap instead of forcing the table wide. [b], not
+% [H] or [t]: IEEE style puts floats at the top or bottom of a column,
+% never pinned mid-column, which is what [H] (float package) does. This
+% table was [H] briefly (2026-09-02) to keep it beside the Section 4
+% paragraph that introduces it; [b] keeps it in the same column and on
+% the same page while moving it to the column foot, which satisfies both
+% the house style and the reading order. Plain [t] is what it must NOT
+% be: as a top float it jumped to the nearest column top, a page away
+% from its own introduction.
+\\begin{{table}}[b]
+\\caption{{Results by model: DyMuT (pooled across tiers) and ULT (\\texttt{{core\\_400}}), all values \\%. Exec.\\ = exec\\_rate, BP = baseline\\_pass\\_rate, Mut@K = conditional mutation score, Cov.-adj.\\ = coverage-adjusted mutation score, $n_{{\\text{{def}}}}$ = problems with a Mut@K. $^\\dagger$ marks a thin cell ($n_{{\\text{{def}}}}<{THIN_THRESHOLD}$); $^\\ddagger$ marks an incomplete ULT crawl (Section~\\ref{{sec:results-h1test1}}).}}
 \\label{{tab:results}}
 \\centering
 \\scriptsize

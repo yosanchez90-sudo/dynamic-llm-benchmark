@@ -1,0 +1,5 @@
+tier,n_inspected,n_equivalent,n_non_equivalent,n_unsure,unsure_policy,equivalent_rate,equivalent_rate_wilson_lo,equivalent_rate_wilson_hi,n_problems_scored,mut_at_k_validated,mut_at_k_validated_boot_lo,mut_at_k_validated_boot_hi
+L1,30,1,29,0,exclude,0.0333,0.0059,0.1667,1938,1.0193,0.984,1.0956
+L2,30,1,29,0,exclude,0.0333,0.0059,0.1667,2841,0.9918,0.9556,1.0679
+L3,30,1,29,0,exclude,0.0333,0.0059,0.1667,1843,0.9753,0.9403,1.0488
+L4,30,1,29,0,exclude,0.0333,0.0059,0.1667,1340,0.9234,0.8869,0.9968

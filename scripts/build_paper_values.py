@@ -190,23 +190,39 @@ def main() -> None:
     raw("HTwoCovAdjPltDidCI", f"[{plt_cov_did['did_ci_lo']*100:.1f}, {plt_cov_did['did_ci_hi']*100:.1f}]")
 
     # ---------------------------------------------- Equivalent-mutant validation
-    # analysis/equiv_mutants/inspection_sheet.xlsx is currently fully unfilled
-    # (0/120 verdicts across all four tiers); scripts/compute_validated_score.py
-    # correctly writes nothing until at least one tier has filled rows. This
-    # block picks up its output automatically, per tier, once that happens,
-    # no further code changes needed, and stays a no-op until then, matching
-    # the paper's own "not yet complete" disclosure (04_results.tex, Additional
-    # Disclosures).
+    # This block picks up scripts/compute_validated_score.py's output
+    # automatically, per tier, once analysis/equiv_mutants/inspection_sheet
+    # has filled verdicts, no further code changes needed, and stays a no-op
+    # until then (0/120 verdicts: matched the paper's "not yet complete"
+    # disclosure; now 120/120, completed 2026-09-02).
     validated_path = ANALYSIS / "equiv_mutants" / "validated_scores.csv"
     if validated_path.exists():
         tier_name = {"L1": "LOne", "L2": "LTwo", "L3": "LThree", "L4": "LFour"}
-        for _, row in pd.read_csv(validated_path).iterrows():
+        validated_df = pd.read_csv(validated_path)
+        for _, row in validated_df.iterrows():
             name = tier_name[row["tier"]]
             num(f"HTwoValidated{name}MutK", row["mut_at_k_validated"], ".3f")
             if pd.notna(row["mut_at_k_validated_boot_lo"]):
                 raw(f"HTwoValidated{name}MutKCI",
                     f"[{row['mut_at_k_validated_boot_lo']:.3f}, {row['mut_at_k_validated_boot_hi']:.3f}]")
             num(f"HTwoValidated{name}EquivRate", row["equivalent_rate"], ".3f")
+
+        # Pooled headline rate across all four tiers' inspection samples
+        # (4/120 here), a single Wilson 95% CI for the "how much equivalence
+        # did the sample find, overall" sentence -- kept separate from each
+        # tier's own rate above, which is what actually corrects that tier's
+        # score and is not assumed equal across tiers even when, as here, it
+        # happens to come out identical (1/30 each).
+        n_equiv_total = int(validated_df["n_equivalent"].sum())
+        n_inspected_total = int(validated_df["n_non_equivalent"].sum()) + n_equiv_total
+        num("HTwoEquivMutTotal", n_equiv_total, "d")
+        pp("HTwoEquivMutRate", n_equiv_total / n_inspected_total)
+        z = 1.959963985469351
+        phat = n_equiv_total / n_inspected_total
+        denom = 1 + z ** 2 / n_inspected_total
+        center = (phat + z ** 2 / (2 * n_inspected_total)) / denom
+        margin = z * ((phat * (1 - phat) / n_inspected_total + z ** 2 / (4 * n_inspected_total ** 2)) ** 0.5) / denom
+        raw("HTwoEquivMutRateCI", f"[{max(0.0, center - margin) * 100:.1f}, {min(1.0, center + margin) * 100:.1f}]")
 
     # ---------------------------------------------------- H2-supplementary
     # Post-hoc, not one of the six pre-registered hypotheses, see

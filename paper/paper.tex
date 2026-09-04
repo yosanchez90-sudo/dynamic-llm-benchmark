@@ -26,6 +26,13 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{tabularx}
+% float's [H] specifier (used on Tables II and IV): pins a table to its
+% exact source position instead of IEEEtran's normal top-of-column float
+% heuristic, which was landing both tables at the top of whichever column
+% happened to break nearest their declaration -- sometimes *before* the
+% very subsection heading that introduces them in reading order, not
+% after it as the source order intends.
+\usepackage{float}
 \usepackage[hidelinks]{hyperref}
 
 \graphicspath{{figures/}{../analysis/figures/}}
@@ -40,20 +47,129 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
+% Reclaim the dead band between the title block and the body text.
+% IEEEtran reserves a fixed spacer there and quantizes it to a whole
+% \baselineskip so body baselines align on a grid (\IEEEquantizevspace,
+% called from \maketitle); \@IEEENORMtitlevspace/\@IEEEMINtitlevspace are
+% its nominal and floor values (1 and 0.75\baselineskip under the
+% conference option). With every front-matter line folded into \title{}
+% and \author{} left empty, that spacer plus the empty author block left
+% a 55.5pt band of white on page 2 -- about 4.6 lines of body text --
+% measured 2026-09-02. Note a plain \vspace after \maketitle cannot
+% remove it: that glue lands at the top of column 1 and TeX discards
+% glue at the top of a column (which is why the pre-existing
+% \vspace{-30pt} below has no measurable effect at any value).
+% Zeroing these two, plus the \vspace at the end of \title{}, cuts the
+% band to 8pt. That matters beyond page 2: the space it frees is what
+% allowed the four \enlargethispage calls in sections/ -- which bought
+% room by pushing text *below* the bottom margin -- to be halved.
+\makeatletter
+\def\@IEEENORMtitlevspace{0pt}
+\def\@IEEEMINtitlevspace{0pt}
+\makeatother
+
+% Space between a float and the text below it. IEEEtran's default is
+% 18.6pt plus 2.4 minus 4.8; combined with the 12pt skip a \subsection
+% adds before its heading, a figure sitting at the top of a column and
+% followed by a heading (Figure 2 into Section 4.6) opened a 45pt hole --
+% and because \flushbottom fills a column by stretching whatever glue it
+% can find, the column's leftover space was landing in that one gap
+% rather than spreading out. Measured 2026-09-02: 45.1pt from the Figure 2
+% caption to the 4.6 heading. Trimming this to 12pt closes it and, by
+% freeing space document-wide, also removed the last bottom-margin
+% overrun on the reference page. Adding \parskip stretch was tried as an
+% alternative (to spread the slack across paragraph breaks instead) and
+% did not help -- the gap stayed at 44.6pt.
+\setlength{\textfloatsep}{12pt plus 2pt minus 4pt}
+
 \begin{document}
 
+% Declaration + Acknowledgment moved to the very front, per explicit
+% instruction: this is now the document's first page, the actual paper's
+% title page its second. \onecolumn here (IEEEtran conference is
+% twocolumn from \begin{document} by default) renders the cover-sheet
+% scan at full page width; \twocolumn below switches back before
+% \maketitle. Both switches force their own page break on their own, so
+% neither end of this block needs an explicit \clearpage/\newpage.
+% ---------------------------------------------------------------------
+% PAGE 1: the degree title page. A title page is a page -- this content
+% used to sit in the \title{} block of the paper's own first page, where
+% it displaced the IEEE author block. It is single-column, centred, and
+% carries no page number, no abstract, no keywords and no acknowledgment.
+% \onecolumn (IEEEtran conference is twocolumn from \begin{document}) is
+% what makes it full-width; it forces its own page break, so nothing
+% before it needs a \clearpage.
+% ---------------------------------------------------------------------
+\onecolumn
+\thispagestyle{empty}
+\begin{center}
+\vspace*{0.14\textheight}
+
+{\LARGE Dynamic, Template-Based Benchmarking Resists\\[0.35em]
+Contamination-Induced Score Inflation in LLM\\[0.35em]
+Unit-Test Generation\par}
+
+\vspace{0.10\textheight}
+
+{\large
+A dissertation submitted in partial fulfilment of\\[0.30em]
+The requirement for the degree of\\[0.30em]
+MASTER OF SCIENCE in Artificial Intelligence\\[0.30em]
+in\\[0.30em]
+The Queen's University of Belfast\\[0.30em]
+By\\[0.30em]
+Yohan Sneider Sanchez Vega\\[0.30em]
+03/09/2026\par}
+\end{center}
+\clearpage
+
+% ---------------------------------------------------------------------
+% PAGE 2: the signed declaration cover sheet, plus the acknowledgment,
+% which stays here rather than moving to the title page. Still
+% single-column; \twocolumn below switches back for the paper itself and
+% forces its own page break.
+% ---------------------------------------------------------------------
+\thispagestyle{empty}
+\begin{center}
+\vspace*{-24pt}
+\includegraphics[width=0.97\textwidth]{Declaration_2.png}
+\end{center}
+\input{sections/07_acknowledgment}
+\twocolumn
+
+% The paper's own first page: title, then the standard IEEE author block.
+% The degree statement that used to live inside \title{} here has moved to
+% the standalone title page (page 1) -- it is not a title block, and
+% keeping it here displaced the affiliation and email IEEEtran's first
+% page is meant to carry.
+% The GitLab-URL note hangs off \thanks in the author block, which is
+% IEEEtran's own place for it: \maketitle suppresses the footnote mark
+% (\thefootnote/\@makefnmark) and typesets the accumulated \@thanks text
+% through the real footnote mechanism, so it lands below the rule at the
+% foot of column 1 on this page and nowhere else.
 \title{Dynamic, Template-Based Benchmarking Resists Contamination-Induced Score Inflation in LLM Unit-Test Generation}
 
-\author{
-\IEEEauthorblockN{Yohan Sneider Sanchez Vega}
-\IEEEauthorblockA{
-School of Electronics, Electrical Engineering and Computer Science\\
-Queen's University Belfast\\
+\author{\IEEEauthorblockN{Yohan Sneider Sanchez Vega}
+\IEEEauthorblockA{\textit{School of Electronics, Electrical Engineering and Computer Science}\\
+\textit{Queen's University Belfast}\\
 Belfast, United Kingdom\\
 ysanchezvega01@qub.ac.uk}
-}
+\thanks{\scriptsize Code and data: \url{https://gitlab.eeecs.qub.ac.uk/40492566/dynamic-llm-benchmark/}}}
 
 \maketitle
+% Makes room on page 2 for the \thanks footnote above (the code/data URL)
+% WITHOUT displacing any body text. A footnote normally takes its space
+% out of the column it is attached to: added on its own it pushed 7 words
+% off page 2 onto page 3 and reflowed both. This grows page 2's own text
+% block by just enough for the footnote to sit below the last line
+% instead, so every page's text is byte-identical to what it was without
+% the footnote (verified 2026-09-02 by comparing per-page word content).
+% 12pt is the minimum that achieves that; at 24pt the page starts pulling
+% text *in* from page 3, which moves text again. Page-local: only page 2's
+% bottom margin is affected (0.86in, vs 1.02in on every other page), and
+% that band is exactly where the footnote sits.
+\enlargethispage{12pt}
+\vspace{-30pt}
 
 \begin{abstract}
 \input{sections/00_abstract}
@@ -88,13 +204,21 @@ data contamination, dynamic benchmarking, large language models, mutation testin
 % two numbers again: rebuild, then verify every \bibitem's first author
 % surname still appears somewhere in `pdftotext paper.pdf -`, not just
 % that pdflatex exits cleanly -- a clean compile with 0 Overfull warnings
-% is not proof nothing was dropped. Current values (trigger{16},
-% enlarge{6skip}) were chosen as the smallest enlarge that pulls
-% references 16-17 onto page 8 while keeping page 8's fullest column
-% comfortably under y=780 (measured 772), leaving margin before the
-% y=787.5 loss threshold found above.
+% is not proof nothing was dropped. Lowered to 2\baselineskip 2026-09-02:
+% with the bottom-margin overruns removed from sections/ and the title
+% gap reclaimed (see the \@IEEENORMtitlevspace note above), every value
+% from 2 to 6\baselineskip now produces a byte-identical layout -- 9
+% pages, all 21 references rendered -- so the smallest of them is used,
+% since a smaller allowance gives TeX less room to push a reference off
+% the page unnoticed. Do not raise it without a reason: it buys nothing
+% here. Disabling it entirely (0) does change things -- the last
+% reference no longer fits and the document becomes 10 pages.
+% The residual: this trigger lets the last page's right column end 14pt
+% below the text block (0.82in bottom margin instead of 1.02in). That
+% 14pt is exactly what the 21st reference needs; it is the one remaining
+% margin deviation in the document, and removing it costs a 10th page.
 \IEEEtriggeratref{16}
-\IEEEtriggercmd{\enlargethispage{6\baselineskip}}
+\IEEEtriggercmd{\enlargethispage{2\baselineskip}}
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
