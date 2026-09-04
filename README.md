@@ -18,8 +18,10 @@ comparison, plus a construct-validity check against an external
 code-generation proxy (BigCodeBench).
 
 The project's outputs are the paper (`paper/paper.pdf`), the ECS8056
-supporting report (`paper/supporting_report/`), and the slide deck
-(`paper/slides/`).
+supporting report (`paper/supporting_report/`), and the slide deck. The
+compiled paper, the report and the deck are all build products and are
+gitignored, so a fresh clone contains their sources, not the files
+themselves.
 
 ## Install
 
@@ -118,6 +120,109 @@ cd paper && make
 the current `analysis/` output before every compile, so the PDF is never
 stale relative to the data behind it.
 
+## The live demonstration
+
+`demo/` holds a short, self-contained walkthrough of the benchmark's central
+claim, in three parts: does the mechanism work, what does it buy you, and can
+you trust the numbers. It makes no model API calls — every test suite is a
+file on disk, written by hand in advance — so it runs in seconds and is
+reproducible offline.
+
+```bash
+source .venv/bin/activate     # the scripts import the real scorer
+./demo/run_demo.sh            # press Enter between steps
+```
+
+### Reproducing it, step by step
+
+The demo's three hand-written suites are not arbitrary: each one is built to
+produce a specific verdict against a specific instance. This is the order to
+rebuild them in, whether you are reconstructing the demo or retargeting it at
+a different template. Run everything from the repository root.
+
+**1. Choose a template and two seeds.** Look at what they actually produce
+before committing:
+
+```bash
+python demo/show_instance.py --template L2-clamp-001 --seed 1101
+python demo/show_instance.py --template L2-clamp-001 --seed 4207 --no-mutants
+```
+
+Pick seeds that differ in *both* the function name and the clamp constant —
+that pairing is what makes the memorisation point land. Reject a seed that
+repeats a name already in use.
+
+**2. Read the mutants before writing any test.** The base suite has to leave a
+*catchable* mutant alive deliberately, so you must know which one is catchable:
+
+```bash
+python demo/show_instance.py --template L2-clamp-001 --seed 1101 --show-mutant 7
+```
+
+Do this per mutant, or script it — execute every mutant against candidate
+inputs and record which inputs separate it from the original. Do not infer
+this by reading the code: an *equivalent* mutant looks catchable until you run
+it, and this template has two.
+
+**3. Write the base suite** (`demo/suite_seed_1101.py`) against seed 1101's
+generated function, deliberately omitting the one input that would kill your
+chosen survivor. Here that input is 67 and the survivor is mutant M7.
+
+**4. Write the killer** (`demo/suite_seed_1101_plus.py`): a copy of the base
+suite plus that single assertion. Keep both docstrings identical, or the diff
+shown during the demo becomes a wall of prose instead of one test.
+
+**5. Write the import-repaired variant**
+(`demo/suite_seed_1101_import_fixed.py`): the base suite with the function
+name changed to the second seed's, at *every* call site — Python has no
+partial import, so renaming only the import line raises `NameError` and you
+get the wrong failure.
+
+**6. Verify all four verdicts before rehearsing:**
+
+```bash
+python demo/score_suite.py --template L2-clamp-001 --seed 1101 --suite demo/suite_seed_1101.py       # 7/10
+python demo/score_suite.py --template L2-clamp-001 --seed 1101 --suite demo/suite_seed_1101_plus.py  # 8/10
+python demo/score_suite.py --template L2-clamp-001 --seed 4207 --suite demo/suite_seed_1101.py       # exec gate FAIL
+python demo/score_suite.py --template L2-clamp-001 --seed 4207 --suite demo/suite_seed_1101_import_fixed.py   # baseline gate FAIL
+```
+
+**7. Measure the whole-set claim rather than asserting it:**
+
+```bash
+python demo/compare_instantiations.py     # 300 problems per version, expect 0 shared
+```
+
+It derives its instance seeds with the production formula, importing
+`INSTANCE_BASE_SEEDS` from `scripts/generate_instantiation_manifest.py`, so it
+demonstrates the path the pipeline actually takes.
+
+**8. Pick and test the citation-gate anchor.** `run_demo.sh` ends by tampering
+with a number and watching `check_doc_citations.py` refuse to build. The gate
+detects *stale* numbers — values matching nothing the pipeline currently
+produces — so an invented number often still passes by coincidentally matching
+some other live value. Confirm your chosen anchor actually fails before you
+rely on it:
+
+```bash
+sed -i "s/n_models=9: exec_rate/n_models=11: exec_rate/" analysis/RQ5_INTERPRETATION.md
+uv run python scripts/check_doc_citations.py --only rq5_interpretation   # must report GATE: FAIL
+git checkout -- analysis/RQ5_INTERPRETATION.md
+```
+
+If it reports PASS, choose a different anchor. Integer counts such as
+`n_models` work because only ten distinct values exist live; most p-values and
+correlations do not.
+
+**9. Run it end to end** before rehearsing with narration:
+
+```bash
+yes "" | ./demo/run_demo.sh | less
+```
+
+`run_demo.sh` guards this last step: it refuses to edit the cited document if
+it has uncommitted changes, and restores it on exit or interrupt.
+
 ## Where things live
 
 | Directory | What it is | Paper section |
@@ -130,7 +235,7 @@ stale relative to the data behind it.
 | `data/` | Raw and generated results (gitignored) | — |
 | `analysis/` | Every interpretation document, auto-generated provenance table, and figure behind the paper's results, indexed in `analysis/INDEX.md` (`analysis/README.md` is a contamination notice, not the index) | Results §IV, Discussion §V |
 | `docs/` | `Approved_Hypotheses.md` (the six governing hypotheses, verbatim) and `Research_questions.xlsx`/`RESEARCH_QUESTIONS.md` (the RQ/hypothesis tracking workbook and its auto-generated markdown mirror) | Introduction §I (RQ1–RQ5), the hypothesis table in Results §IV |
-| `paper/` | The paper (`paper.tex`/`paper.pdf`), the ECS8056 supporting report (`supporting_report/`), and the slide deck (`slides/`) | — (the deliverables) |
+| `paper/` | The paper source (`paper.tex`, `sections/`) and the ECS8056 supporting report (`supporting_report/`). The compiled PDF, the report's `.docx` and the slide deck are gitignored build products | — (the deliverables) |
 | `tests/` | The pytest suite | — |
 
 `PROJECT_BRIEF.md` (repo root) is the canonical statement of the project's
